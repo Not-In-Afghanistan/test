@@ -84,6 +84,7 @@
       e.preventDefault();
       const username = document.querySelector('input[type="text"]').value.trim();
       const password = document.querySelector('input[type="password"]').value.trim();
+      sessionStorage.setItem("loginAsk", "true");
 
       // Admin redirect
       if (username === "999999" && password === "Qwerty") {

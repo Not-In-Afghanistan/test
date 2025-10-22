@@ -7,6 +7,22 @@
   <link rel="stylesheet" href="./chat.css" />
 </head>
 
+
+
+
+
+
+<body>
+<script>
+  // Redirect if not logged in properly
+  if (sessionStorage.getItem("loginAsk") !== "true") {
+    // Optional: alert before redirect
+    alert("Access denied. Redirecting to login...");
+    window.location.href = "./index.html";
+  }
+</script>
+
+
 <div class="locked">
     <img src="./gifs/blueball.gif">
     <img src="./gifs/zero2.gif">
@@ -68,10 +84,6 @@
 
 
 
-
-
-
-<body>
 
   <div class="MainArea">
 
