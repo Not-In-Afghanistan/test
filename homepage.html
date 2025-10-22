@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PIXELCHAT</title>
+  <link rel="stylesheet" href="./chat.css" />
+</head>
+
+<div class="locked">
+    <img src="./gifs/blueball.gif">
+    <img src="./gifs/zero2.gif">
+    <img src="./gifs/swrd.gif">
+        <img src="./gifs/67-67-kid.gif">
+    <img src="./gifs/67.gif">
+    <img src="./gifs/anime-mad.gif">
+        <img src="./gifs/anime-manga.gif">
+    <img src="./gifs/apple.gif">
+    <img src="./gifs/chill.gif">
+        <img src="./gifs/cute.gif">
+    <img src="./gifs/dave-and-bambi-distruption.gif">
+    <img src="./gifs/fnf-dave.gif">
+        <img src="./gifs/blueball.gif">
+    <img src="./gifs/gojo.gif">
+    <img src="./gifs/goon-tuah.gif">
+        <img src="./gifs/kakashi.gif">
+    <img src="./gifs/kis.gif">
+    <img src="./gifs/mad.gif">
+        <img src="./gifs/maga-girl-guitar.gif">
+    <img src="./gifs/mango-mango-mango.gif">
+    <img src="./gifs/minecraft-notch-apple.gif">
+        <img src="./gifs/mommy-anime.gif">
+    <img src="./gifs/poke.gif">
+    <img src="./gifs/rem.gif">
+        <img src="./gifs/shiideraii.gif">
+    <img src="./gifs/shrek.gif">
+    <img src="./gifs/spookierose-vtuber.gif">
+</div>
+
+
+<div class="locked3">
+    <div class="locked2">
+    <img src="./gifs/rightGifs/7tv-emotes.gif">
+    <img src="./gifs/rightGifs/angry.gif">
+    <img src="./gifs/rightGifs/black-guy-maid-vibe-black-maid-dance.gif">
+    <img src="./gifs/rightGifs/bosnov-67.gif">
+    <img src="./gifs/rightGifs/emoji.gif">
+    <img src="./gifs/rightGifs/enojado.gif">
+    <img src="./gifs/rightGifs/gooner-goon.gif">
+    <img src="./gifs/rightGifs/hasbulla-hasbik.gif">
+    <img src="./gifs/rightGifs/kermit-the-frog.gif">
+    <img src="./gifs/rightGifs/knife-crazy-eye.gif">
+    <img src="./gifs/rightGifs/oh-no-oh-my-god.gif">
+    <img src="./gifs/rightGifs/oop-take.gif">
+    <img src="./gifs/rightGifs/patrick-bateman-smile.gif">
+    <img src="./gifs/rightGifs/reallycooked.gif">
+    <img src="./gifs/rightGifs/sigmasungjinwoo-mewing.gif">
+    <img src="./gifs/rightGifs/solid-snake-salute.gif">
+    <img src="./gifs/rightGifs/solo-leveling-sololeveling.gif">
+    <img src="./gifs/rightGifs/thofinn.gif">
+    <img src="./gifs/rightGifs/thorfinn.gif">
+    <img src="./gifs/rightGifs/twitch-twitch-emote.gif">
+    <img src="./gifs/rightGifs/vinland-saga-thorfinn.gif">
+    <img src="./gifs/rightGifs/what-twitch.gif">
+    <img src="./gifs/rightGifs/zzz-jane-doe.gif">
+</div>
+</div>
+
+
+
+
+
+
+<body>
+
+  <div class="MainArea">
+
+    <div class="Header2"><p>PIXELCHAT BY MUZAFAR</p></div>
+    <div class="MainActionContainer">
+      <!-- Username is taken from sessionStorage set on sign-in -->
+
+  <div id="signedInAs" class="GroupNormalMargin"></div>
+
+        <form id="msgForm">
+         <div style="display:flex; gap:8px; align-items:center;">
+            <input id="msgInput" type="text" placeholder="Type a message" style="flex:1;" />
+            <input type="submit" value="Send" />
+         </div>
+        </form>
+
+      <div id="messages" class="GroupNormalMargin">
+        <p>Loading messages...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    // Firebase config (same as other pages)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
+      authDomain: "test-da143.firebaseapp.com",
+      databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
+      projectId: "test-da143",
+      storageBucket: "test-da143.firebasestorage.app",
+      messagingSenderId: "58366480447",
+      appId: "1:58366480447:web:f3dd12850f09952b49688a",
+      measurementId: "G-T5HK7JTWHW"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const msgForm = document.getElementById('msgForm');
+    const msgInput = document.getElementById('msgInput');
+  const messagesDiv = document.getElementById('messages');
+
+  // Helper to get the username stored on sign-in page (prefer localStorage)
+  function getStoredName(){
+    return localStorage.getItem('username') || sessionStorage.getItem('username') || null;
+  }
+
+  // Show signed-in username on the page; if missing, redirect back to sign-in
+  const signedInEl = document.getElementById('signedInAs');
+  const currentUser = getStoredName();
+  console.log('homepage: currentUser =', currentUser);
+  if (!currentUser) {
+    // no username available — send user back to sign-in
+    alert('No username found. Please sign in.');
+    window.location.href = './index.html';
+  } else {
+    if (signedInEl) signedInEl.textContent = 'Signed in as: ' + currentUser;
+  }
+
+    // Render messages (most recent last)
+    function renderMessages(data) {
+      const val = data || {};
+      messagesDiv.innerHTML = '';
+      const entries = Object.entries(val).sort((a,b)=>a[1].timestamp - b[1].timestamp);
+      if (entries.length === 0) {
+        messagesDiv.innerHTML = '<p>No messages yet.</p>';
+        return;
+      }
+      for (const [key, msg] of entries) {
+        const div = document.createElement('div');
+        div.className = 'entry';
+        // If message contains a gifUrl, render the image; otherwise render text
+        if (msg.gifUrl) {
+          div.innerHTML = `<strong>${escapeHtml(msg.username)}:</strong><br><img src="${escapeHtml(msg.gifUrl)}" alt="gif" style="max-width:100%; border-radius:8px;" /><br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+        } else {
+          div.innerHTML = `<strong>${escapeHtml(msg.username)}:</strong> ${escapeHtml(msg.text)} <br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+        }
+        messagesDiv.appendChild(div);
+      }
+      // Scroll to bottom
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Make gifs clickable: clicking any image inside .locked will send the gif URL as a chat message
+    const lockedContainer = document.querySelector('.locked');
+    if (lockedContainer) {
+      lockedContainer.addEventListener('click', (e) => {
+        const img = e.target.closest('img');
+        if (!img) return;
+        const gifUrl = img.getAttribute('src');
+        const username = sessionStorage.getItem('username') || 'Anonymous';
+        // push gif message to Firebase
+        db.ref('messages').push({ username, gifUrl, timestamp: Date.now() })
+          .catch(err => alert(err.message));
+      });
+    }
+    // Also make gifs in the right-side container sendable (.locked2 inside .locked3)
+    const locked2Container = document.querySelector('.locked2');
+    if (locked2Container) {
+      locked2Container.addEventListener('click', (e) => {
+        const img = e.target.closest('img');
+        if (!img) return;
+        const gifUrl = img.getAttribute('src');
+        const username = sessionStorage.getItem('username') || 'Anonymous';
+        db.ref('messages').push({ username, gifUrl, timestamp: Date.now() })
+          .catch(err => alert(err.message));
+      });
+    }
+    // Simple HTML escape
+    function escapeHtml(s){
+      if (!s && s !== 0) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // Live listener on messages
+    db.ref('messages').on('value', snap => renderMessages(snap.val()));
+
+    msgForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+  const text = msgInput.value.trim();
+  let username = sessionStorage.getItem('username') || 'Anonymous';
+      if (!text) return;
+  // (username comes from sign-in stored in sessionStorage)
+      db.ref('messages').push({ username, text, timestamp: Date.now() })
+        .then(()=> { msgInput.value = ''; })
+        .catch(err => alert(err.message));
+    });
+  </script>
+  </div>
+</body>
+</html>

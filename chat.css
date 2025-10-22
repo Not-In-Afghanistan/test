@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+body
+{
+        background-color: #ffffff;
+        color:#ffffff;
+        /* pixel font needs a readable base size */
+        font-size: 14px;
+        font-weight: normal;
+        font-family: 'Press Start 2P', monospace;
+        -webkit-font-smoothing: none;
+        -moz-osx-font-smoothing: grayscale;
+        margin: 0px;
+}
+
+/* apply pixel font to form controls too */
+input, button, textarea {
+    font-family: 'Press Start 2P', monospace;
+}
+
+.MainArea
+{
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 525px;
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+}
+
+.MainActionContainer
+{
+    padding: 5px 20px 5px 20px;
+    border: solid 1px #cccccc;
+    min-height: 150px;
+}
+
+.locked {
+    position: absolute;
+    width: 400px;
+    overflow: hidden;
+}
+
+.locked > img 
+{
+    width: 60px;
+}
+
+.Header2 > p {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+#signedInAs {
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+#msgForm {
+    margin-bottom: 10px;
+}
+
+
+
+/* Chat/message styling */
+#messages {
+    max-height: 350px; /* allow scrolling when there are many messages */
+    overflow-y: auto;
+    margin-top: 8px;
+}
+
+#messages .entry {
+    padding: 6px 8px;
+    border-bottom: 1px solid #eee;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* ensure long words break and don't overflow the main area */
+.MainArea, .MainActionContainer {
+    box-sizing: border-box;
+}
+
+/* Wallpaper-only: full-screen GIF background (change path as needed) */
+body {
+    background-image: url('./gifs/wallpaper.gif');
+    background-size: cover; /* fill screen while preserving aspect ratio */
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* Sent GIF sizing: 25% of the message container, centered */
+#messages .entry img {
+    display: block;
+    width: 30%;
+    margin: 8px 0 0 0;
+    height: auto;
+}
+
+@media (max-width: 640px) {
+    /* On small screens make GIFs full-width for readability */
+    #messages .entry img { width: 100%; }
+}
+
+
+.locked2 {
+    position: absolute;
+    width: 400px;
+    overflow: hidden;
+}
+
+.locked2 > img 
+{
+    width: 60px;
+}
+
+.locked3 {
+    position: absolute;
+    width: 400px;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
