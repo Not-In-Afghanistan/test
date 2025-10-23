@@ -5,24 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In</title>
-    <link rel="stylesheet" type="text/css" href="./StyleSheet.css"/>
-
-<style>
-#masked {
-  -webkit-text-security: disc;
-  font-size: 16px;
-  padding: 8px;
-}
-</style>
-
-<script>
-document.querySelector("#masked").addEventListener("input", e => {
-  console.log("Real value:", e.target.value); // ← real text still visible in console
-});
-</script>
-
-
-    
+    <link rel="stylesheet" type="text/css" href="./StyleSheet.css"/>  
 </head>
 
 <body>
@@ -47,7 +30,7 @@ document.querySelector("#masked").addEventListener("input", e => {
 
         <tr>
             <td><span class="Label"><span>Password: </span></span></td>
-            <td><input type="text" id="masked" autocomplete="off"/></td>
+            <td><input type="password"/></td>
             <td>&nbsp;</td>
         </tr>
 
