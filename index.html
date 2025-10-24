@@ -104,9 +104,20 @@
         alert("Password cannot be empty.");
         return;
       }
-  // store username immediately so homepage can use it
-  try { sessionStorage.setItem('username', username); } catch(e) { console.warn('sessionStorage set failed', e); }
-  try { localStorage.setItem('username', username); } catch(e) { console.warn('localStorage set failed', e); }
+      
+      const displayName = document.getElementById('displayName').value.trim() || username;
+      
+      // store username immediately so homepage can use it
+      try { 
+        sessionStorage.setItem('username', username);
+      } catch(e) { 
+        console.warn('sessionStorage set failed', e); 
+      }
+      try { 
+        localStorage.setItem('username', username);
+      } catch(e) { 
+        console.warn('localStorage set failed', e); 
+      }
 
       // Write to Firebase
       db.ref("users").push({

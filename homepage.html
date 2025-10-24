@@ -125,6 +125,18 @@
     return localStorage.getItem('username') || sessionStorage.getItem('username') || null;
   }
 
+  // Map of IDs to custom names
+  const customNames = {
+    '596923': 'Muzafar',
+    '589533': 'Kyle',
+    '589425': 'Jeffery',
+    '564380': 'Harshan',
+    '603974': 'Disani',
+    '546766': 'Camden',
+    '598292': 'Jacob',
+    // Add more mappings here
+  };
+
   // Show signed-in username on the page; if missing, redirect back to sign-in
   const signedInEl = document.getElementById('signedInAs');
   const currentUser = getStoredName();
@@ -134,7 +146,8 @@
     alert('No username found. Please sign in.');
     window.location.href = './index.html';
   } else {
-    if (signedInEl) signedInEl.textContent = 'Signed in as: ' + currentUser;
+    const displayName = customNames[currentUser] || currentUser;
+    if (signedInEl) signedInEl.textContent = 'Signed in as: ' + displayName;
   }
 
     // Render messages (most recent last)
@@ -168,9 +181,10 @@
         const img = e.target.closest('img');
         if (!img) return;
         const gifUrl = img.getAttribute('src');
-        const username = sessionStorage.getItem('username') || 'Anonymous';
+        const userId = sessionStorage.getItem('username') || 'Anonymous';
+        const displayName = customNames[userId] || userId;
         // push gif message to Firebase
-        db.ref('messages').push({ username, gifUrl, timestamp: Date.now() })
+        db.ref('messages').push({ username: displayName, gifUrl, timestamp: Date.now() })
           .catch(err => alert(err.message));
       });
     }
@@ -197,11 +211,12 @@
 
     msgForm.addEventListener('submit', (e) => {
       e.preventDefault();
-  const text = msgInput.value.trim();
-  let username = sessionStorage.getItem('username') || 'Anonymous';
+      const text = msgInput.value.trim();
+      let userId = sessionStorage.getItem('username') || 'Anonymous';
       if (!text) return;
-  // (username comes from sign-in stored in sessionStorage)
-      db.ref('messages').push({ username, text, timestamp: Date.now() })
+      // Use custom name if available, otherwise use ID
+      const displayName = customNames[userId] || userId;
+      db.ref('messages').push({ username: displayName, text, timestamp: Date.now() })
         .then(()=> { msgInput.value = ''; })
         .catch(err => alert(err.message));
     });
