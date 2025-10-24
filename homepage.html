@@ -217,6 +217,21 @@
         .catch(err => alert(err.message));
     });
   </script>
+<script>
+// Only start timer if user is logged in
+if (sessionStorage.getItem("username")) {
+  // Auto-logout after 20 minutes
+  setTimeout(() => {
+    sessionStorage.clear(); // removes username + admin flags if any
+    alert("Session expired. Please log in again.");
+    window.location.href = "index.html";
+  }, 20 * 60 * 1000); // 20 minutes
+} else {
+  // If no session found, send them back immediately
+  window.location.href = "index.html";
+}
+</script>
+
   </div>
 </body>
 </html>
