@@ -195,8 +195,9 @@
         const img = e.target.closest('img');
         if (!img) return;
         const gifUrl = img.getAttribute('src');
-        const username = sessionStorage.getItem('username') || 'Anonymous';
-        db.ref('messages').push({ username, gifUrl, timestamp: Date.now() })
+        const userId = sessionStorage.getItem('username') || 'Anonymous';
+        const displayName = customNames[userId] || userId;
+        db.ref('messages').push({ username: displayName, gifUrl, timestamp: Date.now() })
           .catch(err => alert(err.message));
       });
     }
