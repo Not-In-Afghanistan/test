@@ -115,6 +115,9 @@ body {
     .MainArea {
         width: 400px;
     }
+    #toggleBtn {
+        display: none;
+    }
 }
 
 #toggleBtn {
