@@ -112,6 +112,9 @@ body {
     img {
         display: none;
     }
+    .MainArea {
+        width: 400px;
+    }
 }
 
 #toggleBtn {
