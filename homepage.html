@@ -106,117 +106,140 @@
     </div>
 
   </div>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+  // Firebase config (same as other pages)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
+    authDomain: "test-da143.firebaseapp.com",
+    databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
+    projectId: "test-da143",
+    storageBucket: "test-da143.firebasestorage.app",
+    messagingSenderId: "58366480447",
+    appId: "1:58366480447:web:f3dd12850f09952b49688a",
+    measurementId: "G-T5HK7JTWHW"
+  };
 
-  <script>
-    // Firebase config (same as other pages)
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
-      authDomain: "test-da143.firebaseapp.com",
-      databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
-      projectId: "test-da143",
-      storageBucket: "test-da143.firebasestorage.app",
-      messagingSenderId: "58366480447",
-      appId: "1:58366480447:web:f3dd12850f09952b49688a",
-      measurementId: "G-T5HK7JTWHW"
-    };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  // 🔹 Map of 6-digit IDs to display names
+  const idToName = {
+    "596923": "Muzafar",
+    "589533": "Kyle",
+    "589425": "Jeffery",
+    "564380": "Harshan",
+    "603974": "Disani",
+    "546766": "Camden",
+    "598292": "Jacob"
+    // Add more like: "123456": "YourChosenName"
+  };
 
-    const msgForm = document.getElementById('msgForm');
-    const msgInput = document.getElementById('msgInput');
+  const msgForm = document.getElementById('msgForm');
+  const msgInput = document.getElementById('msgInput');
   const messagesDiv = document.getElementById('messages');
 
-  // Helper to get the username stored on sign-in page (prefer localStorage)
-  function getStoredName(){
+  // Helper to get stored ID
+  function getStoredId() {
     return localStorage.getItem('username') || sessionStorage.getItem('username') || null;
   }
 
-  // Show signed-in username on the page; if missing, redirect back to sign-in
-  const signedInEl = document.getElementById('signedInAs');
-  const currentUser = getStoredName();
-  console.log('homepage: currentUser =', currentUser);
-  if (!currentUser) {
-    // no username available — send user back to sign-in
+  // Get user ID and convert to display name
+  const currentUserId = getStoredId();
+  if (!currentUserId) {
     alert('No username found. Please sign in.');
     window.location.href = './index.html';
-  } else {
-    if (signedInEl) signedInEl.textContent = 'Signed in as: ' + currentUser;
   }
 
-    // Render messages (most recent last)
-    function renderMessages(data) {
-      const val = data || {};
-      messagesDiv.innerHTML = '';
-      const entries = Object.entries(val).sort((a,b)=>a[1].timestamp - b[1].timestamp);
-      if (entries.length === 0) {
-        messagesDiv.innerHTML = '<p>No messages yet.</p>';
-        return;
+  const displayName = idToName[currentUserId] || currentUserId;
+  const signedInEl = document.getElementById('signedInAs');
+  if (signedInEl) signedInEl.textContent = 'Signed in as: ' + displayName;
+
+  // 🔹 Render messages (translate IDs to names)
+  function renderMessages(data) {
+    const val = data || {};
+    messagesDiv.innerHTML = '';
+    const entries = Object.entries(val).sort((a, b) => a[1].timestamp - b[1].timestamp);
+    if (entries.length === 0) {
+      messagesDiv.innerHTML = '<p>No messages yet.</p>';
+      return;
+    }
+    for (const [key, msg] of entries) {
+      const shownName = idToName[msg.username] || msg.username;
+      const div = document.createElement('div');
+      div.className = 'entry';
+      if (msg.gifUrl) {
+        div.innerHTML = `
+          <strong>${escapeHtml(shownName)}:</strong><br>
+          <img src="${escapeHtml(msg.gifUrl)}" alt="gif" style="max-width:100%; border-radius:8px;" />
+          <br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+      } else {
+        div.innerHTML = `
+          <strong>${escapeHtml(shownName)}:</strong> ${escapeHtml(msg.text)} 
+          <br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
       }
-      for (const [key, msg] of entries) {
-        const div = document.createElement('div');
-        div.className = 'entry';
-        // If message contains a gifUrl, render the image; otherwise render text
-        if (msg.gifUrl) {
-          div.innerHTML = `<strong>${escapeHtml(msg.username)}:</strong><br><img src="${escapeHtml(msg.gifUrl)}" alt="gif" style="max-width:100%; border-radius:8px;" /><br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
-        } else {
-          div.innerHTML = `<strong>${escapeHtml(msg.username)}:</strong> ${escapeHtml(msg.text)} <br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
-        }
-        messagesDiv.appendChild(div);
-      }
-      // Scroll to bottom
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      messagesDiv.appendChild(div);
     }
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
 
-    // Make gifs clickable: clicking any image inside .locked will send the gif URL as a chat message
-    const lockedContainer = document.querySelector('.locked');
-    if (lockedContainer) {
-      lockedContainer.addEventListener('click', (e) => {
-        const img = e.target.closest('img');
-        if (!img) return;
-        const gifUrl = img.getAttribute('src');
-        const username = sessionStorage.getItem('username') || 'Anonymous';
-        // push gif message to Firebase
-        db.ref('messages').push({ username, gifUrl, timestamp: Date.now() })
-          .catch(err => alert(err.message));
-      });
-    }
-    // Also make gifs in the right-side container sendable (.locked2 inside .locked3)
-    const locked2Container = document.querySelector('.locked2');
-    if (locked2Container) {
-      locked2Container.addEventListener('click', (e) => {
-        const img = e.target.closest('img');
-        if (!img) return;
-        const gifUrl = img.getAttribute('src');
-        const username = sessionStorage.getItem('username') || 'Anonymous';
-        db.ref('messages').push({ username, gifUrl, timestamp: Date.now() })
-          .catch(err => alert(err.message));
-      });
-    }
-    // Simple HTML escape
-    function escapeHtml(s){
-      if (!s && s !== 0) return '';
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // Live listener on messages
-    db.ref('messages').on('value', snap => renderMessages(snap.val()));
-
-    msgForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-  const text = msgInput.value.trim();
-  let username = sessionStorage.getItem('username') || 'Anonymous';
-      if (!text) return;
-  // (username comes from sign-in stored in sessionStorage)
-      db.ref('messages').push({ username, text, timestamp: Date.now() })
-        .then(()=> { msgInput.value = ''; })
-        .catch(err => alert(err.message));
+  // 🔹 GIF click to send
+  function handleGifClick(container) {
+    if (!container) return;
+    container.addEventListener('click', (e) => {
+      const img = e.target.closest('img');
+      if (!img) return;
+      const gifUrl = img.getAttribute('src');
+      db.ref('messages').push({
+        username: currentUserId,
+        gifUrl,
+        timestamp: Date.now()
+      }).catch(err => alert(err.message));
     });
-  </script>
+  }
+
+  handleGifClick(document.querySelector('.locked'));
+  handleGifClick(document.querySelector('.locked2'));
+
+  // 🔹 Escape HTML helper
+  function escapeHtml(s) {
+    if (!s && s !== 0) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // 🔹 Listen for live messages
+  db.ref('messages').on('value', snap => renderMessages(snap.val()));
+
+  // 🔹 Send text message
+  msgForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = msgInput.value.trim();
+    if (!text) return;
+    db.ref('messages').push({
+      username: currentUserId, // store ID in Firebase
+      text,
+      timestamp: Date.now()
+    }).then(() => {
+      msgInput.value = '';
+    }).catch(err => alert(err.message));
+  });
+
+  // 🔹 Auto logout after 20 minutes
+  setTimeout(() => {
+    sessionStorage.clear();
+    localStorage.clear();
+    alert("Session expired. Please log in again.");
+    window.location.href = "index.html";
+  }, 20 * 60 * 1000);
+</script>
+
   </div>
 </body>
 </html>
