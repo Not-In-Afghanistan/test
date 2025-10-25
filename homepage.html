@@ -22,8 +22,8 @@
   }
 </script>
 
-
-<div class="locked">
+<input type="submit" id="toggleBtn" value="Hide GIFs">
+<div id="locked">
     <img src="./gifs/67-67-kid.gif">
     <img src="./gifs/67.gif">
     <img src="./gifs/anime-mad.gif">
@@ -38,11 +38,7 @@
     <img src="./gifs/mango-mango-mango.gif">
     <img src="./gifs/mommy-anime.gif">
     <img src="./gifs/shrek.gif">
-</div>
-
-
-<div class="locked3">
-    <div class="locked2">
+    <!-- Right-side GIFs -->
     <img src="./gifs/rightGifs/7tv-emotes.gif">
     <img src="./gifs/rightGifs/angry.gif">
     <img src="./gifs/rightGifs/black-guy-maid-vibe-black-maid-dance.gif">
@@ -64,29 +60,26 @@
     <img src="./gifs/rightGifs/vinland-saga-thorfinn.gif">
     <img src="./gifs/rightGifs/what-twitch.gif">
 </div>
+
 </div>
-
-
-
-
   <div class="MainArea">
 
-    <div class="Header2"><p>PIXELCHAT BY MUZAFAR</p></div>
+    <div class="Header2"><p>SPEEDCHAT BY MUZAFAR</p></div>
     <div class="MainActionContainer">
-      <!-- Username is taken from sessionStorage set on sign-in -->
+       <!-- Username is taken from sessionStorage set on sign-in -->
 
-  <div id="signedInAs" class="GroupNormalMargin"></div>
+       <div id="signedInAs" class="GroupNormalMargin"></div>
 
-        <form id="msgForm">
-         <div style="display:flex; gap:8px; align-items:center;">
-            <input id="msgInput" type="text" placeholder="Type a message" style="flex:1;" />
-            <input type="submit" value="Send" />
-         </div>
-        </form>
+         <form id="msgForm">
+          <div style="display:flex; gap:8px; align-items:center;">
+             <input id="msgInput" type="text" placeholder="Type a message" style="flex:1;" />
+             <input type="submit" value="Send" />
+          </div>
+         </form>
 
-      <div id="messages" class="GroupNormalMargin">
-        <p>Loading messages...</p>
-      </div>
+       <div id="messages" class="GroupNormalMargin">
+         <p>Loading messages...</p>
+       </div>
     </div>
 
   </div>
@@ -171,25 +164,24 @@
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
-  // 🔹 GIF click to send
-  function handleGifClick(container) {
-    if (!container) return;
-    container.addEventListener('click', (e) => {
-      const img = e.target.closest('img');
-      if (!img) return;
-      const gifUrl = img.getAttribute('src');
+// 🔹 GIF click to send
+function enableGifClick(container) {
+  container.querySelectorAll("img").forEach(img => {
+    img.addEventListener("click", () => {
+      const gifUrl = img.src;
       db.ref('messages').push({
         username: currentUserId,
-        gifUrl,
+        gifUrl: gifUrl,
         timestamp: Date.now()
       }).catch(err => alert(err.message));
     });
-  }
+  });
+}
+enableGifClick(document.getElementById("locked"));
 
-  handleGifClick(document.querySelector('.locked'));
-  handleGifClick(document.querySelector('.locked2'));
 
-  // 🔹 Escape HTML helper
+
+// 🔹 Escape HTML helper
   function escapeHtml(s) {
     if (!s && s !== 0) return '';
     return String(s)
@@ -199,8 +191,13 @@
       .replace(/"/g, '&quot;');
   }
 
-  // 🔹 Listen for live messages
+
+
+
+// 🔹 Listen for live messages
   db.ref('messages').on('value', snap => renderMessages(snap.val()));
+
+
 
   // 🔹 Send text message
   msgForm.addEventListener('submit', (e) => {
@@ -216,6 +213,8 @@
     }).catch(err => alert(err.message));
   });
 
+  
+  
   // 🔹 Auto logout after 20 minutes
   setTimeout(() => {
     sessionStorage.clear();
@@ -224,7 +223,25 @@
     window.location.href = "index.html";
   }, 20 * 60 * 1000);
 </script>
+<script>
+  
+  
+  // Toggle GIF container
+const toggleBtn = document.getElementById("toggleBtn");
+const gifContainer = document.getElementById("locked");
 
+toggleBtn.addEventListener("click", (e) => {
+  e.preventDefault(); // prevent form submission
+  if (gifContainer.style.display === "none") {
+    gifContainer.style.display = "block";
+    toggleBtn.value = "Hide GIFs";
+  } else {
+    gifContainer.style.display = "none";
+    toggleBtn.value = "Show GIFs";
+  }
+});
+
+</script>
   </div>
 </body>
 </html>

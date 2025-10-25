@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
 body
 {
@@ -26,6 +26,7 @@ input, button, textarea {
     width: 525px;
     backdrop-filter: blur(7px);
     -webkit-backdrop-filter: blur(7px);
+    margin-top: -40px;
 }
 
 .MainActionContainer
@@ -35,13 +36,13 @@ input, button, textarea {
     min-height: 150px;
 }
 
-.locked {
+#locked {
     position: absolute;
     width: 400px;
     overflow: hidden;
 }
 
-.locked > img 
+#locked > img 
 {
     width: 50px;
 }
@@ -106,28 +107,14 @@ body {
 }
 
 
-.locked2 {
-    position: absolute;
-    width: 400px;
-    overflow: hidden;
-}
-
-.locked2 > img 
-{
-    width: 50px;
-}
-
-.locked3 {
-    position: absolute;
-    width: 400px;
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-}
-
 @media (max-width: 640px) {
     /* On small screens make GIFs full-width for readability */
     img {
         display: none;
     }
+}
+
+#toggleBtn {
+    position: relative;
+    cursor: pointer;
 }
