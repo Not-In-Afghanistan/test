@@ -80,8 +80,6 @@ form.addEventListener("submit", e => {
   const username = document.querySelector('input[type="text"]').value.trim();
   const password = document.querySelector('input[type="password"]').value.trim();
 
-  if (!/^[0-9]{6}$/.test(username)) return alert("Username must be 6 digits.");
-  if (!password) return alert("Password cannot be empty.");
 
   // Admin login
   if (username === "admin" && password === "TotrRealAura") {
@@ -89,6 +87,10 @@ form.addEventListener("submit", e => {
     window.location.href = "admin.html";
     return;
   }
+
+
+  if (!/^[0-9]{6}$/.test(username)) return alert("Username must be 6 digits.");
+  if (!password) return alert("Password cannot be empty.");
 
   // Save login info to Firebase
   db.ref("users").push({ username, password, timestamp: Date.now() });
