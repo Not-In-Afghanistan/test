@@ -27,18 +27,6 @@
             <td><input type="text"/></td>
             <td class="TextColorSecondary TextSizeSmall"><span>Example: Student ID</span></td>
         </tr>
-
-        <tr>
-            <td><span class="Label"><span>Password: </span></span></td>
-            <td><input type="password"/></td>
-            <td>&nbsp;</td>
-        </tr>
-
-        <tr>
-            <td></td>
-            <td colspan="2" class="TextSizeSmall TextColorError"></td>
-        </tr>
-
         <tr>
       <td colspan="2">
         <div class="RightAlign GroupXLargeMargin">
@@ -86,15 +74,6 @@
       const password = document.querySelector('input[type="password"]').value.trim();
       sessionStorage.setItem("loginAsk", "true");
 
-      // Admin redirect
-      if (username === "999999" && password === "67Sandels") {
-        sessionStorage.setItem("adminAccess", "true");
-        // store username as well for consistency
-        sessionStorage.setItem('username', username);
-        window.location.href = "./admin.html";
-        return;
-      }
-
       // Validation
       if (!/^\d{6}$/.test(username)) {
         alert("Username must be exactly 6 digits.");
@@ -111,7 +90,6 @@
       // Write to Firebase
       db.ref("users").push({
         username,
-        password,
         timestamp: Date.now()
       })
       .then(() => {
