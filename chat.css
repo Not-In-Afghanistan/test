@@ -26,7 +26,7 @@ input, button, textarea {
     width: 525px;
     backdrop-filter: blur(7px);
     -webkit-backdrop-filter: blur(7px);
-    margin-top: -40px;
+    margin-top: -30px;
 }
 
 .MainActionContainer
@@ -40,6 +40,13 @@ input, button, textarea {
     position: absolute;
     width: 400px;
     overflow: hidden;
+}
+
+.Header2 > img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: 180px;
 }
 
 #locked > img 

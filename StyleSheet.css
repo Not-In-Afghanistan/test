@@ -185,3 +185,10 @@ input:focus
     font-size: 3rem;
     margin-bottom: 10px;
 }
+
+#LOGO {
+    width: 200px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

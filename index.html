@@ -5,22 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In</title>
-    <link rel="stylesheet" type="text/css" href="./StyleSheet.css"/>  
+    <link rel="stylesheet" type="text/css" href="./StyleSheet.css"/> 
+    <link rel="icon" type="image/png" href="./favicon.png"/> 
 </head>
 
 <body>
   <div class="MainArea">
         <div class="Header"><span>Sign In</span></div>
         
-        <div class="GroupXLargeMargin"><img src="./cfbisd edu_logo_v1.png" alt="logo" /></div>
+        <div class="GroupXLargeMargin"><img src="./LOGO.png" alt="logo" id="LOGO" /></div>
         
         <div class="GroupLargeMargin">
-            <div class="TextSizeXLarge"><span>fs.cfbisd.edu</span></div>
+            <div class="TextSizeXLarge"><span>pingpalsbymuzafar.vercel.app</span></div>
         </div>
 
     <div class="MainActionContainer">
       <form id="form">
-  <div class="GroupXLargeMargin"><span>Type your user name and password.</span></div>
+  <div class="GroupXLargeMargin"><span>Type your user name.</span></div>
   <table class="UsernamePasswordTable">
         <tr>
             <td><span class="Label"><span>User name: </span></span></td>
@@ -71,16 +72,11 @@
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const username = document.querySelector('input[type="text"]').value.trim();
-      const password = document.querySelector('input[type="password"]').value.trim();
       sessionStorage.setItem("loginAsk", "true");
 
       // Validation
       if (!/^\d{6}$/.test(username)) {
         alert("Username must be exactly 6 digits.");
-        return;
-      }
-      if (!password) {
-        alert("Password cannot be empty.");
         return;
       }
   // store username immediately so homepage can use it
