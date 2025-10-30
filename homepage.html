@@ -271,7 +271,7 @@ function enableGifClick(container) {
       }
 
       const gifUrl = img.src;
-      const cooldownTime = shortCooldownUsers.includes(currentUserId) ? 2 : 30;
+      const cooldownTime = shortCooldownUsers.includes(currentUserId) ? 5 : 30;
 
       // Push GIF message
       db.ref('messages').push({
