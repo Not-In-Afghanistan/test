@@ -162,7 +162,6 @@ const shortCooldownUsers = ["596923", "547025"];
     <img src="./gifs/rightGifs/what-twitch.gif">
 </div>
 <input type="submit" id="toggleBtn" value="Hide GIFs">
-</div>
   <div class="MainArea">
 
     <div class="Header2">&nbsp;</div>
@@ -238,13 +237,13 @@ function renderMessages(data) {
 
   for (const [key, msg] of entries) {
     const shownName = idToName[msg.username] || msg.username;
-    const userInfo = users[msg.username] || { role: "user" };
+    const userInfo = users[msg.username] || {};
 
     // 🎨 Role tag style & color
     let roleTag = "";
     switch (userInfo.role) {
       case "Admin":
-        roleTag = `<span style="background:#ff4d4d; color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Admin</span>`;
+        roleTag = `<span style="background:linear-gradient(red, blue); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Admin</span>`;
         break;
       case "PremiumOG":
         roleTag = `<span style="background:linear-gradient(90deg, #b026ff, #6f00ff); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">PremiumOG</span>`;
