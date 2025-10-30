@@ -10,6 +10,30 @@
 
 <body>
 <script>
+  // 🔹 Map of 6-digit IDs to display names
+  const idToName = {
+    "596923": "Muzafar",
+    "589533": "Kyle",
+    "589425": "Jeffery",
+    "564380": "Harshan",
+    "603974": "Disani",
+    "546766": "Camden",
+    "596922": "Veena",
+    "545208": "Braylen",
+    "547025": "Jostin",
+    "600437": "Blake",
+    "599328": "Ethan",
+    "592276": "Nitya",
+    "598292": "Jacob"
+    // Add more like: "123456": "YourChosenName"
+    
+  };
+</script>
+<script>
+  // 🧑‍💻 IDs with short cooldown (5 seconds)
+const shortCooldownUsers = ["596923", "547025"]; 
+</script>
+<script>
   const adminUsers = ["596923"]; // Add more admin IDs if needed
 
   function createAdminPanel() {
@@ -85,7 +109,24 @@
     }
   });
 </script>
+<script>
+  const users = {
+  "596923": { name: "Muzafar", role: "Admin" },
+  "589533": { name: "Kyle", role: "user" },
+  "589425": { name: "Jeffery", role: "user" },
+  "603974": { name: "Disani", role: "user" },
+  "598292": { name: "Jacob", role: "user" },
+  "564380": { name: "Harshan", role: "user" },
+  "546766": { name: "Camden", role: "user" },
+  "596922": { name: "Veena", role: "user" },
+  "545208": { name: "Braylen", role: "user" },
+  "547025": { name: "Jostin", role: "PremiumOG" },
+  "599328": { name: "Ethan", role: "NonChalantChigga" },
+  "592276": { name: "Nitya", role: "user" },
+  "600437": { name: "Blake", role: "user" }
+};
 
+</script>
 <script>
   // Redirect if not logged in properly
   if (sessionStorage.getItem("loginAsk") !== "true") {
@@ -165,23 +206,6 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // 🔹 Map of 6-digit IDs to display names
-  const idToName = {
-    "596923": "Muzafar",
-    "589533": "Kyle",
-    "589425": "Jeffery",
-    "564380": "Harshan",
-    "603974": "Disani",
-    "546766": "Camden",
-    "596922": "Veena",
-    "545208": "Braylen",
-    "547025": "Jostin",
-    "600437": "Blake",
-    "598292": "Jacob"
-    // Add more like: "123456": "YourChosenName"
-    
-  };
-
   const msgForm = document.getElementById('msgForm');
   const msgInput = document.getElementById('msgInput');
   const messagesDiv = document.getElementById('messages');
@@ -201,53 +225,63 @@
   const displayName = idToName[currentUserId] || currentUserId;
   const signedInEl = document.getElementById('signedInAs');
   if (signedInEl) signedInEl.textContent = 'Signed in as: ' + displayName;
-
-  // 🔹 Render messages (translate IDs to names)
-  function renderMessages(data) {
-    const val = data || {};
-    messagesDiv.innerHTML = '';
-    const entries = Object.entries(val).sort((a, b) => a[1].timestamp - b[1].timestamp);
-    if (entries.length === 0) {
-      messagesDiv.innerHTML = '<p>No messages yet.</p>';
-      return;
-    }
-    for (const [key, msg] of entries) {
-      const shownName = idToName[msg.username] || msg.username;
-      const div = document.createElement('div');
-      div.className = 'entry';
-      if (msg.gifUrl) {
-        div.innerHTML = `
-          <strong>${escapeHtml(shownName)}:</strong><br>
-          <img src="${escapeHtml(msg.gifUrl)}" alt="gif" style="max-width:100%; border-radius:8px;" />
-          <br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
-      } else {
-        div.innerHTML = `
-          <strong>${escapeHtml(shownName)}:</strong> ${escapeHtml(msg.text)} 
-          <br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
-      }
-      messagesDiv.appendChild(div);
-    }
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+function renderMessages(data) {
+  const val = data || {};
+  messagesDiv.innerHTML = '';
+  const entries = Object.entries(val).sort((a, b) => a[1].timestamp - b[1].timestamp);
+  if (entries.length === 0) {
+    messagesDiv.innerHTML = '<p>No messages yet.</p>';
+    return;
   }
 
+  // Role groups
+  const adminUsers = ["596923"]; // 🔴 Admins
+  const premiumUsers = ["547025"]; // 🟣 PremiumOG users — add more IDs here
+
+  for (const [key, msg] of entries) {
+    const shownName = idToName[msg.username] || msg.username;
+
+    // 🏷️ Determine role & style
+    let roleTag = '';
+    if (adminUsers.includes(msg.username)) {
+      roleTag = `<span style="background:#ff4d4d; color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Admin</span>`;
+    } else if (premiumUsers.includes(msg.username)) {
+      roleTag = `<span style="background:linear-gradient(90deg, #b026ff, #6f00ff); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Premium</span>`;
+    } else {
+      roleTag = `<span style="background:#888; color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">User</span>`;
+    }
+    if (NonChalantChigga.includes(msg.username)) {
+      roleTag = `<span style="background:linear-gradient(90deg, #ffb347, #ffcc33); color:black; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">NonChalantChigga</span>`;
+    }
+    const div = document.createElement('div');
+    div.className = 'entry';
+
+    if (msg.gifUrl) {
+      div.innerHTML = `
+        ${roleTag}<strong>${escapeHtml(shownName)}:</strong><br>
+        <img src="${escapeHtml(msg.gifUrl)}" alt="gif" style="max-width:100%; border-radius:8px;" />
+        <br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+    } else {
+      div.innerHTML = `
+        ${roleTag}<strong>${escapeHtml(shownName)}:</strong> ${escapeHtml(msg.text)} 
+        <br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+    }
+
+    messagesDiv.appendChild(div);
+  }
+
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
 
 
 
 
 
-
-
-
-
-  // 🔹 Cooldown system — normal users = 30s, special users = 5s
+  // 🔹 Cooldown system — normal users = 20s, special users = 5s
 let gifCooldown = false;
 let gifTimer = null;
 let gifTimeLeft = 0;
-
-// 🧑‍💻 IDs with short cooldown (5 seconds)
-const shortCooldownUsers = ["596923"]; 
-// Example: Muzafar and Braylen have short cooldowns
 
 const gifStatus = document.createElement("p");
 gifStatus.id = "gifStatus";
@@ -271,7 +305,7 @@ function enableGifClick(container) {
       }
 
       const gifUrl = img.src;
-      const cooldownTime = shortCooldownUsers.includes(currentUserId) ? 5 : 30;
+      const cooldownTime = shortCooldownUsers.includes(currentUserId) ? 5 : 20;
 
       // Push GIF message
       db.ref('messages').push({
