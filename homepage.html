@@ -225,34 +225,39 @@ const shortCooldownUsers = ["596923", "547025"];
   const displayName = idToName[currentUserId] || currentUserId;
   const signedInEl = document.getElementById('signedInAs');
   if (signedInEl) signedInEl.textContent = 'Signed in as: ' + displayName;
+
+
+  // Render messages
 function renderMessages(data) {
   const val = data || {};
   messagesDiv.innerHTML = '';
   const entries = Object.entries(val).sort((a, b) => a[1].timestamp - b[1].timestamp);
+
   if (entries.length === 0) {
     messagesDiv.innerHTML = '<p>No messages yet.</p>';
     return;
   }
 
-  // Role groups
-  const adminUsers = ["596923"]; // 🔴 Admins
-  const premiumUsers = ["547025"]; // 🟣 PremiumOG users — add more IDs here
-
   for (const [key, msg] of entries) {
     const shownName = idToName[msg.username] || msg.username;
+    const userInfo = users[msg.username] || { role: "user" };
 
-    // 🏷️ Determine role & style
-    let roleTag = '';
-    if (adminUsers.includes(msg.username)) {
-      roleTag = `<span style="background:#ff4d4d; color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Admin</span>`;
-    } else if (premiumUsers.includes(msg.username)) {
-      roleTag = `<span style="background:linear-gradient(90deg, #b026ff, #6f00ff); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Premium</span>`;
-    } else {
-      roleTag = `<span style="background:#888; color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">User</span>`;
+    // 🎨 Role tag style & color
+    let roleTag = "";
+    switch (userInfo.role) {
+      case "Admin":
+        roleTag = `<span style="background:#ff4d4d; color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Admin</span>`;
+        break;
+      case "PremiumOG":
+        roleTag = `<span style="background:linear-gradient(90deg, #b026ff, #6f00ff); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">PremiumOG</span>`;
+        break;
+      case "NonChalantChigga":
+        roleTag = `<span style="background:linear-gradient(90deg, #ffb347, #ffcc33); color:black; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">NonChalantChigga</span>`;
+        break;
+      default:
+        roleTag = `<span style="background:#888; color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">User</span>`;
     }
-    if (NonChalantChigga.includes(msg.username)) {
-      roleTag = `<span style="background:linear-gradient(90deg, #ffb347, #ffcc33); color:black; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">NonChalantChigga</span>`;
-    }
+
     const div = document.createElement('div');
     div.className = 'entry';
 
