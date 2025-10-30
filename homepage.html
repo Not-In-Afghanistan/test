@@ -112,18 +112,16 @@ const shortCooldownUsers = ["596923", "547025"];
 <script>
   const users = {
   "596923": { name: "Muzafar", role: "Admin" },
-  "589533": { name: "Kyle", role: "user" },
-  "589425": { name: "Jeffery", role: "user" },
-  "603974": { name: "Disani", role: "user" },
-  "598292": { name: "Jacob", role: "user" },
-  "564380": { name: "Harshan", role: "user" },
-  "546766": { name: "Camden", role: "user" },
-  "596922": { name: "Veena", role: "user" },
-  "545208": { name: "Braylen", role: "user" },
   "547025": { name: "Jostin", role: "PremiumOG" },
-  "599328": { name: "Ethan", role: "NonChalantChigga" },
-  "592276": { name: "Nitya", role: "user" },
-  "600437": { name: "Blake", role: "user" }
+  "599328": { name: "Ethan" },
+  "589533": { name: "Kyle" },
+  "589425": { name: "Jeffery" },
+  "564380": { name: "Harshan" },
+  "603974": { name: "Disani" },
+  "596922": { name: "Veena" },
+  "545208": { name: "Braylen" },
+  "600437": { name: "Blake" },
+  "598292": { name: "Jacob" }
 };
 
 </script>
@@ -227,7 +225,7 @@ const shortCooldownUsers = ["596923", "547025"];
   if (signedInEl) signedInEl.textContent = 'Signed in as: ' + displayName;
 
 
-  // Render messages
+// Render messages
 function renderMessages(data) {
   const val = data || {};
   messagesDiv.innerHTML = '';
@@ -251,11 +249,8 @@ function renderMessages(data) {
       case "PremiumOG":
         roleTag = `<span style="background:linear-gradient(90deg, #b026ff, #6f00ff); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">PremiumOG</span>`;
         break;
-      case "NonChalantChigga":
-        roleTag = `<span style="background:linear-gradient(90deg, #ffb347, #ffcc33); color:black; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">NonChalantChigga</span>`;
-        break;
       default:
-        roleTag = `<span style="background:#888; color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">User</span>`;
+        roleTag = ""; // no tag for regular users
     }
 
     const div = document.createElement('div');
@@ -385,18 +380,24 @@ enableGifClick(document.getElementById("locked"));
 
 
   // 🔹 Send text message
-  msgForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const text = msgInput.value.trim();
-    if (!text) return;
-    db.ref('messages').push({
-      username: currentUserId, // store ID in Firebase
-      text,
-      timestamp: Date.now()
-    }).then(() => {
-      msgInput.value = '';
-    }).catch(err => alert(err.message));
-  });
+ msgForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = msgInput.value.trim();
+
+  if (!text) return;
+  if (text.length > 100) {
+    alert(`⚠️ Message too long! (${text.length}/100 characters)`);
+    return;
+  }
+
+  db.ref('messages').push({
+    username: currentUserId,
+    text,
+    timestamp: Date.now()
+  }).then(() => {
+    msgInput.value = '';
+  }).catch(err => alert(err.message));
+});
 
 
 </script>
