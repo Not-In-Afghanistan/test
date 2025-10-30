@@ -141,45 +141,19 @@ select
     padding-left: 4px;
 }
 
-input[type="submit"].Resizable
-{
-    width: auto;
-}
+input[type="submit"].Resizable{width: auto;}
 
 input:focus
 {
     outline: none;
-  border: solid orange 1px;
+  border: solid blue 1px;
 }
 
-.Indent1
-{
-    padding-left: 5px;
-}
+.Indent1{padding-left: 5px;}
+.Indent2{padding-left: 27px;}
 
-.Indent2
-{
-    padding-left: 27px;
-}
-
-
-
-
-
-
-
-
-
-.locked {
-    position: absolute;
-    width: 400px;
-    overflow: hidden;
-}
-
-.locked > img 
-{
-    width: 100px;
-}
+.locked { position: absolute; width: 400px; overflow: hidden; }
+.locked > img {width: 100px;}
 
 .Header2 > p {
     font-size: 3rem;
@@ -187,7 +161,7 @@ input:focus
 }
 
 #LOGO {
-    width: 200px;
+    width: 500px;
     display: block;
     margin-left: auto;
     margin-right: auto;
