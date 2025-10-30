@@ -8,12 +8,84 @@
   <link rel="icon" type="image/png" href="./newlog.png"/> 
 </head>
 
-
-
-
-
-
 <body>
+<script>
+  const adminUsers = ["596923"]; // Add more admin IDs if needed
+
+  function createAdminPanel() {
+    const currentUserId = localStorage.getItem("username") || sessionStorage.getItem("username");
+    if (!currentUserId || !adminUsers.includes(currentUserId)) return;
+
+    // Inject CSS once
+    const style = document.createElement("style");
+    style.textContent = `
+      /* === Admin Panel Styles === */
+      #adminPanel {
+        position: fixed;
+        top: 10px;
+        right: 20px;
+        backdrop-filter: blur(10px);
+        border: 1px solid white;
+        padding: 14px 18px;
+        text-align: center;
+        width: 300px;
+        z-index: 999;
+        animation: fadeIn 0.3s ease;
+      }
+
+      #adminPanel h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      #adminPanel button {
+        width: fit-content;
+        border: none;
+        background: lightgray;
+        color: black;
+        cursor: pointer;
+      }
+
+      #adminPanel p {
+        font-size: 12px;
+        color: #aaa;
+        margin-top: 8px;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-55%); }
+        to { opacity: 1; transform: translateY(-50%); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Create the panel
+    const panel = document.createElement("div");
+    panel.id = "adminPanel";
+    panel.innerHTML = `
+      <h3>Admin Panel</h3>
+      <button id="clearMessagesBtn">Clear All Messages</button>
+      <p id="adminStatus">Logged in as admin: ${currentUserId}</p>
+    `;
+    document.body.appendChild(panel);
+
+    // Button functionality
+    document.getElementById("clearMessagesBtn").addEventListener("click", () => {
+      if (confirm("⚠️ Are you sure you want to delete ALL messages?")) {
+        db.ref("messages").remove()
+          .catch(err => alert("❌ Error: " + err.message));
+      }
+    });
+  }
+
+  // Initialize when page loads
+  window.addEventListener("load", () => {
+    if (typeof db !== "undefined") {
+      createAdminPanel();
+    }
+  });
+</script>
+
 <script>
   // Redirect if not logged in properly
   if (sessionStorage.getItem("loginAsk") !== "true") {
@@ -23,48 +95,38 @@
   }
 </script>
 
-<input type="submit" id="toggleBtn" value="Hide GIFs">
+
 <div id="locked">
     <img src="./gifs/67-67-kid.gif">
     <img src="./gifs/67.gif">
-    <img src="./gifs/anime-mad.gif">
     <img src="./gifs/anime-manga.gif">
     <img src="./gifs/chill.gif">
     <img src="./gifs/cute.gif">
     <img src="./gifs/gojo.gif">
     <img src="./gifs/goon-tuah.gif">
-    <img src="./gifs/kakashi.gif">
     <img src="./gifs/kis.gif">
-    <img src="./gifs/mango-mango-mango.gif">
-    <img src="./gifs/mommy-anime.gif">
     <img src="./gifs/shrek.gif">
-    <img src="./gifs/dancing-parrott.gif">
+    <img src="./gifs/what.gif">
     <!-- Right-side GIFs -->
-    <img src="./gifs/rightGifs/7tv-emotes.gif">
     <img src="./gifs/rightGifs/angry.gif">
-    <img src="./gifs/rightGifs/black-guy-maid-vibe-black-maid-dance.gif">
     <img src="./gifs/rightGifs/bosnov-67.gif">
     <img src="./gifs/rightGifs/emoji.gif">
     <img src="./gifs/rightGifs/enojado.gif">
-    <img src="./gifs/rightGifs/gooner-goon.gif">
-    <img src="./gifs/rightGifs/hasbulla-hasbik.gif">
-    <img src="./gifs/rightGifs/kermit-the-frog.gif">
     <img src="./gifs/rightGifs/oh-no-oh-my-god.gif">
     <img src="./gifs/rightGifs/patrick-bateman-smile.gif">
     <img src="./gifs/rightGifs/reallycooked.gif">
     <img src="./gifs/rightGifs/sigmasungjinwoo-mewing.gif">
-    <img src="./gifs/rightGifs/solid-snake-salute.gif">
     <img src="./gifs/rightGifs/solo-leveling-sololeveling.gif">
     <img src="./gifs/rightGifs/thofinn.gif">
     <img src="./gifs/rightGifs/thorfinn.gif">
     <img src="./gifs/rightGifs/twitch-twitch-emote.gif">
     <img src="./gifs/rightGifs/what-twitch.gif">
 </div>
-
+<input type="submit" id="toggleBtn" value="Hide GIFs">
 </div>
   <div class="MainArea">
 
-    <div class="Header2"><img src="./newlog.png"></div>
+    <div class="Header2">&nbsp;</div>
     <div class="MainActionContainer">
        <!-- Username is taken from sessionStorage set on sign-in -->
 
@@ -115,7 +177,6 @@
     "545208": "Braylen",
     "547025": "Jostin",
     "600437": "Blake",
-    "676767": "ThisNiggerIsAnAdmin",
     "598292": "Jacob"
     // Add more like: "123456": "YourChosenName"
     
@@ -169,20 +230,100 @@
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
-// 🔹 GIF click to send
+
+
+
+
+
+
+
+
+
+
+  // 🔹 Cooldown system — normal users = 30s, special users = 5s
+let gifCooldown = false;
+let gifTimer = null;
+let gifTimeLeft = 0;
+
+// 🧑‍💻 IDs with short cooldown (5 seconds)
+const shortCooldownUsers = ["596923", "545208"]; 
+// Example: Muzafar and Braylen have short cooldowns
+
+const gifStatus = document.createElement("p");
+gifStatus.id = "gifStatus";
+gifStatus.style.color = "gray";
+gifStatus.style.fontSize = "14px";
+gifStatus.style.textAlign = "center";
+gifStatus.style.marginTop = "10px";
+gifStatus.textContent = "You can send GIFs freely.";
+document.body.appendChild(gifStatus);
+
+// 🔹 Enable GIF clicking
 function enableGifClick(container) {
-  container.querySelectorAll("img").forEach(img => {
+  const gifs = container.querySelectorAll("img");
+
+  gifs.forEach(img => {
+    img.style.cursor = "pointer";
     img.addEventListener("click", () => {
+      if (gifCooldown) {
+        alert(`Please wait ${gifTimeLeft} seconds before sending another GIF.`);
+        return;
+      }
+
       const gifUrl = img.src;
+      const cooldownTime = shortCooldownUsers.includes(currentUserId) ? 2 : 30;
+
+      // Push GIF message
       db.ref('messages').push({
         username: currentUserId,
         gifUrl: gifUrl,
         timestamp: Date.now()
-      }).catch(err => alert(err.message));
+      })
+      .then(() => {
+        startGifCooldown(cooldownTime); // ⏳ start correct cooldown
+      })
+      .catch(err => alert(err.message));
     });
   });
 }
+
+// 🔹 Start cooldown + UI lock
+function startGifCooldown(seconds) {
+  gifCooldown = true;
+  gifTimeLeft = seconds;
+
+  // Gray out all GIFs
+  document.querySelectorAll("#locked img").forEach(img => {
+    img.style.filter = "grayscale(100%)";
+    img.style.pointerEvents = "none";
+    img.style.opacity = "0.6";
+  });
+
+  gifStatus.textContent = `You can send another GIF in ${gifTimeLeft}s`;
+
+  gifTimer = setInterval(() => {
+    gifTimeLeft--;
+    if (gifTimeLeft <= 0) {
+      clearInterval(gifTimer);
+      gifCooldown = false;
+
+      // Restore GIFs
+      document.querySelectorAll("#locked img").forEach(img => {
+        img.style.filter = "none";
+        img.style.pointerEvents = "auto";
+        img.style.opacity = "1";
+      });
+
+      gifStatus.textContent = "You can now send GIFs again!";
+    } else {
+      gifStatus.textContent = `You can send another GIF in ${gifTimeLeft}s`;
+    }
+  }, 1000);
+}
+
 enableGifClick(document.getElementById("locked"));
+
+
 
 
 
@@ -218,15 +359,7 @@ enableGifClick(document.getElementById("locked"));
     }).catch(err => alert(err.message));
   });
 
-  
-  
-  // 🔹 Auto logout after 20 minutes
-  setTimeout(() => {
-    sessionStorage.clear();
-    localStorage.clear();
-    alert("Session expired. Please log in again.");
-    window.location.href = "index.html";
-  }, 20 * 60 * 1000);
+
 </script>
 <script>
   
@@ -245,6 +378,19 @@ toggleBtn.addEventListener("click", (e) => {
     toggleBtn.value = "Show GIFs";
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 </script>
   </div>
