@@ -26,7 +26,7 @@ input, button, textarea {
     width: 500px;
     backdrop-filter: blur(7px);
     -webkit-backdrop-filter: blur(7px);
-    margin-top: -30px;
+    margin-top: -38px;
 }
 
 .MainActionContainer
@@ -43,6 +43,13 @@ input, button, textarea {
     backdrop-filter: blur(10px);
     border: 1px solid white;
     padding: 5px;
+    margin: 8px 0px 0px 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(-55%); }
+to { opacity: 1; transform: translateY(-50%); }
 }
 
 .Header2 > img {
@@ -136,4 +143,6 @@ body {
 #toggleBtn {
     cursor: pointer;
     position: relative;
+    margin-left: 20px;
+    margin-top: 8px;
 }
