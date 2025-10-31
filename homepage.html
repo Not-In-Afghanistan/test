@@ -9,6 +9,7 @@
 </head>
 
 <body>
+ <!-- Id to name --> 
 <script>
   // 🔹 Map of 6-digit IDs to display names
   const idToName = {
@@ -29,12 +30,14 @@
     
   };
 </script>
+
+<!-- cooldown -->
 <script>
   // 🧑‍💻 IDs with short cooldown (5 seconds)
 const shortCooldownUsers = ["596923", "547025"]; 
 </script>
 
-
+<!-- Admin Panel Script -->
 <script>
 const adminUsers = ["596923"]; // Admin IDs
 
@@ -60,6 +63,7 @@ function createAdminPanel() {
     #adminPanel h3 { font-size:16px; margin-bottom:10px; }
     #adminPanel button { margin-top:5px; padding:4px 8px; cursor:pointer; }
     #adminPanel input { width: 80%; margin:4px 0; padding:3px; }
+    #bannedList { max-height:150px; overflow-y:auto; text-align:left; margin-top:8px; }
     @keyframes fadeIn { from{opacity:0; transform:translateY(-55%);} to{opacity:1; transform:translateY(-50%);} }
   `;
   document.head.appendChild(style);
@@ -77,6 +81,9 @@ function createAdminPanel() {
     <input type="number" id="banDuration" placeholder="Minutes" min="1"/>
     <button id="banBtn">Ban User</button>
     <p id="banInfo" style="font-size:12px;color:#aaa;margin-top:4px;"></p>
+    <hr>
+    <h4>Currently Banned Users</h4>
+    <div id="bannedList"><p>Loading...</p></div>
   `;
   document.body.appendChild(panel);
 
@@ -107,6 +114,46 @@ function createAdminPanel() {
       document.getElementById("banInfo").textContent = `${usernameOrId} banned until ${expiresDate}`;
     }).catch(err => alert("❌ Error: " + err.message));
   });
+
+  // Function to update the banned users list
+  function updateBannedList() {
+    const listDiv = document.getElementById("bannedList");
+    db.ref("bans").once("value").then(snap => {
+      const bans = snap.val() || {};
+      listDiv.innerHTML = "";
+
+      Object.keys(bans).forEach(userId => {
+        const ban = bans[userId];
+        if (ban.expires && ban.expires > Date.now()) {
+          const displayName = idToName[userId] || userId;
+          const div = document.createElement("div");
+          div.style.display = "flex";
+          div.style.justifyContent = "space-between";
+          div.style.alignItems = "center";
+          div.style.marginBottom = "4px";
+
+          const text = document.createElement("span");
+          text.textContent = `${displayName} (expires: ${new Date(ban.expires).toLocaleString()})`;
+
+          const unbanBtn = document.createElement("button");
+          unbanBtn.textContent = "Unban";
+          unbanBtn.addEventListener("click", () => {
+            db.ref(`bans/${userId}`).remove().then(updateBannedList);
+          });
+
+          div.appendChild(text);
+          div.appendChild(unbanBtn);
+          listDiv.appendChild(div);
+        }
+      });
+
+      if (listDiv.innerHTML === "") listDiv.innerHTML = "<p>No active bans.</p>";
+    });
+  }
+
+  // Real-time listener for bans
+  db.ref("bans").on("value", updateBannedList);
+  updateBannedList();
 }
 
 // Check if current user is banned on login
@@ -121,8 +168,7 @@ function checkBan() {
       alert(`⛔ You have been banned until ${expires}. Refresh to see this message.`);
       window.location.href = "./index.html";
     } else if (banData) {
-      // Ban expired, remove entry
-      db.ref(`bans/${currentUserId}`).remove();
+      db.ref(`bans/${currentUserId}`).remove(); // Remove expired ban
     }
   });
 }
@@ -134,10 +180,10 @@ window.addEventListener("load", () => {
     checkBan();
   }
 });
+
 </script>
 
-
-
+<!-- User ID to Name mapping -->
 <script>
   const users = {
   "596923": { name: "Muzafar", role: "Admin" },
@@ -155,7 +201,7 @@ window.addEventListener("load", () => {
 
 </script>
 
-
+<!-- Redirect if not logged in properly -->
 <script>
   // Redirect if not logged in properly
   if (sessionStorage.getItem("loginAsk") !== "true") {
@@ -525,6 +571,7 @@ enableGifClick(document.getElementById("locked"));
 
 
 </script>
+<!-- toggle GIF container -->
 <script>
   
   
