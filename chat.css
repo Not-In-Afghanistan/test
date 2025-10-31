@@ -41,7 +41,7 @@ input, button, textarea {
     width: 350px;
     overflow: hidden;
     backdrop-filter: blur(10px);
-    border: 1px solid cccccc;
+    border: 1px solid #cccccc;
     padding: 5px;
     margin: 8px 0px 0px 20px;
     animation: fadeIn 0.3s ease;
