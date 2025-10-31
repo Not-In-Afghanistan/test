@@ -414,7 +414,7 @@ function renderMessages(data) {
     let roleTag = "";
     switch (userInfo.role) {
       case "Admin":
-        roleTag = `<span style="background:linear-gradient(red, blue); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Admin</span>`;
+        roleTag = `<span style="background:linear-gradient(90deg, red, blue); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Admin</span>`;
         break;
       case "PremiumOG":
         roleTag = `<span style="background:linear-gradient(90deg, #b026ff, #6f00ff); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">PremiumOG</span>`;
@@ -448,11 +448,7 @@ function renderMessages(data) {
 
 
 
-  // 🔹 Cooldown system — normal users = 20s, special users = 5s
-let gifCooldown = false;
-let gifTimer = null;
-let gifTimeLeft = 0;
-
+// 🔹 Cooldown system — now server-based (prevents refresh exploits)
 const gifStatus = document.createElement("p");
 gifStatus.id = "gifStatus";
 gifStatus.style.color = "gray";
@@ -462,74 +458,95 @@ gifStatus.style.marginTop = "10px";
 gifStatus.textContent = "You can send GIFs freely.";
 document.body.appendChild(gifStatus);
 
-// 🔹 Enable GIF clicking
-function enableGifClick(container) {
-  const gifs = container.querySelectorAll("img");
-
-  gifs.forEach(img => {
-    img.style.cursor = "pointer";
-    img.addEventListener("click", () => {
-      if (gifCooldown) {
-        alert(`Please wait ${gifTimeLeft} seconds before sending another GIF.`);
-        return;
-      }
-
-      const gifUrl = img.src;
-      const cooldownTime = shortCooldownUsers.includes(currentUserId) ? 3 : 20;
-
-      // Push GIF message
-      db.ref('messages').push({
-        username: currentUserId,
-        gifUrl: gifUrl,
-        timestamp: Date.now()
-      })
-      .then(() => {
-        startGifCooldown(cooldownTime); // ⏳ start correct cooldown
-      })
-      .catch(err => alert(err.message));
-    });
-  });
-}
-
-// 🔹 Start cooldown + UI lock
-function startGifCooldown(seconds) {
-  gifCooldown = true;
-  gifTimeLeft = seconds;
-
-  // Gray out all GIFs
-  document.querySelectorAll("#locked img").forEach(img => {
+// Helper: Start cooldown visually
+function startLocalGifCooldown(seconds) {
+  let timeLeft = seconds;
+  gifStatus.textContent = `You can send another GIF in ${timeLeft}s`;
+  const imgs = document.querySelectorAll("#locked img");
+  imgs.forEach(img => {
     img.style.filter = "grayscale(100%)";
     img.style.pointerEvents = "none";
     img.style.opacity = "0.6";
   });
 
-  gifStatus.textContent = `You can send another GIF in ${gifTimeLeft}s`;
-
-  gifTimer = setInterval(() => {
-    gifTimeLeft--;
-    if (gifTimeLeft <= 0) {
-      clearInterval(gifTimer);
-      gifCooldown = false;
-
-      // Restore GIFs
-      document.querySelectorAll("#locked img").forEach(img => {
+  const timer = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      imgs.forEach(img => {
         img.style.filter = "none";
         img.style.pointerEvents = "auto";
         img.style.opacity = "1";
       });
-
       gifStatus.textContent = "You can now send GIFs again!";
     } else {
-      gifStatus.textContent = `You can send another GIF in ${gifTimeLeft}s`;
+      gifStatus.textContent = `You can send another GIF in ${timeLeft}s`;
     }
   }, 1000);
 }
 
+// 🔹 Enable GIF clicking
+function enableGifClick(container) {
+  const gifs = container.querySelectorAll("img");
+  gifs.forEach(img => {
+    img.style.cursor = "pointer";
+    img.addEventListener("click", async () => {
+      const userId = localStorage.getItem("username") || sessionStorage.getItem("username");
+      if (!userId) return alert("User not found.");
+
+      const userRef = db.ref(`gifCooldowns/${userId}`);
+      const snap = await userRef.once("value");
+      const data = snap.val();
+      const now = Date.now();
+      const cooldownTime = shortCooldownUsers.includes(userId) ? 3000 : 25000; // 3s / 20s
+
+      if (data && data.expires > now) {
+        const wait = Math.ceil((data.expires - now) / 1000);
+        alert(`⏳ Please wait ${wait}s before sending another GIF.`);
+        return;
+      }
+
+      // Push GIF message
+      const gifUrl = img.src;
+      await db.ref("messages").push({
+        username: userId,
+        gifUrl,
+        timestamp: now
+      });
+
+      // Set cooldown in database
+      await userRef.set({ expires: now + cooldownTime });
+
+      // Auto remove from DB after cooldown
+      setTimeout(() => userRef.remove().catch(() => {}), cooldownTime);
+
+      startLocalGifCooldown(cooldownTime / 1000);
+    });
+  });
+}
+
 enableGifClick(document.getElementById("locked"));
 
+// 🔹 Restore GIF cooldown after refresh
+async function restoreGifCooldownOnLoad() {
+  const userId = localStorage.getItem("username") || sessionStorage.getItem("username");
+  if (!userId) return;
 
+  const userRef = db.ref(`gifCooldowns/${userId}`);
+  const snap = await userRef.once("value");
+  const data = snap.val();
+  const now = Date.now();
 
+  if (data && data.expires > now) {
+    const remaining = Math.ceil((data.expires - now) / 1000);
+    startLocalGifCooldown(remaining);
+  } else {
+    gifStatus.textContent = "You can send GIFs freely.";
+  }
+}
 
+restoreGifCooldownOnLoad();
+// End of GIF cooldown system
 
 // 🔹 Escape HTML helper
   function escapeHtml(s) {
