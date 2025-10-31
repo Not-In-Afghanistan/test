@@ -33,82 +33,111 @@
   // 🧑‍💻 IDs with short cooldown (5 seconds)
 const shortCooldownUsers = ["596923", "547025"]; 
 </script>
+
+
 <script>
-  const adminUsers = ["596923"]; // Add more admin IDs if needed
+const adminUsers = ["596923"]; // Admin IDs
 
-  function createAdminPanel() {
-    const currentUserId = localStorage.getItem("username") || sessionStorage.getItem("username");
-    if (!currentUserId || !adminUsers.includes(currentUserId)) return;
+function createAdminPanel() {
+  const currentUserId = localStorage.getItem("username") || sessionStorage.getItem("username");
+  if (!currentUserId || !adminUsers.includes(currentUserId)) return;
 
-    // Inject CSS once
-    const style = document.createElement("style");
-    style.textContent = `
-      /* === Admin Panel Styles === */
-      #adminPanel {
-        position: fixed;
-        top: 8px;
-        right: 20px;
-        backdrop-filter: blur(10px);
-        border: 1px solid white;
-        padding: 14px 18px;
-        text-align: center;
-        width: 300px;
-        z-index: 999;
-        animation: fadeIn 0.3s ease;
-      }
+  // Inject admin panel CSS
+  const style = document.createElement("style");
+  style.textContent = `
+    #adminPanel {
+      position: fixed;
+      top: 8px;
+      right: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid white;
+      padding: 14px 18px;
+      width: 320px;
+      text-align: center;
+      z-index: 999;
+      animation: fadeIn 0.3s ease;
+    }
+    #adminPanel h3 { font-size:16px; margin-bottom:10px; }
+    #adminPanel button { margin-top:5px; padding:4px 8px; cursor:pointer; }
+    #adminPanel input { width: 80%; margin:4px 0; padding:3px; }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(-55%);} to{opacity:1; transform:translateY(-50%);} }
+  `;
+  document.head.appendChild(style);
 
-      #adminPanel h3 {
-        font-size: 16px;
-        margin-bottom: 10px;
-      }
+  // Create the panel
+  const panel = document.createElement("div");
+  panel.id = "adminPanel";
+  panel.innerHTML = `
+    <h3>Admin Panel</h3>
+    <button id="clearMessagesBtn">Clear All Messages</button>
+    <p id="adminStatus">Logged in as admin: ${currentUserId}</p>
+    <hr>
+    <h4>Ban User</h4>
+    <input type="text" id="banUsername" placeholder="Enter username or ID" />
+    <input type="number" id="banDuration" placeholder="Minutes" min="1"/>
+    <button id="banBtn">Ban User</button>
+    <p id="banInfo" style="font-size:12px;color:#aaa;margin-top:4px;"></p>
+  `;
+  document.body.appendChild(panel);
 
-      #adminPanel button {
-        width: fit-content;
-        border: none;
-        background: lightgray;
-        color: black;
-        cursor: pointer;
-      }
-
-      #adminPanel p {
-        font-size: 12px;
-        color: #aaa;
-        margin-top: 8px;
-      }
-
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-55%); }
-        to { opacity: 1; transform: translateY(-50%); }
-      }
-    `;
-    document.head.appendChild(style);
-
-    // Create the panel
-    const panel = document.createElement("div");
-    panel.id = "adminPanel";
-    panel.innerHTML = `
-      <h3>Admin Panel</h3>
-      <button id="clearMessagesBtn">Clear All Messages</button>
-      <p id="adminStatus">Logged in as admin: ${currentUserId}</p>
-    `;
-    document.body.appendChild(panel);
-
-    // Button functionality
-    document.getElementById("clearMessagesBtn").addEventListener("click", () => {
-      if (confirm("⚠️ Are you sure you want to delete ALL messages?")) {
-        db.ref("messages").remove()
-          .catch(err => alert("❌ Error: " + err.message));
-      }
-    });
-  }
-
-  // Initialize when page loads
-  window.addEventListener("load", () => {
-    if (typeof db !== "undefined") {
-      createAdminPanel();
+  // Clear all messages
+  document.getElementById("clearMessagesBtn").addEventListener("click", () => {
+    if (confirm("⚠️ Are you sure you want to delete ALL messages?")) {
+      db.ref("messages").remove().catch(err => alert("❌ Error: " + err.message));
     }
   });
+
+  // Ban user
+  document.getElementById("banBtn").addEventListener("click", () => {
+    const usernameOrId = document.getElementById("banUsername").value.trim();
+    const durationMinutes = parseInt(document.getElementById("banDuration").value);
+
+    if (!usernameOrId || isNaN(durationMinutes) || durationMinutes < 1) {
+      alert("❌ Please enter a valid username/ID and duration.");
+      return;
+    }
+
+    // Resolve ID if display name is given
+    let userId = Object.keys(idToName).find(id => idToName[id] === usernameOrId) || usernameOrId;
+
+    const banExpires = Date.now() + durationMinutes * 60 * 1000;
+    db.ref(`bans/${userId}`).set({ expires: banExpires }).then(() => {
+      const expiresDate = new Date(banExpires).toLocaleString();
+      alert(`✅ ${usernameOrId} is banned until ${expiresDate}`);
+      document.getElementById("banInfo").textContent = `${usernameOrId} banned until ${expiresDate}`;
+    }).catch(err => alert("❌ Error: " + err.message));
+  });
+}
+
+// Check if current user is banned on login
+function checkBan() {
+  const currentUserId = localStorage.getItem("username") || sessionStorage.getItem("username");
+  if (!currentUserId) return;
+
+  db.ref(`bans/${currentUserId}`).once("value").then(snap => {
+    const banData = snap.val();
+    if (banData && banData.expires > Date.now()) {
+      const expires = new Date(banData.expires).toLocaleString();
+      alert(`⛔ You have been banned until ${expires}. Refresh to see this message.`);
+      window.location.href = "./index.html";
+    } else if (banData) {
+      // Ban expired, remove entry
+      db.ref(`bans/${currentUserId}`).remove();
+    }
+  });
+}
+
+// Initialize
+window.addEventListener("load", () => {
+  if (typeof db !== "undefined") {
+    createAdminPanel();
+    checkBan();
+  }
+});
 </script>
+
+
+
 <script>
   const users = {
   "596923": { name: "Muzafar", role: "Admin" },
@@ -125,6 +154,8 @@ const shortCooldownUsers = ["596923", "547025"];
 };
 
 </script>
+
+
 <script>
   // Redirect if not logged in properly
   if (sessionStorage.getItem("loginAsk") !== "true") {

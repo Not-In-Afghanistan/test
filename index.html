@@ -53,67 +53,77 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
-      authDomain: "test-da143.firebaseapp.com",
-      databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
-      projectId: "test-da143",
-      storageBucket: "test-da143.firebasestorage.app",
-      messagingSenderId: "58366480447",
-      appId: "1:58366480447:web:f3dd12850f09952b49688a",
-      measurementId: "G-T5HK7JTWHW"
-    };
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
+    authDomain: "test-da143.firebaseapp.com",
+    databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
+    projectId: "test-da143",
+    storageBucket: "test-da143.firebasestorage.app",
+    messagingSenderId: "58366480447",
+    appId: "1:58366480447:web:f3dd12850f09952b49688a",
+    measurementId: "G-T5HK7JTWHW"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-    // 🔒 Local ID-password pairs
-    const userPasswords = {
-      "596923": "UrWrong67", //muzafar
-      "589533": "Monk3y41", //kyle
-      "589425": "mynameisjeff512", //jeff
-      "564380": "CurryLover99", //harshan
-      "603974": "ninjastar123", //disani
-      "546766": "HitlerWasRight1", //camden
-      "596922": "veenapass", //veena
-      "545208": "Boondocks697", //braylen
-      "547025": "IhaveLigma43", //jostin
-      "600437": "Niggalodian69", //blake
-      "599328": "brycedallasisaSmash", //ethan
-      "592276": "SoccerIsLife22", //Nitya
-      "598292": "noTherCurry4U" //jacob
-    };
+  // 🔒 Local ID-password pairs
+  const userPasswords = {
+    "596923": "UrWrong67",
+    "589533": "Monk3y41",
+    "589425": "mynameisjeff512",
+    "564380": "CurryLover99",
+    "603974": "ninjastar123",
+    "546766": "HitlerWasRight1",
+    "596922": "veenapass",
+    "545208": "Boondocks697",
+    "547025": "IhaveLigma43",
+    "600437": "Niggalodian69",
+    "599328": "brycedallasisaSmash",
+    "592276": "SoccerIsLife22",
+    "598292": "noTherCurry4U"
+  };
 
-    const form = document.getElementById("form");
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
+  const form = document.getElementById("form");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-      const username = document.getElementById("usernameInput").value.trim();
-      const password = document.getElementById("passwordInput").value.trim();
+    const username = document.getElementById("usernameInput").value.trim();
+    const password = document.getElementById("passwordInput").value.trim();
 
-      if (!/^\d{6}$/.test(username)) {
-        alert("User ID must be exactly 6 digits.");
+    if (!/^\d{6}$/.test(username)) {
+      alert("User ID must be exactly 6 digits.");
+      return;
+    }
+
+    if (!userPasswords[username]) {
+      alert("User ID not found.");
+      return;
+    }
+
+    if (userPasswords[username] !== password) {
+      alert("Incorrect password. Please try again.");
+      return;
+    }
+
+    // ✅ Check for active ban
+    db.ref(`bans/${username}`).once("value").then(snap => {
+      const banData = snap.val();
+      if (banData && banData.expires > Date.now()) {
+        const expires = new Date(banData.expires).toLocaleString();
+        alert(`⛔ You are banned until ${expires}. You cannot sign in.`);
         return;
+      } else if (banData) {
+        // Ban expired, remove entry
+        db.ref(`bans/${username}`).remove();
       }
 
-      // Validate ID and password
-      if (!userPasswords[username]) {
-        alert("User ID not found.");
-        return;
-      }
-
-      if (userPasswords[username] !== password) {
-        alert("Incorrect password. Please try again.");
-        return;
-      }
-
-      // Success
+      // Success login
       sessionStorage.setItem("loginAsk", "true");
       sessionStorage.setItem("username", username);
       localStorage.setItem("username", username);
 
-      // Record login
       db.ref("users").push({ username, timestamp: Date.now() })
         .then(() => {
           form.reset();
@@ -121,6 +131,8 @@
         })
         .catch(err => alert(err.message));
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
