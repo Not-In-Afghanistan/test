@@ -217,7 +217,7 @@ window.addEventListener("load", () => {
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
+<!-- Firebase -->
 <script>
   // Firebase config (same as other pages)
   const firebaseConfig = {
@@ -237,7 +237,101 @@ window.addEventListener("load", () => {
   const msgForm = document.getElementById('msgForm');
   const msgInput = document.getElementById('msgInput');
   const messagesDiv = document.getElementById('messages');
+</script>
+<!-- Real-time ban watcher -->
+<script>
+(function(){
+  // Real-time ban watcher - drop into index.html and homepage.html after firebase is initialized.
+  let banRef = null;
+  let currentWatchedId = null;
 
+  // Helper: get current userid from storage
+  function getStoredId() {
+    return localStorage.getItem('username') || sessionStorage.getItem('username') || null;
+  }
+
+  // Attach a realtime listener for the given user id
+  function attachBanListener(userId) {
+    if (!userId) return;
+    // avoid re-attaching same ref
+    if (currentWatchedId === userId && banRef) return;
+
+    // detach previous
+    detachBanListener();
+
+    currentWatchedId = userId;
+    banRef = db.ref(`bans/${userId}`);
+    banRef.on('value', snap => {
+      const banData = snap.val();
+      if (banData && banData.expires && banData.expires > Date.now()) {
+        // user is currently banned
+        const expiresStr = new Date(banData.expires).toLocaleString();
+        try { alert(`⛔ You are banned until ${expiresStr}.`); } catch(e) { /* ignore */ }
+        // force back to index (kick)
+        window.location.href = "./index.html";
+      } else if (banData && banData.expires && banData.expires <= Date.now()) {
+        // ban expired — cleanup server-side record optionally
+        db.ref(`bans/${userId}`).remove().catch(()=>{ /* ignore */ });
+      }
+      // if no banData -> no active ban
+    });
+  }
+
+  // Detach listener if present
+  function detachBanListener() {
+    if (banRef) {
+      try { banRef.off(); } catch(e) {}
+      banRef = null;
+    }
+    currentWatchedId = null;
+  }
+
+  // Keep in sync: attach for current id, detach if none or changed
+  function syncBanWatcher() {
+    const id = getStoredId();
+    if (!id) {
+      detachBanListener();
+      return;
+    }
+    attachBanListener(id);
+  }
+
+  // React to storage changes in other tabs
+  window.addEventListener('storage', (ev) => {
+    if (ev.key === 'username') syncBanWatcher();
+  });
+
+  // Also check when page becomes visible (user switched tab)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) syncBanWatcher();
+  });
+
+  // As fallback, poll every 5s to make sure we are attached (keeps things robust)
+  setInterval(syncBanWatcher, 5000);
+
+  // Start immediately (requires db to be defined)
+  if (typeof db !== 'undefined') {
+    syncBanWatcher();
+  } else {
+    // if db isn't defined yet, wait until firebase is ready
+    const readyInterval = setInterval(() => {
+      if (typeof db !== 'undefined') {
+        clearInterval(readyInterval);
+        syncBanWatcher();
+      }
+    }, 200);
+  }
+
+  // Expose small helper for manual control (optional)
+  window.__banWatcher = {
+    attach: attachBanListener,
+    detach: detachBanListener,
+    sync: syncBanWatcher
+  };
+})();
+</script>
+<!-- rest of the script -->
+<script>
   // Helper to get stored ID
   function getStoredId() {
     return localStorage.getItem('username') || sessionStorage.getItem('username') || null;
@@ -448,19 +542,6 @@ toggleBtn.addEventListener("click", (e) => {
     toggleBtn.value = "Show GIFs";
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 </script>
   </div>
