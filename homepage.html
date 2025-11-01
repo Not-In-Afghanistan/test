@@ -333,13 +333,12 @@ function createOnlinePanel() {
       const userInfo = usersData?.[id] || {};
       let color = "🔴"; // default = offline
       const name = idToName?.[id] || userInfo.name || id;
-
-      // 🟣 banned user
-      if (userInfo.banned) {
+    // 🟣 banned user (use bansData, not userInfo)
+        if (bansData[id] && bansData[id].expires > now) {
         color = "🟣";
-      } else {
-        // remove stale tabs
-        const activeTabs = tabs.filter(t => now - t.lastActive < STALE_TIMEOUT);
+        } else {
+  // remove stale tabs
+  const activeTabs = tabs.filter(t => now - t.lastActive < STALE_TIMEOUT);
 
         if (activeTabs.length > 0) {
           color = activeTabs.some(t => t.visible) ? "🟢" : "🟡";
@@ -626,10 +625,11 @@ restoreGifCooldownOnLoad();
 
 /* -------------------- INIT -------------------- */
 window.addEventListener("load", ()=>{
-  createAdminPanel();
   checkBan();
-  createOnlinePanel();
   enableGifClick(document.getElementById("locked"));
+    // Start presence tracking
+  createOnlinePanel();
+  updateTabStatus();
 });
 </script>
 <!-- -------------------- IMAGE UPLOAD -------------------- -->
