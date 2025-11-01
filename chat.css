@@ -34,6 +34,7 @@ input, button, textarea {
     padding: 5px 20px 5px 20px;
     border: solid 1px #cccccc;
     min-height: 150px;
+        background: rgba(255,255,255,0.08);
 }
 
 #locked {
@@ -42,6 +43,7 @@ input, button, textarea {
     overflow: hidden;
     backdrop-filter: blur(10px);
     border: 1px solid #cccccc;
+        background: rgba(255,255,255,0.08);
     padding: 5px;
     margin: 8px 0px 0px 20px;
     animation: fadeIn 0.3s ease;
