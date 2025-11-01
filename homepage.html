@@ -239,7 +239,7 @@ window.addEventListener("beforeunload", () => updateStatus("offline"));
 function createOnlinePanel() {
   const panel = document.createElement("div");
   panel.id = "onlinePanel";
-  panel.innerHTML = "<h4>🟢 Online Users</h4><ul id='userList'></ul>";
+  panel.innerHTML = "<h4>📶Users Availability List</h4><ul id='userList'></ul>";
 
   // Position based on role
   const currentUserId = localStorage.getItem("username") || sessionStorage.getItem("username");
@@ -276,7 +276,7 @@ function createOnlinePanel() {
       let color = "🔴";
       if (status === "online") color = "🟢";
       else if (status === "away") color = "🟡";
-      else if (now - lastActive > 60000) color = "🔴";
+      else if (now - lastActive > 15000) color = "🔴";
       const name = idToName?.[id] || id;
       usersArr.push({ id, name, color });
     });
