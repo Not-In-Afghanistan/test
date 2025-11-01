@@ -89,7 +89,20 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 /* -------------------- USERS -------------------- */
-const idToName = { "596923":"Muzafar","589533":"Kyle","589425":"Jeffery","564380":"Harshan","603974":"Disani","546766":"Camden","545208":"Braylen","547025":"Jostin","600437":"Blake","599328":"Ethan","592276":"Nitya","598292":"Jacob" };
+const idToName = { 
+  "596923":"Muzafar",
+  "589533":"Kyle",
+  "589425":"Jeffery",
+  "564380":"Harshan",
+  "603974":"Disani",
+  "546766":"Camden",
+  "545208":"Braylen",
+  "547025":"Jostin",
+  "600437":"Blake",
+  "599328":"Ethan",
+  "592276":"Nitya",
+  "598292":"Jacob" 
+};
 const users = {
   "596923": { name: "Muzafar", role: "Admin" },
   "547025": { name: "Jostin", role: "PremiumOG" },
@@ -194,6 +207,23 @@ enableGifClick(document.getElementById("locked"));restoreGifCooldowns();
 checkBan();
 createAdminPanel();
 createOnlinePanel();
+</script>
+<!-- Ban Watcher-->
+<script>
+// ✅ Check for active ban after login but before other features
+if (currentUserId) {
+  db.ref(`bans/${currentUserId}`).once("value").then(snap => {
+    const banData = snap.val();
+    if (banData && banData.expires > Date.now()) {
+      const expires = new Date(banData.expires).toLocaleString();
+      alert(`⛔ You are banned until ${expires}. You cannot use PingPals.`);
+      window.location.href = "./index.html"; // redirect banned user
+    } else if (banData) {
+      // Ban expired, remove entry
+      db.ref(`bans/${currentUserId}`).remove();
+    }
+  }).catch(err => console.error("Error checking ban:", err));
+}
 </script>
 
 <!-- -------------------- IMAGE UPLOAD -------------------- -->
