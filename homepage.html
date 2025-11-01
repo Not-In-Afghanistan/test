@@ -252,31 +252,34 @@ function checkBan() {
 
 
 /* -------------------- ONLINE USERS FIXED -------------------- */
-const PING_INTERVAL = 1000; // heartbeat every 1s
+
+/* -------------------- PRESENCE LOGIC FIX -------------------- */
+const PING_INTERVAL = 1000; // send heartbeat every 1s
+const OFFLINE_TIMEOUT = 5000; // 5s without ping = offline
+
 const userRef = db.ref("presence/" + currentUserId);
 
 // unique ID for this tab
 const tabId = Date.now() + "-" + Math.floor(Math.random() * 1000);
 
-// Update this tab's presence
+// update this tab's status
 function updateStatus() {
   userRef.child(tabId).set({
     lastActive: Date.now(),
-    visible: !document.hidden // true = tab is visible, false = tab in background
+    visible: !document.hidden // true = tab visible, false = background
   });
 }
 
-// Remove this tab from presence when closed
+// remove this tab on close
 function clearTab() {
   userRef.child(tabId).remove();
 }
 
-// Heartbeat ping
 setInterval(updateStatus, PING_INTERVAL);
 window.addEventListener("beforeunload", clearTab);
 document.addEventListener("visibilitychange", updateStatus);
 
-// Online panel
+/* -------------------- ONLINE PANEL -------------------- */
 function createOnlinePanel() {
   const panel = document.createElement("div");
   panel.id = "onlinePanel";
@@ -305,10 +308,18 @@ function createOnlinePanel() {
 
     Object.keys(data).forEach(userId => {
       const tabs = Object.values(data[userId] || {});
-      let color = "🔴"; // default red = no tabs open
+      const now = Date.now();
+
+      let color = "🔴"; // default = offline
+
       if (tabs.length > 0) {
-        color = tabs.some(t => t.visible) ? "🟢" : "🟡";
+        const recentTabs = tabs.filter(t => now - t.lastActive <= OFFLINE_TIMEOUT);
+
+        if (recentTabs.length > 0) {
+          color = recentTabs.some(t => t.visible) ? "🟢" : "🟡";
+        }
       }
+
       const name = idToName[userId] || userId;
       const li = document.createElement("li");
       li.innerHTML = userId === currentUserId
@@ -321,6 +332,9 @@ function createOnlinePanel() {
 
 createOnlinePanel();
 updateStatus();
+
+
+
 
 
 
