@@ -84,7 +84,7 @@ to { opacity: 1; transform: translateY(-50%); }
 
 /* Chat/message styling */
 #messages {
-    max-height: 350px; /* allow scrolling when there are many messages */
+    max-height: 75vh; /* allow scrolling when there are many messages */
     overflow-y: auto;
     margin-top: 8px;
 }
