@@ -260,13 +260,20 @@ const STALE_TIMEOUT = 10000;       // consider tab stale after 10s
 const OFFLINE_TIMEOUT = 15000;     // user offline if no tabs active
 
 const userRef = db.ref("presence/" + currentUserId);
-const usersRef = db.ref("users");  // to check banned users
+const usersRef = db.ref("users");
+const bansRef = db.ref("bans");  // your actual bans node
 
 let usersData = {};
+let bansData = {};
 
-// Load all user data (banned, name, etc.)
+// Load users info
 usersRef.on("value", snap => {
   usersData = snap.val() || {};
+});
+
+// Load bans info
+bansRef.on("value", snap => {
+  bansData = snap.val() || {};
 });
 
 // Keep track of my tab's activity
