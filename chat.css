@@ -40,7 +40,8 @@ input, button, textarea {
 #locked {
     position: absolute;
     width: 350px;
-    overflow: hidden;
+    height: 48vh;
+    overflow-y: scroll;
     backdrop-filter: blur(10px);
     border: 1px solid #cccccc;
         background: rgba(255,255,255,0.08);
