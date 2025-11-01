@@ -348,7 +348,7 @@ function renderMessages(data) {
       const repliedName = idToName[repliedMsg.username] || repliedMsg.username;
       replyHTML = `
         <div style="border-left: 3px solid gray; padding-left: 6px; font-size:10px; color:#bbb; margin-bottom:4px;">
-          ↪ Replied to <strong>${escapeHtml(repliedName)}</strong>: 
+          Replied to <strong>${escapeHtml(repliedName)}</strong>: 
           <em>${escapeHtml(repliedMsg.text || "[GIF]")}</em>
         </div>
       `;
@@ -365,7 +365,7 @@ function renderMessages(data) {
 
     // Add reply button (text)
     const replyBtn = document.createElement("button");
-    replyBtn.textContent = "↩ Reply";
+    replyBtn.textContent = "Reply";
     replyBtn.style = "margin-top:3px; margin-left: 1vw; font-size:10px; cursor:pointer; opacity:0.7;";
     replyBtn.addEventListener("click", () => setReplyTarget(key, shownName, msg.text));
 
