@@ -312,52 +312,104 @@ function createOnlinePanel() {
 }
 
 
-/* -------------------- MESSAGES -------------------- */
+
+/* -------------------- MESSAGES with Replies -------------------- */
 const messagesDiv = document.getElementById('messages');
+let replyingTo = null; // track which message is being replied to
+
 function renderMessages(data) {
   const val = data || {};
   messagesDiv.innerHTML = '';
   const entries = Object.entries(val).sort((a,b)=>a[1].timestamp - b[1].timestamp);
-  if (entries.length===0){ messagesDiv.innerHTML='<p>No messages yet.</p>'; return; }
-  for(const [key,msg] of entries){
+  if (entries.length === 0) {
+    messagesDiv.innerHTML = '<p>No messages yet.</p>';
+    return;
+  }
+
+  for (const [key, msg] of entries) {
     const shownName = idToName[msg.username] || msg.username;
     const userInfo = users[msg.username] || {};
     let roleTag = "";
-    if(userInfo.role==="Admin") roleTag=`<span style="background:linear-gradient(90deg, red, blue); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Admin</span>`;
-    else if(userInfo.role==="PremiumOG") roleTag=`<span style="background:linear-gradient(90deg, #b026ff, #6f00ff); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">PremiumOG</span>`;
+    if (userInfo.role === "Admin")
+      roleTag = `<span style="background:linear-gradient(90deg, red, blue); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">Admin</span>`;
+    else if (userInfo.role === "PremiumOG")
+      roleTag = `<span style="background:linear-gradient(90deg, #b026ff, #6f00ff); color:white; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:6px;">PremiumOG</span>`;
 
-    const div = document.createElement('div'); div.className='entry';
-    if(msg.gifUrl){
-      div.innerHTML=`${roleTag}<strong>${escapeHtml(shownName)}:</strong><br>
-      <img src="${escapeHtml(msg.gifUrl)}" alt="gif" style="max-width:100%; border-radius:8px;" /><br>
-      <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
-    }else{
-      div.innerHTML=`${roleTag}<strong>${escapeHtml(shownName)}:</strong> ${escapeHtml(msg.text)}
-      <br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+    // Base message wrapper
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.style.marginBottom = "10px";
+    div.dataset.msgId = key;
+
+    // If this message is a reply
+    let replyHTML = "";
+    if (msg.replyTo && val[msg.replyTo]) {
+      const repliedMsg = val[msg.replyTo];
+      const repliedName = idToName[repliedMsg.username] || repliedMsg.username;
+      replyHTML = `
+        <div style="border-left: 3px solid gray; padding-left: 6px; font-size:10px; color:#bbb; margin-bottom:4px;">
+          ↪ Replied to <strong>${escapeHtml(repliedName)}</strong>: 
+          <em>${escapeHtml(repliedMsg.text || "[GIF]")}</em>
+        </div>
+      `;
     }
+
+    const content = msg.gifUrl
+      ? `${roleTag}<strong>${escapeHtml(shownName)}:</strong><br>
+         <img src="${escapeHtml(msg.gifUrl)}" alt="gif" style="max-width:100%; border-radius:8px;" /><br>
+         <small>${new Date(msg.timestamp).toLocaleString()}</small>`
+      : `${roleTag}<strong>${escapeHtml(shownName)}:</strong> ${escapeHtml(msg.text)}<br>
+         <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+
+    div.innerHTML = replyHTML + content;
+
+    // Add reply button (text)
+    const replyBtn = document.createElement("button");
+    replyBtn.textContent = "↩ Reply";
+    replyBtn.style = "margin-top:3px; margin-left: 1vw; font-size:10px; cursor:pointer; opacity:0.7;";
+    replyBtn.addEventListener("click", () => setReplyTarget(key, shownName, msg.text));
+
+    div.appendChild(replyBtn);
     messagesDiv.appendChild(div);
   }
-  messagesDiv.scrollTop=messagesDiv.scrollHeight;
+
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-/* -------------------- SEND MESSAGE (fixed) -------------------- */
-let canSend = true;
+/* --- Reply target logic --- */
+function setReplyTarget(messageId, name, text) {
+  replyingTo = messageId;
+  const preview = document.getElementById("replyPreview");
+  preview.innerHTML = `Replying to <strong>${escapeHtml(name)}</strong>: <em>${escapeHtml(text || "[GIF]")}</em> 
+    <button id="cancelReply" style="margin-left:10px; cursor:pointer; font-size:10px;">Cancel</button>`;
+  preview.style.display = "block";
 
-const msgForm = document.getElementById('msgForm');
-const msgInput = document.getElementById('msgInput');
-// support either <button type="submit"> or <input type="submit">
-let sendBtn = msgForm.querySelector('button[type="submit"], input[type="submit"]');
-
-// Defensive fallback: if still not found, create a virtual controller object
-if (!sendBtn) {
-  // create a minimal virtual object so code doesn't throw
-  sendBtn = {
-    disabled: false,
-    style: {},
-    setAttribute: () => {},
-    removeAttribute: () => {}
+  document.getElementById("cancelReply").onclick = () => {
+    replyingTo = null;
+    preview.style.display = "none";
   };
 }
+
+/* --- Add a reply preview area above the input --- */
+const replyPreview = document.createElement("div");
+replyPreview.id = "replyPreview";
+replyPreview.style = `
+  display:none;
+  height: 0px;
+  background:rgba(255,255,255,0.08);
+  padding-bottom:12px;
+  border-radius:6px;
+  margin:8px 0;
+  font-size:10px;
+`;
+document.querySelector("form#msgForm").before(replyPreview);
+
+/* --- Send message --- */
+let canSend = true;
+const msgForm = document.getElementById('msgForm');
+const msgInput = document.getElementById('msgInput');
+let sendBtn = msgForm.querySelector('button[type="submit"], input[type="submit"]');
+if (!sendBtn) sendBtn = { disabled: false, style: {}, setAttribute:()=>{}, removeAttribute:()=>{} };
 
 msgForm.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -369,36 +421,36 @@ msgForm.addEventListener('submit', (e) => {
     return;
   }
 
-  // Disable sending + gray out button (works for <button> or <input>)
   canSend = false;
-  try {
-    sendBtn.disabled = true;
-    sendBtn.style.opacity = "0.5";
-    sendBtn.style.cursor = "not-allowed";
-  } catch (err) {
-    // if sendBtn is the virtual fallback, ignore styling errors
-  }
+  sendBtn.disabled = true;
+  sendBtn.style.opacity = "0.5";
+  sendBtn.style.cursor = "not-allowed";
 
-    db.ref('messages').push({ username: currentUserId, text, timestamp: Date.now() })
+  const newMsg = {
+    username: currentUserId,
+    text,
+    timestamp: Date.now()
+  };
+  if (replyingTo) newMsg.replyTo = replyingTo;
+
+  db.ref('messages').push(newMsg)
     .then(() => {
       msgInput.value = '';
+      replyingTo = null;
+      replyPreview.style.display = "none";
       setTimeout(() => {
         canSend = true;
-        try {
-          sendBtn.disabled = false;
-          sendBtn.style.opacity = "1";
-          sendBtn.style.cursor = "pointer";
-        } catch (err) {}
-      }, 1500); // cooldown = 1s
+        sendBtn.disabled = false;
+        sendBtn.style.opacity = "1";
+        sendBtn.style.cursor = "pointer";
+      }, 1500);
     })
     .catch(err => {
       alert(err.message);
       canSend = true;
-      try {
-        sendBtn.disabled = false;
-        sendBtn.style.opacity = "1";
-        sendBtn.style.cursor = "pointer";
-      } catch (err) {}
+      sendBtn.disabled = false;
+      sendBtn.style.opacity = "1";
+      sendBtn.style.cursor = "pointer";
     });
 });
 
