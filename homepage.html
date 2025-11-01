@@ -357,11 +357,6 @@ function createOnlinePanel() {
   });
 }
 
-// Initialize
-createOnlinePanel();
-
-
-
 
 
 /* -------------------- MESSAGES with Replies -------------------- */
@@ -624,12 +619,24 @@ enableGifClick(document.getElementById("locked"));
 restoreGifCooldownOnLoad();
 
 /* -------------------- INIT -------------------- */
-window.addEventListener("load", ()=>{
+window.addEventListener("load", () => {
+  console.log("Initializing PingPals...");
+
+  // 1️⃣ Prevent duplicate admin/online panels
+  if (!document.getElementById("onlinePanel")) createOnlinePanel();
+  if (!document.getElementById("adminPanel")) createAdminPanel();
+
+  // 2️⃣ Ban check first
   checkBan();
-  enableGifClick(document.getElementById("locked"));
-  createOnlinePanel();
+
+  // 3️⃣ Make sure GIF click events are attached only once
+  if (!window.gifClickEnabled) {
+    enableGifClick(document.getElementById("locked"));
+    window.gifClickEnabled = true;
+  }
+
+  // 4️⃣ Start presence heartbeat
   updateTabStatus();
-  createAdminPanel(); // <---- THIS MUST BE HERE
 });
 
 </script>
