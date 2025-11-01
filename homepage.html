@@ -379,6 +379,14 @@ function enableGifClick(container) {
   const gifs = container.querySelectorAll("img");
   gifs.forEach(img => {
     img.style.cursor = "pointer";
+
+    // 🧠 Prevent duplicate listeners:
+    img.replaceWith(img.cloneNode(true));
+  });
+
+  // reselect new clones to attach fresh event listeners
+  const newGifs = container.querySelectorAll("img");
+  newGifs.forEach(img => {
     img.addEventListener("click", async () => {
       const userId = currentUserId;
       if (!userId) return alert("User not found.");
@@ -394,12 +402,14 @@ function enableGifClick(container) {
         return;
       }
 
-      // Push GIF message
-      await db.ref("messages").push({ username: userId, gifUrl: img.src, timestamp: now });
+      await db.ref("messages").push({
+        username: userId,
+        gifUrl: img.src,
+        timestamp: now
+      });
 
-      // Set cooldown in database and start local visual timer
       await userRef.set({ expires: now + cooldownTime });
-      startLocalGifCooldown(cooldownTime / 1000);
+      setTimeout(() => startLocalGifCooldown(cooldownTime / 1000), 0);
     });
   });
 }
