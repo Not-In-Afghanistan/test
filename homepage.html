@@ -132,6 +132,16 @@ if (!currentUserId) {
   alert("No username found. Please sign in.");
   window.location.href = './index.html';
 }
+// Apply layout change if not admin
+const currentUser = users[currentUserId];
+if (!currentUser || currentUser.role !== "Admin") {
+  const mainArea = document.querySelector(".MainArea");
+  if (mainArea) {
+    mainArea.style.marginRight = "20px";
+    mainArea.style.width = "70vw";
+  }
+}
+
 const displayName = idToName[currentUserId] || currentUserId;
 document.getElementById('signedInAs').textContent = 'Signed in as: ' + displayName;
 
@@ -258,7 +268,7 @@ function createOnlinePanel() {
     bottom: 4vh;
     left: 20px;
     width: 340px;
-    height: 200px;
+    height: 225px;
     background: rgba(255,255,255,0.08);
     border: 1px solid #cccccc;
     bottom: 8.5vh;
