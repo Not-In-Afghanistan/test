@@ -151,7 +151,7 @@ function createAdminPanel() {
 
   const style = document.createElement("style");
   style.textContent = `
-    #adminPanel{position:fixed;top:8px;right:20px;backdrop-filter:blur(10px);
+    #adminPanel{position:fixed;top:8px;right:20px;backdrop-filter:brightness(40%);
       border:1px solid #ccc;padding:14px 18px;width:320px;text-align:center;z-index:999;
       animation:fadeIn 0.3s ease;}
     #adminPanel { background: rgba(255,255,255,0.08); }
@@ -269,14 +269,14 @@ function createOnlinePanel() {
     left: 20px;
     width: 340px;
     height: 225px;
-    background: rgba(255,255,255,0.08);
+
     border: 1px solid #cccccc;
     bottom: 8.5vh;
     padding: 10px;
     padding-top: 0px;
     font-size: 12px;
     color: white;
-    backdrop-filter: blur(10px);
+    backdrop-filter: brightness(40%);
     z-index: 998;
     overflow-y: auto; /* enables scrolling if too many users */
   `;

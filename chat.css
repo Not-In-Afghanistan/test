@@ -2,7 +2,7 @@
 
 body
 {
-        background-color: #ffffff;
+        background-color: black;
         color:#ffffff;
         /* pixel font needs a readable base size */
         font-size: 14px;
@@ -24,9 +24,10 @@ input, button, textarea {
     margin-right: auto;
     display: block;
     width: 500px;
-    backdrop-filter: blur(7px);
+    backdrop-filter: brightness(40%);
     -webkit-backdrop-filter: blur(7px);
     margin-top: -8px;
+    
 }
 
 .MainActionContainer
@@ -34,7 +35,7 @@ input, button, textarea {
     padding: 5px 20px 5px 20px;
     border: solid 1px #cccccc;
     min-height: 90vh;
-        background: rgba(255,255,255,0.08);
+       /* background: rgba(255,255,255,0.08); */
 }
 
 #locked {
@@ -42,9 +43,9 @@ input, button, textarea {
     width: 350px;
     height: 48vh;
     overflow-y: scroll;
-    backdrop-filter: blur(10px);
+    backdrop-filter: brightness(40%);
     border: 1px solid #cccccc;
-        background: rgba(255,255,255,0.08);
+       /* background: rgba(255,255,255,0.08); */
     padding: 5px;
     margin: 16px 0px 0px 20px;
     animation: fadeIn 0.3s ease;
