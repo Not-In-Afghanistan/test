@@ -33,7 +33,7 @@ input, button, textarea {
 {
     padding: 5px 20px 5px 20px;
     border: solid 1px #cccccc;
-    min-height: 150px;
+    min-height: 90vh;
         background: rgba(255,255,255,0.08);
 }
 
