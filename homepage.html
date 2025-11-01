@@ -52,6 +52,12 @@
   <div class="Header2">&nbsp;</div>
   <div class="MainActionContainer">
     <div id="signedInAs" class="GroupNormalMargin"></div>
+    <div id="uploadSection" style="display:none; margin-bottom:10px;">
+    <input type="file" id="imageUpload" accept="image/*" />
+    <button id="sendImageBtn">Send File</button>
+      <div id="imagePreview" style="margin-top:6px;"></div>
+  </div>
+
     <form id="msgForm">
       <div style="display:flex; gap:8px; align-items:center;">
         <input id="msgInput" type="text" placeholder="Type a message" style="flex:1;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
@@ -494,36 +500,55 @@ function enableGifClick(container) {
   gifs.forEach(img => {
     img.style.cursor = "pointer";
 
-    // 🧠 Prevent duplicate listeners:
+    // Remove any old event listeners
     img.replaceWith(img.cloneNode(true));
   });
 
-  // reselect new clones to attach fresh event listeners
   const newGifs = container.querySelectorAll("img");
+
   newGifs.forEach(img => {
+    let localBlocked = false; // local cooldown flag
+
     img.addEventListener("click", async () => {
+      if (localBlocked) return; // already in local cooldown
+
       const userId = currentUserId;
       if (!userId) return alert("User not found.");
 
-      const userRef = db.ref(`gifCooldowns/${userId}`);
-      const snap = await userRef.once("value");
-      const data = snap.val();
-      const now = Date.now();
       const cooldownTime = shortCooldownUsers.includes(userId) ? 3000 : 25000;
 
-      if (data && data.expires > now) {
-        alert(`⏳ Please wait ${Math.ceil((data.expires - now) / 1000)}s before sending another GIF.`);
-        return;
+      // Immediately block locally
+      localBlocked = true;
+      startLocalGifCooldown(cooldownTime / 1000);
+
+      // Check server-side cooldown
+      const userRef = db.ref(`gifCooldowns/${userId}`);
+      try {
+        const snap = await userRef.once("value");
+        const data = snap.val();
+        const now = Date.now();
+
+        if (data && data.expires > now) {
+          const wait = Math.ceil((data.expires - now) / 1000);
+          alert(`⏳ Please wait ${wait}s before sending another GIF.`);
+          localBlocked = false; // allow retry after alert
+          return;
+        }
+
+        // Send GIF
+        await db.ref("messages").push({
+          username: userId,
+          gifUrl: img.src,
+          timestamp: now
+        });
+
+        // Set server cooldown
+        await userRef.set({ expires: now + cooldownTime });
+
+      } catch (err) {
+        alert("❌ Error sending GIF: " + err.message);
+        localBlocked = false; // reset flag on error
       }
-
-      await db.ref("messages").push({
-        username: userId,
-        gifUrl: img.src,
-        timestamp: now
-      });
-
-      await userRef.set({ expires: now + cooldownTime });
-      setTimeout(() => startLocalGifCooldown(cooldownTime / 1000), 0);
     });
   });
 }
@@ -559,6 +584,59 @@ window.addEventListener("load", ()=>{
   checkBan();
   createOnlinePanel();
   enableGifClick(document.getElementById("locked"));
+});
+</script>
+<!-- -------------------- IMAGE UPLOAD -------------------- -->
+<script>
+// Show upload section only to PremiumOG/Admin
+const uploadSection = document.getElementById("uploadSection");
+if (currentUser.role === "PremiumOG" || currentUser.role === "Admin") {
+  uploadSection.style.display = "block";
+}
+
+const imageInput = document.getElementById("imageUpload");
+const imagePreview = document.getElementById("imagePreview");
+
+// Preview selected image
+imageInput.addEventListener("change", () => {
+  const file = imageInput.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { // 2MB max
+    alert("⚠️ File too large! Max 2MB.");
+    imageInput.value = "";
+    imagePreview.innerHTML = "";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width:200px; border-radius:8px;" />`;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Upload image to Firebase as a message
+document.getElementById("sendImageBtn").addEventListener("click", async () => {
+  const file = imageInput.files[0];
+  if (!file) return alert("Select an image first!");
+
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const imageData = e.target.result;
+    try {
+      const newMsg = {
+        username: currentUserId,
+        gifUrl: imageData, // reuse gifUrl field
+        timestamp: Date.now()
+      };
+      db.ref("messages").push(newMsg);
+      // Reset input
+      imageInput.value = "";
+      imagePreview.innerHTML = "";
+    } catch (err) {
+      alert("❌ Upload failed: " + err.message);
+    }
+  };
+  reader.readAsDataURL(file);
 });
 </script>
 </body>
