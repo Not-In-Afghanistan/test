@@ -126,19 +126,23 @@ if (!currentUser || currentUser.role !== "Admin") {
   const mainArea = document.querySelector(".MainArea");
   if (mainArea) { mainArea.style.marginRight="20px"; mainArea.style.width="70vw"; }
 }
+// -------------------- INSTANT BAN LISTENER --------------------
+if (currentUserId) {
+    db.ref(`bans/${currentUserId}`).on("value", snap => {
+        const banData = snap.val();
+        if (banData && banData.expires > Date.now()) {
+            alert(`⛔ You have been banned until ${new Date(banData.expires).toLocaleString()}`);
+            window.location.href = "./index.html";
+        } else if (banData && banData.expires <= Date.now()) {
+            db.ref(`bans/${currentUserId}`).remove();
+        }
+    });
+}
+// -------------------- Instant ban check done --------------------
 document.getElementById('signedInAs').textContent = 'Signed in as: ' + (idToName[currentUserId]||currentUserId);
 
 /* -------------------- HELPERS -------------------- */
 function escapeHtml(s){if(!s&&s!==0)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-/* -------------------- BAN CHECK -------------------- */
-function checkBan() {
-  db.ref(`bans/${currentUserId}`).once("value").then(snap=>{
-    const banData = snap.val();
-    if (banData && banData.expires>Date.now()) { alert(`⛔ You are banned until ${new Date(banData.expires).toLocaleString()}`); window.location.href="./index.html"; }
-    else if (banData) db.ref(`bans/${currentUserId}`).remove();
-  });
-}
 
 /* -------------------- ADMIN PANEL -------------------- */
 function createAdminPanel() {
