@@ -627,10 +627,11 @@ restoreGifCooldownOnLoad();
 window.addEventListener("load", ()=>{
   checkBan();
   enableGifClick(document.getElementById("locked"));
-    // Start presence tracking
   createOnlinePanel();
   updateTabStatus();
+  createAdminPanel(); // <---- THIS MUST BE HERE
 });
+
 </script>
 <!-- -------------------- IMAGE UPLOAD -------------------- -->
 <script>
