@@ -247,9 +247,10 @@ function createOnlinePanel() {
 
   panel.style = `
     position: fixed;
-    bottom: 20vh;
+    bottom: 4vh;
     left: 20px;
     width: 340px;
+    height: 200px;
     background: rgba(255,255,255,0.08);
     border: 1px solid #cccccc;
     padding: 10px;
@@ -257,6 +258,7 @@ function createOnlinePanel() {
     color: white;
     backdrop-filter: blur(10px);
     z-index: 998;
+    overflow-y: auto; /* enables scrolling if too many users */
   `;
 
   document.body.appendChild(panel);
