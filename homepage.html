@@ -35,7 +35,6 @@
     <img src="./gifs/rightGifs/twitch-twitch-emote.gif">
     <img src="./gifs/rightGifs/what-twitch.gif">
 </div>
-<input type="submit" id="toggleBtn" value="Hide GIFs">
 
 <div class="MainArea">
   <div class="Header2">&nbsp;</div>
@@ -418,13 +417,6 @@ async function restoreGifCooldownOnLoad() {
 // Initialize
 enableGifClick(document.getElementById("locked"));
 restoreGifCooldownOnLoad();
-
-/* -------------------- TOGGLE GIF VISIBILITY -------------------- */
-document.getElementById("toggleBtn").addEventListener("click",()=>{
-  const locked=document.getElementById("locked");
-  if(locked.style.display==="none"){ locked.style.display="flex"; document.getElementById("toggleBtn").value="Hide GIFs"; }
-  else { locked.style.display="none"; document.getElementById("toggleBtn").value="Show GIFs"; }
-});
 
 /* -------------------- INIT -------------------- */
 window.addEventListener("load", ()=>{
