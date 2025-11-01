@@ -91,7 +91,6 @@ const idToName = {
   "564380": "Harshan",
   "603974": "Disani",
   "546766": "Camden",
-  "596922": "Veena",
   "545208": "Braylen",
   "547025": "Jostin",
   "600437": "Blake",
@@ -108,7 +107,6 @@ const users = {
   "589425": { name: "Jeffery" },
   "564380": { name: "Harshan" },
   "603974": { name: "Disani" },
-  "596922": { name: "Veena" },
   "545208": { name: "Braylen" },
   "600437": { name: "Blake" },
   "598292": { name: "Jacob" }
@@ -250,7 +248,7 @@ window.addEventListener("beforeunload", () => updateStatus("offline"));
 function createOnlinePanel() {
   const panel = document.createElement("div");
   panel.id = "onlinePanel";
-  panel.innerHTML = "<h4>📶Users Status</h4><ul id='userList'></ul>";
+  panel.innerHTML = "<ul id='userList'></ul>";
   // Position based on role
   const currentUserId = localStorage.getItem("username") || sessionStorage.getItem("username");
   const isAdmin = adminUsers.includes(currentUserId);
@@ -265,7 +263,8 @@ function createOnlinePanel() {
     border: 1px solid #cccccc;
     bottom: 8.5vh;
     padding: 10px;
-    font-size: 13px;
+    padding-top: 0px;
+    font-size: 12px;
     color: white;
     backdrop-filter: blur(10px);
     z-index: 998;
@@ -332,16 +331,69 @@ function renderMessages(data) {
   messagesDiv.scrollTop=messagesDiv.scrollHeight;
 }
 
-/* -------------------- SEND MESSAGE -------------------- */
-document.getElementById('msgForm').addEventListener('submit', (e)=>{
+/* -------------------- SEND MESSAGE (fixed) -------------------- */
+let canSend = true;
+
+const msgForm = document.getElementById('msgForm');
+const msgInput = document.getElementById('msgInput');
+// support either <button type="submit"> or <input type="submit">
+let sendBtn = msgForm.querySelector('button[type="submit"], input[type="submit"]');
+
+// Defensive fallback: if still not found, create a virtual controller object
+if (!sendBtn) {
+  // create a minimal virtual object so code doesn't throw
+  sendBtn = {
+    disabled: false,
+    style: {},
+    setAttribute: () => {},
+    removeAttribute: () => {}
+  };
+}
+
+msgForm.addEventListener('submit', (e) => {
   e.preventDefault();
-  const text=document.getElementById('msgInput').value.trim();
-  if(!text) return;
-  if(text.length>100){ alert(`⚠️ Message too long! (${text.length}/100 characters)`); return; }
-  db.ref('messages').push({ username: currentUserId, text, timestamp: Date.now() })
-    .then(()=>{ document.getElementById('msgInput').value=''; }).catch(err=>alert(err.message));
+  const text = msgInput.value.trim();
+  if (!text || !canSend) return;
+
+  if (text.length > 100) {
+    alert(`⚠️ Message too long! (${text.length}/100 characters)`);
+    return;
+  }
+
+  // Disable sending + gray out button (works for <button> or <input>)
+  canSend = false;
+  try {
+    sendBtn.disabled = true;
+    sendBtn.style.opacity = "0.5";
+    sendBtn.style.cursor = "not-allowed";
+  } catch (err) {
+    // if sendBtn is the virtual fallback, ignore styling errors
+  }
+
+    db.ref('messages').push({ username: currentUserId, text, timestamp: Date.now() })
+    .then(() => {
+      msgInput.value = '';
+      setTimeout(() => {
+        canSend = true;
+        try {
+          sendBtn.disabled = false;
+          sendBtn.style.opacity = "1";
+          sendBtn.style.cursor = "pointer";
+        } catch (err) {}
+      }, 1500); // cooldown = 1s
+    })
+    .catch(err => {
+      alert(err.message);
+      canSend = true;
+      try {
+        sendBtn.disabled = false;
+        sendBtn.style.opacity = "1";
+        sendBtn.style.cursor = "pointer";
+      } catch (err) {}
+    });
 });
-db.ref('messages').on('value', snap=>renderMessages(snap.val()));
+
+db.ref('messages').on('value', snap => renderMessages(snap.val()));
 
 /* -------------------- GIF COOLDOWN -------------------- */
 const gifStatus = document.createElement("p");
