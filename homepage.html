@@ -253,33 +253,46 @@ function checkBan() {
 
 /* -------------------- ONLINE USERS FIXED -------------------- */
 
-/* -------------------- PRESENCE LOGIC FIX -------------------- */
-const PING_INTERVAL = 1000; // send heartbeat every 1s
-const OFFLINE_TIMEOUT = 5000; // 5s without ping = offline
+/* -------------------- PRESENCE SYSTEM -------------------- */
+
+const PING_INTERVAL = 1000;        // how often to ping the server
+const STALE_TIMEOUT = 10000;       // consider tab stale after 10s
+const OFFLINE_TIMEOUT = 15000;     // user offline if no tabs active
 
 const userRef = db.ref("presence/" + currentUserId);
+const usersRef = db.ref("users");  // to check banned users
 
-// unique ID for this tab
-const tabId = Date.now() + "-" + Math.floor(Math.random() * 1000);
+let usersData = {};
 
-// update this tab's status
-function updateStatus() {
-  userRef.child(tabId).set({
-    lastActive: Date.now(),
-    visible: !document.hidden // true = tab visible, false = background
+// Load all user data (banned, name, etc.)
+usersRef.on("value", snap => {
+  usersData = snap.val() || {};
+});
+
+// Keep track of my tab's activity
+const tabId = Math.random().toString(36).substr(2, 9);
+const tabRef = userRef.child("tabs").child(tabId);
+
+// Update my tab's presence
+function updateTabStatus() {
+  tabRef.set({
+    visible: !document.hidden,
+    lastActive: Date.now()
   });
 }
 
-// remove this tab on close
-function clearTab() {
-  userRef.child(tabId).remove();
-}
+// Remove this tab when it closes
+window.addEventListener("beforeunload", () => {
+  tabRef.remove();
+});
 
-setInterval(updateStatus, PING_INTERVAL);
-window.addEventListener("beforeunload", clearTab);
-document.addEventListener("visibilitychange", updateStatus);
+// Update periodically (heartbeat)
+setInterval(updateTabStatus, PING_INTERVAL);
+document.addEventListener("visibilitychange", updateTabStatus);
+updateTabStatus();
 
-/* -------------------- ONLINE PANEL -------------------- */
+/* -------------------- ONLINE USERS PANEL -------------------- */
+
 function createOnlinePanel() {
   const panel = document.createElement("div");
   panel.id = "onlinePanel";
@@ -289,7 +302,7 @@ function createOnlinePanel() {
     bottom: 8.5vh;
     left: 20px;
     width: 340px;
-    height: 215px;
+    height: 225px;
     border: 1px solid #ccc;
     padding: 10px;
     font-size: 12px;
@@ -304,35 +317,42 @@ function createOnlinePanel() {
 
   db.ref("presence").on("value", snap => {
     const data = snap.val() || {};
+    const now = Date.now();
     userList.innerHTML = "";
 
-    Object.keys(data).forEach(userId => {
-      const tabs = Object.values(data[userId] || {});
-      const now = Date.now();
-
+    Object.keys(data).forEach(id => {
+      const user = data[id];
+      const tabs = Object.values(user.tabs || {});
+      const userInfo = usersData?.[id] || {};
       let color = "🔴"; // default = offline
+      const name = idToName?.[id] || userInfo.name || id;
 
-      if (tabs.length > 0) {
-        const recentTabs = tabs.filter(t => now - t.lastActive <= OFFLINE_TIMEOUT);
+      // 🟣 banned user
+      if (userInfo.banned) {
+        color = "🟣";
+      } else {
+        // remove stale tabs
+        const activeTabs = tabs.filter(t => now - t.lastActive < STALE_TIMEOUT);
 
-        if (recentTabs.length > 0) {
-          color = recentTabs.some(t => t.visible) ? "🟢" : "🟡";
+        if (activeTabs.length > 0) {
+          color = activeTabs.some(t => t.visible) ? "🟢" : "🟡";
+        } else {
+          color = "🔴"; // all tabs stale/offline
         }
       }
 
-      const name = idToName[userId] || userId;
       const li = document.createElement("li");
-      li.innerHTML = userId === currentUserId
-        ? `<strong>${color} ${name} (You)</strong>`
-        : `${color} ${name}`;
+      li.innerHTML =
+        id === currentUserId
+          ? `<strong>${color} ${name} (You)</strong>`
+          : `${color} ${name}`;
       userList.appendChild(li);
     });
   });
 }
 
+// Initialize
 createOnlinePanel();
-updateStatus();
-
 
 
 
