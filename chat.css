@@ -149,3 +149,6 @@ body {
     margin-left: 20px;
     margin-top: 8px;
 }
+#userList {
+    list-style: none;
+}
