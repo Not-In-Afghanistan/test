@@ -250,7 +250,7 @@ window.addEventListener("beforeunload", () => updateStatus("offline"));
 function createOnlinePanel() {
   const panel = document.createElement("div");
   panel.id = "onlinePanel";
-  panel.innerHTML = "<h4>📶Users Availability List</h4><ul id='userList'></ul>";
+  panel.innerHTML = "<h4>📶Users Status</h4><ul id='userList'></ul>";
 
   // Position based on role
   const currentUserId = localStorage.getItem("username") || sessionStorage.getItem("username");
