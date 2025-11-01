@@ -252,30 +252,31 @@ function checkBan() {
 
 
 /* -------------------- ONLINE USERS FIXED -------------------- */
-const PING_INTERVAL = 1000;       // heartbeat every 1s
-const OFFLINE_TIMEOUT = 5000;     // offline if no ping for 5s
+const PING_INTERVAL = 1000; // heartbeat every 1s
 const userRef = db.ref("presence/" + currentUserId);
 
-// Track this tab
+// unique ID for this tab
 const tabId = Date.now() + "-" + Math.floor(Math.random() * 1000);
 
-// Update my status
+// Update this tab's presence
 function updateStatus() {
-  const status = document.hidden ? "away" : "online";
-  userRef.child(tabId).set({ status, lastActive: Date.now() });
+  userRef.child(tabId).set({
+    lastActive: Date.now(),
+    visible: !document.hidden // true = tab is visible, false = tab in background
+  });
 }
 
-// Remove this tab on close
-function markOffline() {
+// Remove this tab from presence when closed
+function clearTab() {
   userRef.child(tabId).remove();
 }
 
-// Heartbeat
+// Heartbeat ping
 setInterval(updateStatus, PING_INTERVAL);
+window.addEventListener("beforeunload", clearTab);
 document.addEventListener("visibilitychange", updateStatus);
-window.addEventListener("beforeunload", markOffline);
 
-// Create online users panel
+// Online panel
 function createOnlinePanel() {
   const panel = document.createElement("div");
   panel.id = "onlinePanel";
@@ -285,7 +286,7 @@ function createOnlinePanel() {
     bottom: 8.5vh;
     left: 20px;
     width: 340px;
-    height: 215px;
+    height: 225px;
     border: 1px solid #ccc;
     padding: 10px;
     font-size: 12px;
@@ -300,32 +301,17 @@ function createOnlinePanel() {
 
   db.ref("presence").on("value", snap => {
     const data = snap.val() || {};
-    const now = Date.now();
-
-    // Merge multiple tabs per user
-    const usersStatus = {};
-    Object.keys(data).forEach(userId => {
-      Object.values(data[userId]).forEach(tab => {
-        if (!usersStatus[userId]) usersStatus[userId] = { status: "offline", lastActive: 0 };
-        if (tab.lastActive > usersStatus[userId].lastActive) {
-          usersStatus[userId] = { status: tab.status, lastActive: tab.lastActive };
-        }
-      });
-    });
-
     userList.innerHTML = "";
-    Object.keys(usersStatus).forEach(id => {
-      const { status, lastActive } = usersStatus[id];
-      const delta = now - (lastActive || 0);
 
-      let color;
-      if (status === "offline" || delta > OFFLINE_TIMEOUT) color = "🔴";
-      else if (status === "away") color = "🟡";
-      else color = "🟢";
-
-      const name = idToName[id] || id;
+    Object.keys(data).forEach(userId => {
+      const tabs = Object.values(data[userId] || {});
+      let color = "🔴"; // default red = no tabs open
+      if (tabs.length > 0) {
+        color = tabs.some(t => t.visible) ? "🟢" : "🟡";
+      }
+      const name = idToName[userId] || userId;
       const li = document.createElement("li");
-      li.innerHTML = id === currentUserId
+      li.innerHTML = userId === currentUserId
         ? `<strong>${color} ${name} (You)</strong>`
         : `${color} ${name}`;
       userList.appendChild(li);
@@ -333,15 +319,8 @@ function createOnlinePanel() {
   });
 }
 
-// Initialize
 createOnlinePanel();
 updateStatus();
-
-
-
-
-
-
 
 
 
