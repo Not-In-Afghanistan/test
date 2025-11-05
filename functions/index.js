@@ -36,13 +36,13 @@ admin.initializeApp();
 
 exports.loginUser = functions.https.onRequest(async (req, res) => {
   // === CORS headers ===
-  res.set('Access-Control-Allow-Origin', '*'); // use your frontend URL for production instead of '*'
+  res.set('Access-Control-Allow-Origin', '*'); // or your frontend URL in production
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type');
 
   // === Handle preflight request ===
   if (req.method === 'OPTIONS') {
-    return res.status(204).send(''); // No Content
+    return res.status(204).send(''); // Must respond to OPTIONS
   }
 
   // Only allow POST
@@ -61,15 +61,9 @@ exports.loginUser = functions.https.onRequest(async (req, res) => {
     const snapshot = await userRef.once('value');
     const userData = snapshot.val();
 
-    if (!userData) {
-      return res.status(404).json({ error: 'User ID not found' });
-    }
+    if (!userData) return res.status(404).json({ error: 'User ID not found' });
+    if (userData.password !== password) return res.status(403).json({ error: 'Incorrect password' });
 
-    if (userData.password !== password) {
-      return res.status(403).json({ error: 'Incorrect password' });
-    }
-
-    // Check for ban
     const banRef = admin.database().ref(`bans/${userId}`);
     const banSnap = await banRef.once('value');
     const banData = banSnap.val();
@@ -78,7 +72,6 @@ exports.loginUser = functions.https.onRequest(async (req, res) => {
       return res.status(403).json({ error: `You are banned until ${new Date(banData.expires).toLocaleString()}` });
     }
 
-    // Success
     return res.json({ success: true });
   } catch (err) {
     console.error(err);
