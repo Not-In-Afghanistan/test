@@ -9,12 +9,15 @@
 </head>
 
 <body>
+  <!-- Donation / Banner -->
   <div id="donate">
-    <p>Hi! Im Muzafar. 
-    If you will and want to support me, please consider <span class="red">subscribing!</span> 
-    It would really help me a lot, since I work hard and maintain this project public and allow you guys to visit.
-     It also comes with perks <a href="./donate.html">Learn More</a>. Thank you!</p>
-</div>
+    <p>Hi! I'm Muzafar. 
+    If you want to support me, please consider <span class="red">subscribing!</span> 
+    It really helps since I maintain this project for free.
+    It also comes with perks — <a href="./donate.html">Learn More</a>. Thank you!</p>
+  </div>
+
+  <!-- Main Sign In Area -->
   <div class="MainArea">
     <div class="Header"><span>Sign In</span></div>
     <div class="GroupXLargeMargin"><img src="./newlog.png" alt="logo" id="LOGO" /></div>
@@ -34,7 +37,6 @@
           <tr>
             <td><span class="Label">Password:</span></td>
             <td><input type="password" id="passwordInput" required /></td>
-            <td class="TextColorSecondary TextSizeSmall">
           </tr>
           <tr>
             <td colspan="2">
@@ -53,60 +55,79 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <script>
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
-    authDomain: "test-da143.firebaseapp.com",
-    databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
-    projectId: "test-da143",
-    storageBucket: "test-da143.firebasestorage.app",
-    messagingSenderId: "58366480447",
-    appId: "1:58366480447:web:f3dd12850f09952b49688a",
-    measurementId: "G-T5HK7JTWHW"
-  };
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
+      authDomain: "test-da143.firebaseapp.com",
+      databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
+      projectId: "test-da143",
+      storageBucket: "test-da143.firebasestorage.app",
+      messagingSenderId: "58366480447",
+      appId: "1:58366480447:web:f3dd12850f09952b49688a",
+      measurementId: "G-T5HK7JTWHW"
+    };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
- form.addEventListener("submit", async (e) => {
+    const form = document.getElementById("form");
+    const usernameInput = document.getElementById("usernameInput");
+    const passwordInput = document.getElementById("passwordInput");
+
+    // Handle sign in
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
+
   const username = usernameInput.value.trim();
   const password = passwordInput.value.trim();
 
-const res = await fetch("/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
-
-const data = await res.json();
-  if (!data.success) {
-    alert(data.error || "Login failed");
+  if (!/^\d{6}$/.test(username)) {
+    alert("User ID must be exactly 6 digits.");
     return;
   }
 
-window.location.href = "./homepage.html";
-
-    // ✅ Check for active ban
-    db.ref(`bans/${username}`).once("value").then(snap => {
-      const banData = snap.val();
-      if (banData && banData.expires > Date.now()) {
-        const expires = new Date(banData.expires).toLocaleString();
-        alert(`⛔ You are banned until ${expires}. You cannot sign in.`);
-        return;
-      } else if (banData) {
-        // Ban expired, remove entry
-        db.ref(`bans/${username}`).remove();
-      }
-
-      // Success login
-      sessionStorage.setItem("loginAsk", "true");
-      sessionStorage.setItem("username", username);
-      localStorage.setItem("username", username);
+  try {
+    // Call your login API
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
     });
-  });
-</script>
-<script>
+
+    if (!res.ok) throw new Error(await res.text());
+
+    const data = await res.json();
+    if (!data.success) {
+      alert(data.error || "Login failed");
+      return;
+    }
+
+    // Check Firebase ban
+    const snap = await db.ref(`bans/${username}`).once("value");
+    const banData = snap.val();
+
+    if (banData && banData.expires > Date.now()) {
+      alert(`⛔ You are banned until ${new Date(banData.expires).toLocaleString()}.`);
+      return;
+    } else if (banData) {
+      await db.ref(`bans/${username}`).remove();
+    }
+
+    // Set session/local storage after ban check
+    sessionStorage.setItem("loginAsk", "true");
+    sessionStorage.setItem("username", username);
+    localStorage.setItem("username", username);
+
+    window.location.href = "./homepage.html";
+
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong. Please try again later.");
+  }
+});
+
+  </script>
+  <script>
 (function(){
   // Real-time ban watcher - drop into index.html and homepage.html after firebase is initialized.
   let banRef = null;
@@ -197,6 +218,5 @@ window.location.href = "./homepage.html";
   };
 })();
 </script>
-
 </body>
 </html>
