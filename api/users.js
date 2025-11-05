@@ -1,18 +1,6 @@
 // api/users.js
 export default function handler(req, res) {
   // 🔒 This code runs on Vercel's server, not in the browser
-  const firebaseConfig = {
-    apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
-    authDomain: "test-da143.firebaseapp.com",
-    databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
-    projectId: "test-da143",
-    storageBucket: "test-da143.firebasestorage.app",
-    messagingSenderId: "58366480447",
-    appId: "1:58366480447:web:f3dd12850f09952b49688a",
-    measurementId: "G-T5HK7JTWHW"
-  };
-
-  
 
   // 🔒 Local ID-password pairs
   const userPasswords = {
