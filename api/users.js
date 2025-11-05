@@ -1,8 +1,12 @@
 // api/users.js
-export default function handler(req, res) {
-  // 🔒 This code runs on Vercel's server, not in the browser
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-  // 🔒 Local ID-password pairs
+  const { id, password } = req.body;
+
+  // 🔒 Local user-password storage (hidden on server)
   const userPasswords = {
     "596923": "UrWrong67",
     "589533": "Monk3y41",
@@ -19,7 +23,6 @@ export default function handler(req, res) {
     "589475": "IrishLapDance67",
     "598292": "noTherCurry4U"
   };
-
 
   const idToName = { 
     "596923":"Muzafar",
@@ -53,19 +56,18 @@ export default function handler(req, res) {
     "598292": { name: "Jacob" }
   };
 
-  const adminUsers = ["596923"];
-  const shortCooldownUsers = ["596923", "547025"];
-
-  // 🧠 Example: basic data filter
-  const { id } = req.query;
-  if (id && users[id]) {
-    return res.status(200).json(users[id]); // Return specific user
+  if (!id || !password) {
+    return res.status(400).json({ ok: false, error: "Missing ID or password" });
   }
 
-  // Otherwise return a summary
-  res.status(200).json({
-    count: Object.keys(users).length,
-    admins: adminUsers.length,
-    users,
+  if (!userPasswords[id] || userPasswords[id] !== password) {
+    return res.status(401).json({ ok: false, error: "Invalid credentials" });
+  }
+
+  // ✅ Successful login
+  return res.status(200).json({
+    ok: true,
+    name: idToName[id],
+    role: users[id]?.role || "User"
   });
 }
