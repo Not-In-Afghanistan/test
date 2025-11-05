@@ -34,35 +34,56 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
-exports.loginUser = functions.https.onCall(async (data, context) => {
-    const { userId, password } = data;
+exports.loginUser = functions.https.onRequest(async (req, res) => {
+  // CORS headers
+  res.set('Access-Control-Allow-Origin', '*'); // allow your frontend domain for production instead of '*'
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
 
-    if (!userId || !password) {
-        throw new functions.https.HttpsError('invalid-argument', 'Missing userId or password.');
-    }
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
 
-    // Reference to your user
+  // Only allow POST
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method Not Allowed' });
+    return;
+  }
+
+  const { userId, password } = req.body;
+
+  if (!userId || !password) {
+    return res.status(400).json({ error: 'Missing userId or password' });
+  }
+
+  try {
     const userRef = admin.database().ref(`users/${userId}`);
     const snapshot = await userRef.once('value');
     const userData = snapshot.val();
 
     if (!userData) {
-        throw new functions.https.HttpsError('not-found', 'User ID not found.');
+      return res.status(404).json({ error: 'User ID not found' });
     }
 
     if (userData.password !== password) {
-        throw new functions.https.HttpsError('permission-denied', 'Incorrect password.');
+      return res.status(403).json({ error: 'Incorrect password' });
     }
 
-    // Optional: Check for ban
+    // Check ban
     const banRef = admin.database().ref(`bans/${userId}`);
     const banSnap = await banRef.once('value');
     const banData = banSnap.val();
 
     if (banData && banData.expires > Date.now()) {
-        throw new functions.https.HttpsError('permission-denied', `You are banned until ${new Date(banData.expires).toLocaleString()}.`);
+      return res.status(403).json({ error: `You are banned until ${new Date(banData.expires).toLocaleString()}` });
     }
 
     // Success
-    return { success: true };
+    return res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
 });

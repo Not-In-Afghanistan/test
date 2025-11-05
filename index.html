@@ -45,29 +45,9 @@
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
-  <script>
-      const firebaseConfig = {
-      apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
-      authDomain: "test-da143.firebaseapp.com",
-      databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
-      projectId: "test-da143",
-      storageBucket: "test-da143.firebasestorage.app",
-      messagingSenderId: "58366480447",
-      appId: "1:58366480447:web:f3dd12850f09952b49688a",
-    };
-  </script>
 <script>
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const functions = firebase.functions();
-
-  // Login form
   const form = document.getElementById("form");
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -75,60 +55,25 @@
     const password = document.getElementById("passwordInput").value.trim();
 
     try {
-      const result = await functions.httpsCallable('loginUser')({ userId, password });
+      const response = await fetch('https://us-central1-test-da143.cloudfunctions.net/loginUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, password })
+      });
 
-      sessionStorage.setItem("username", userId);
-      localStorage.setItem("username", userId);
-      window.location.href = "./homepage.html";
+      const data = await response.json();
 
+      if (response.ok && data.success) {
+        sessionStorage.setItem("username", userId);
+        localStorage.setItem("username", userId);
+        window.location.href = "./homepage.html";
+      } else {
+        alert(data.error || 'Login failed');
+      }
     } catch (err) {
-      alert(err.message);
+      alert('Error connecting to server: ' + err.message);
     }
   });
-
-  // Real-time ban watcher
-  (function() {
-    let banRef = null;
-    let currentUid = null;
-
-    function getStoredUid() {
-      return localStorage.getItem('username') || sessionStorage.getItem('username') || null;
-    }
-
-    function attachBanListener(uid) {
-      if (!uid) return;
-      if (currentUid === uid && banRef) return;
-
-      detachBanListener();
-      currentUid = uid;
-      banRef = db.ref(`bans/${uid}`);
-      banRef.on('value', snap => {
-        const banData = snap.val();
-        if (banData && banData.expires > Date.now()) {
-          alert(`⛔ You are banned until ${new Date(banData.expires).toLocaleString()}.`);
-          window.location.href = "./index.html";
-        } else if (banData && banData.expires <= Date.now()) {
-          db.ref(`bans/${uid}`).remove().catch(()=>{});
-        }
-      });
-    }
-
-    function detachBanListener() {
-      if (banRef) { banRef.off(); banRef = null; }
-      currentUid = null;
-    }
-
-    function syncBanWatcher() {
-      const uid = getStoredUid();
-      if (!uid) detachBanListener();
-      else attachBanListener(uid);
-    }
-
-    window.addEventListener('storage', () => syncBanWatcher());
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) syncBanWatcher(); });
-    setInterval(syncBanWatcher, 5000);
-    syncBanWatcher();
-  })();
 </script>
 </body>
 </html>
