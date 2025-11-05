@@ -1,11 +1,23 @@
-export default function handler(req, res) {
+import admin from "firebase-admin";
+
+if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_KEY);
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://test-da143-default-rtdb.firebaseio.com"
+  });
+}
+
+const db = admin.database();
+
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { username, password } = req.body;
 
-  // 🧠 Secret data (kept on server, not exposed)
+  // 🧠 Hidden data — secure on server
   const users = {
     "596923": "UrWrong67",
     "589533": "Monk3y41",
@@ -29,6 +41,11 @@ export default function handler(req, res) {
     return res.status(403).json({ success: false, error: "Incorrect password." });
   }
 
-  // If success
+  // ✅ On success, push to Firebase (hidden logic)
+  await db.ref("users").push({
+    username,
+    timestamp: Date.now()
+  });
+
   res.status(200).json({ success: true });
 }

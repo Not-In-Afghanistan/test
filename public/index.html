@@ -103,13 +103,6 @@ window.location.href = "./homepage.html";
       sessionStorage.setItem("loginAsk", "true");
       sessionStorage.setItem("username", username);
       localStorage.setItem("username", username);
-
-      db.ref("users").push({ username, timestamp: Date.now() })
-        .then(() => {
-          form.reset();
-          window.location.href = "./homepage.html";
-        })
-        .catch(err => alert(err.message));
     });
   });
 </script>
