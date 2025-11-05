@@ -1,51 +1,51 @@
-import admin from "firebase-admin";
+// /api/login.js
+import firebaseAdmin from "firebase-admin";
 
-if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_KEY);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://test-da143-default-rtdb.firebaseio.com"
+let app;
+
+// Initialize Firebase Admin (Vercel requires this to be idempotent)
+if (!firebaseAdmin.apps.length) {
+  app = firebaseAdmin.initializeApp({
+    credential: firebaseAdmin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+    }),
+    databaseURL: process.env.FIREBASE_DATABASE_URL
   });
+} else {
+  app = firebaseAdmin.app();
 }
 
-const db = admin.database();
+const db = app.database();
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ success: false, error: "Method not allowed" });
   }
 
   const { username, password } = req.body;
 
-  // 🧠 Hidden data — secure on server
-  const users = {
-    "596923": "UrWrong67",
-    "589533": "Monk3y41",
-    "589425": "Crossing22",
-    "564380": "CurryLover99",
-    "603974": "ninjastar123",
-    "546766": "MitlerWasRight2",
-    "545208": "Boondocks697",
-    "547025": "IhaveLigma43",
-    "600437": "Niggalodian69",
-    "599328": "PreFredom88",
-    "592276": "SoccerIsLife22",
-    "598292": "noTherCurry4U"
-  };
-
-  if (!users[username]) {
-    return res.status(400).json({ success: false, error: "User ID not found." });
+  if (!username || !password || !/^\d{6}$/.test(username)) {
+    return res.status(400).json({ success: false, error: "Invalid username or password" });
   }
 
-  if (users[username] !== password) {
-    return res.status(403).json({ success: false, error: "Incorrect password." });
+  try {
+    const snap = await db.ref(`users/${username}`).once("value");
+    const userData = snap.val();
+
+    if (!userData) {
+      return res.status(401).json({ success: false, error: "User not found" });
+    }
+
+    if (userData.password !== password) {
+      return res.status(401).json({ success: false, error: "Incorrect password" });
+    }
+
+    // ✅ Success
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).json({ success: false, error: "Server error" });
   }
-
-  // ✅ On success, push to Firebase (hidden logic)
-  await db.ref("users").push({
-    username,
-    timestamp: Date.now()
-  });
-
-  res.status(200).json({ success: true });
 }
