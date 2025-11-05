@@ -35,21 +35,19 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 
 exports.loginUser = functions.https.onRequest(async (req, res) => {
-  // CORS headers
-  res.set('Access-Control-Allow-Origin', '*'); // allow your frontend domain for production instead of '*'
+  // === CORS headers ===
+  res.set('Access-Control-Allow-Origin', '*'); // use your frontend URL for production instead of '*'
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight requests
+  // === Handle preflight request ===
   if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
+    return res.status(204).send(''); // No Content
   }
 
   // Only allow POST
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method Not Allowed' });
-    return;
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   const { userId, password } = req.body;
@@ -71,7 +69,7 @@ exports.loginUser = functions.https.onRequest(async (req, res) => {
       return res.status(403).json({ error: 'Incorrect password' });
     }
 
-    // Check ban
+    // Check for ban
     const banRef = admin.database().ref(`bans/${userId}`);
     const banSnap = await banRef.once('value');
     const banData = banSnap.val();
