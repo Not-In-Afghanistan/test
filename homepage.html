@@ -34,18 +34,22 @@
     <img src="./gifs/rightGifs/thorfinn.gif">
     <img src="./gifs/rightGifs/twitch-twitch-emote.gif">
     <img src="./gifs/rightGifs/what-twitch.gif">
-    <!-- New Gen Gif -->
-    <img src="./gifs/promo.png">
-    <img src="./gifs/promo.png">
-    <img src="./gifs/promo.png">
-    <img src="./gifs/promo.png">
-    <img src="./gifs/promo.png">
-    <img src="./gifs/promo.png">
-    <img src="./gifs/promo.png">
-    <img src="./gifs/promo.png">
-    <img src="./gifs/promo.png">
-    <img src="./gifs/promo.png">
-    <img src="./gifs/promo.png">
+    <!-- Ethan Gifs -->
+    <img src="./gifs/ethan/1.gif">
+    <img src="./gifs/ethan/2.gif">
+    <img src="./gifs/ethan/3.gif">
+    <img src="./gifs/ethan/4.gif">
+    <img src="./gifs/ethan/5.gif">
+    <img src="./gifs/ethan/6.gif">
+    <img src="./gifs/ethan/7.gif">
+    <img src="./gifs/ethan/8.gif">
+    <img src="./gifs/ethan/9.gif">
+    <img src="./gifs/ethan/10.gif">
+    <img src="./gifs/ethan/11.gif">
+    <img src="./gifs/ethan/12.gif">
+    <img src="./gifs/ethan/13.gif">
+    <img src="./gifs/ethan/14.gif">
+    <img src="./gifs/ethan/15.gif">
 </div>
 
 <div class="MainArea">
@@ -91,36 +95,32 @@ const db = firebase.database();
 /* -------------------- USERS -------------------- */
 const idToName = { 
   "596923":"Muzafar",
-  "589533":"Kyle",
   "589425":"Jeffery",
   "564380":"Harshan",
   "603974":"Dasani",
-  "546766":"Camden",
   "545208":"Braylen",
   "547025":"Jostin",
   "600437":"Blake",
   "599328":"Ethan",
   "592276":"Nitya",
-  "597627":"IdianShawn",
   "589475":"Liam",
   "598292":"Jacob" 
 };
 const users = {
   "596923": { name: "Muzafar", role: "Admin" },
   "547025": { name: "Jostin", role: "PremiumOG" },
-  "599328": { name: "Ethan" },
-  "589533": { name: "Kyle" },
+  "599328": { name: "Ethan", role: "PremiumOG" },
   "589425": { name: "Jeffery" },
   "564380": { name: "Harshan" },
   "603974": { name: "Dasani" },
   "545208": { name: "Braylen" },
   "600437": { name: "Blake" },
-  "597627": { name: "IdianShawn" },
-  "589475": { name: "Liam" },
+  "589475": { name: "Liam", role: "PremiumOG" },
+  "592276": { name: "Nitya" },
   "598292": { name: "Jacob" }
 };
 const adminUsers = ["596923"];
-const shortCooldownUsers = ["596923","547025"];
+const shortCooldownUsers = ["596923","547025","599328","589475"];
 
 /* -------------------- CURRENT USER -------------------- */
 const currentUserId = localStorage.getItem('username') || sessionStorage.getItem('username');
