@@ -13,9 +13,8 @@
     <p>Hi! Im Muzafar. 
     If you will and want to support me, please consider <span class="red">subscribing!</span> 
     It would really help me a lot, since I work hard and maintain this project public and allow you guys to visit.
-    It also comes with perks <a href="./donate.html">Learn More</a>. Thank you!</p>
-  </div>
-
+     It also comes with perks <a href="./donate.html">Learn More</a>. Thank you!</p>
+</div>
   <div class="MainArea">
     <div class="Header"><span>Sign In</span></div>
     <div class="GroupXLargeMargin"><img src="./newlog.png" alt="logo" id="LOGO" /></div>
@@ -35,6 +34,7 @@
           <tr>
             <td><span class="Label">Password:</span></td>
             <td><input type="password" id="passwordInput" required /></td>
+            <td class="TextColorSecondary TextSizeSmall">
           </tr>
           <tr>
             <td colspan="2">
@@ -52,18 +52,44 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <!-- Main Script -->
-  <script type="module">
-  // Fetch Firebase config from server
-  const configRes = await fetch("/api/config");
-  const firebaseConfig = await configRes.json();
+  <script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
+    authDomain: "test-da143.firebaseapp.com",
+    databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
+    projectId: "test-da143",
+    storageBucket: "test-da143.firebasestorage.app",
+    messagingSenderId: "58366480447",
+    appId: "1:58366480447:web:f3dd12850f09952b49688a",
+    measurementId: "G-T5HK7JTWHW"
+  };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  const form = document.getElementById("form");
 
-  form.addEventListener("submit", async (e) => {
+  // 🔒 Local ID-password pairs
+  const userPasswords = {
+    "596923": "UrWrong67",
+    "589533": "Monk3y41",
+    "589425": "Crossing22",
+    "564380": "CurryLover99",
+    "603974": "ninjastar123",
+    "546766": "MitlerWasRight2",
+    "545208": "Boondocks697",
+    "547025": "IhaveLigma43",
+    "600437": "Niggalodian69",
+    "599328": "PreFredom88",
+    "592276": "SoccerIsLife22",
+    "597627": "HolyShmoly77",
+    "589475": "IrishLapDance67",
+    "598292": "noTherCurry4U"
+  };
+
+
+  const form = document.getElementById("form");
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const username = document.getElementById("usernameInput").value.trim();
@@ -74,113 +100,133 @@
       return;
     }
 
-    try {
-      // Send login request to secure backend
-      const res = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: username, password })
-      });
+    if (!userPasswords[username]) {
+      alert("User ID not found.");
+      return;
+    }
 
-      const data = await res.json();
+    if (userPasswords[username] !== password) {
+      alert("Incorrect password. Please try again.");
+      return;
+    }
 
-      if (!data.ok) {
-        alert(data.error);
+    // ✅ Check for active ban
+    db.ref(`bans/${username}`).once("value").then(snap => {
+      const banData = snap.val();
+      if (banData && banData.expires > Date.now()) {
+        const expires = new Date(banData.expires).toLocaleString();
+        alert(`⛔ You are banned until ${expires}. You cannot sign in.`);
         return;
+      } else if (banData) {
+        // Ban expired, remove entry
+        db.ref(`bans/${username}`).remove();
       }
 
-      // ✅ Login successful
+      // Success login
       sessionStorage.setItem("loginAsk", "true");
       sessionStorage.setItem("username", username);
       localStorage.setItem("username", username);
 
-      // Optional: push login event to Firebase database
       db.ref("users").push({ username, timestamp: Date.now() })
         .then(() => {
           form.reset();
           window.location.href = "./homepage.html";
         })
         .catch(err => alert(err.message));
+    });
+  });
+</script>
+<script>
+(function(){
+  // Real-time ban watcher - drop into index.html and homepage.html after firebase is initialized.
+  let banRef = null;
+  let currentWatchedId = null;
 
-    } catch (err) {
-      alert("Something went wrong: " + err.message);
+  // Helper: get current userid from storage
+  function getStoredId() {
+    return localStorage.getItem('username') || sessionStorage.getItem('username') || null;
+  }
+
+  // Attach a realtime listener for the given user id
+  function attachBanListener(userId) {
+    if (!userId) return;
+    // avoid re-attaching same ref
+    if (currentWatchedId === userId && banRef) return;
+
+    // detach previous
+    detachBanListener();
+
+    currentWatchedId = userId;
+    banRef = db.ref(`bans/${userId}`);
+    banRef.on('value', snap => {
+      const banData = snap.val();
+      if (banData && banData.expires && banData.expires > Date.now()) {
+        // user is currently banned
+        const expiresStr = new Date(banData.expires).toLocaleString();
+        try { alert(`⛔ You are banned until ${expiresStr}.`); } catch(e) { /* ignore */ }
+        // force back to index (kick)
+        window.location.href = "./index.html";
+      } else if (banData && banData.expires && banData.expires <= Date.now()) {
+        // ban expired — cleanup server-side record optionally
+        db.ref(`bans/${userId}`).remove().catch(()=>{ /* ignore */ });
+      }
+      // if no banData -> no active ban
+    });
+  }
+
+  // Detach listener if present
+  function detachBanListener() {
+    if (banRef) {
+      try { banRef.off(); } catch(e) {}
+      banRef = null;
     }
+    currentWatchedId = null;
+  }
+
+  // Keep in sync: attach for current id, detach if none or changed
+  function syncBanWatcher() {
+    const id = getStoredId();
+    if (!id) {
+      detachBanListener();
+      return;
+    }
+    attachBanListener(id);
+  }
+
+  // React to storage changes in other tabs
+  window.addEventListener('storage', (ev) => {
+    if (ev.key === 'username') syncBanWatcher();
   });
 
-  // --- Real-time ban watcher ---
-  (function(){
-    let banRef = null;
-    let currentWatchedId = null;
+  // Also check when page becomes visible (user switched tab)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) syncBanWatcher();
+  });
 
-    function getStoredId() {
-      return localStorage.getItem('username') || sessionStorage.getItem('username') || null;
-    }
+  // As fallback, poll every 5s to make sure we are attached (keeps things robust)
+  setInterval(syncBanWatcher, 5000);
 
-    function attachBanListener(userId) {
-      if (!userId) return;
-      if (currentWatchedId === userId && banRef) return;
-
-      detachBanListener();
-
-      currentWatchedId = userId;
-      banRef = db.ref(`bans/${userId}`);
-      banRef.on('value', snap => {
-        const banData = snap.val();
-        if (banData && banData.expires && banData.expires > Date.now()) {
-          const expiresStr = new Date(banData.expires).toLocaleString();
-          try { alert(`⛔ You are banned until ${expiresStr}.`); } catch(e) {}
-          window.location.href = "./index.html";
-        } else if (banData && banData.expires && banData.expires <= Date.now()) {
-          db.ref(`bans/${userId}`).remove().catch(()=>{});
-        }
-      });
-    }
-
-    function detachBanListener() {
-      if (banRef) {
-        try { banRef.off(); } catch(e) {}
-        banRef = null;
+  // Start immediately (requires db to be defined)
+  if (typeof db !== 'undefined') {
+    syncBanWatcher();
+  } else {
+    // if db isn't defined yet, wait until firebase is ready
+    const readyInterval = setInterval(() => {
+      if (typeof db !== 'undefined') {
+        clearInterval(readyInterval);
+        syncBanWatcher();
       }
-      currentWatchedId = null;
-    }
+    }, 200);
+  }
 
-    function syncBanWatcher() {
-      const id = getStoredId();
-      if (!id) {
-        detachBanListener();
-        return;
-      }
-      attachBanListener(id);
-    }
-
-    window.addEventListener('storage', (ev) => {
-      if (ev.key === 'username') syncBanWatcher();
-    });
-
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) syncBanWatcher();
-    });
-
-    setInterval(syncBanWatcher, 5000);
-
-    if (typeof db !== 'undefined') {
-      syncBanWatcher();
-    } else {
-      const readyInterval = setInterval(() => {
-        if (typeof db !== 'undefined') {
-          clearInterval(readyInterval);
-          syncBanWatcher();
-        }
-      }, 200);
-    }
-
-    window.__banWatcher = {
-      attach: attachBanListener,
-      detach: detachBanListener,
-      sync: syncBanWatcher
-    };
-  })();
-  </script>
+  // Expose small helper for manual control (optional)
+  window.__banWatcher = {
+    attach: attachBanListener,
+    detach: detachBanListener,
+    sync: syncBanWatcher
+  };
+})();
+</script>
 
 </body>
 </html>
