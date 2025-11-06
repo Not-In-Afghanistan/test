@@ -68,12 +68,13 @@
 <script type="module">
 (async () => {
   // --- FETCH CONFIG & USERS ---
-  const configRes = await fetch("/api/config");
+  const configRes = await fetch("/api/config", { method: "POST" });
+
   const firebaseConfig = await configRes.json();
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  const usersRes = await fetch("/api/users");
+  const usersRes = await fetch("/api/users", { method: "POST" });
   const { users, idToName } = await usersRes.json();
 
   // --- CURRENT USER ---
