@@ -35,6 +35,16 @@
   <img src="./gifs/rightGifs/twitch-twitch-emote.gif">
   <img src="./gifs/rightGifs/what-twitch.gif">
   <img src="./gifs/promo.png">
+  <img src="./gifs/promo.png">
+  <img src="./gifs/promo.png">
+  <img src="./gifs/promo.png">
+  <img src="./gifs/promo.png">
+  <img src="./gifs/promo.png">
+  <img src="./gifs/promo.png">
+  <img src="./gifs/promo.png">
+  <img src="./gifs/promo.png">
+  <img src="./gifs/promo.png">
+  <img src="./gifs/promo.png">
 </div>
 
 <div class="MainArea">
@@ -54,7 +64,7 @@
         <input type="submit" value="Send" />
       </div>
     </form>
-    <div id="replyPreview" style="display:none;height:0;background:rgba(255,255,255,0.08);padding-bottom:12px;border-radius:6px;margin:8px 0;font-size:10px;"></div>
+    <div id="replyPreview" style="display:none;height:0px;background:rgba(255,255,255,0.08);padding-bottom:12px;border-radius:6px;margin:8px 0;font-size:10px;"></div>
     <div id="messages" class="GroupNormalMargin">
       <p>Loading messages...</p>
     </div>
@@ -67,19 +77,33 @@
 
 <script type="module">
 (async () => {
-  // --- FETCH CONFIG & USERS ---
-  const configRes = await fetch("/api/config", { method: "POST" });
+  // --- FETCH HIDDEN CONFIG & USERS ---
+  let firebaseConfig = {};
+  let users = {};
+  let idToName = {};
+  try {
+    const configRes = await fetch("/api/config");
+    firebaseConfig = await configRes.json();
+    firebase.initializeApp(firebaseConfig);
+  } catch(err) {
+    alert("❌ Failed to load Firebase config."); console.error(err); return;
+  }
 
-  const firebaseConfig = await configRes.json();
-  firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  const usersRes = await fetch("/api/users", { method: "POST" });
-  const { users, idToName } = await usersRes.json();
+  try {
+    const usersRes = await fetch("/api/users");
+    const json = await usersRes.json();
+    users = json.users || {};
+    idToName = json.idToName || {};
+  } catch(err) {
+    alert("❌ Failed to fetch users."); console.error(err);
+    users = {}; idToName = {};
+  }
 
   // --- CURRENT USER ---
   const currentUserId = localStorage.getItem('username') || sessionStorage.getItem('username');
-  if (!currentUserId) { alert("No username found."); window.location.href = './index.html'; }
+  if (!currentUserId) { alert("No username found."); window.location.href = './index.html'; return; }
   const currentUser = users[currentUserId] || { role: "Guest" };
   document.getElementById('signedInAs').textContent = 'Signed in as: ' + (idToName[currentUserId] || currentUserId);
 
@@ -95,49 +119,55 @@
     }
   });
 
-  // --- SHOW UPLOAD SECTION ---
+  // --- SHOW UPLOAD SECTION FOR PREMIUM/ADMIN ---
   const uploadSection = document.getElementById("uploadSection");
-  if (["PremiumOG","Admin"].includes(currentUser.role)) uploadSection.style.display = "block";
+  if (["PremiumOG","Admin"].includes(currentUser.role)) {
+    uploadSection.style.display = "block";
+  }
 
   // --- IMAGE UPLOAD ---
   const imageInput = document.getElementById("imageUpload");
   const imagePreview = document.getElementById("imagePreview");
   imageInput.addEventListener("change", () => {
     const file = imageInput.files[0];
-    if(!file) return;
-    if(file.size > 2*1024*1024){ alert("⚠️ Max 2MB!"); imageInput.value=""; imagePreview.innerHTML=""; return; }
+    if (!file) return;
+    if (file.size > 2*1024*1024) { alert("⚠️ Max 2MB!"); imageInput.value=""; imagePreview.innerHTML=""; return; }
     const reader = new FileReader();
-    reader.onload = e => imagePreview.innerHTML=`<img src="${e.target.result}" style="max-width:200px;border-radius:8px;" />`;
+    reader.onload = e => { imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width:200px;border-radius:8px;" />`; };
     reader.readAsDataURL(file);
   });
+
   document.getElementById("sendImageBtn").addEventListener("click", async () => {
     const file = imageInput.files[0];
-    if(!file) return alert("Select an image first!");
+    if (!file) return alert("Select an image first!");
     const reader = new FileReader();
     reader.onload = async e => {
-      const newMsg = { username: currentUserId, gifUrl: e.target.result, timestamp: Date.now() };
-      await db.ref("messages").push(newMsg);
-      imageInput.value=""; imagePreview.innerHTML="";
+      try {
+        await db.ref("messages").push({ username: currentUserId, gifUrl: e.target.result, timestamp: Date.now() });
+        imageInput.value=""; imagePreview.innerHTML="";
+      } catch(err) { alert("❌ Upload failed: " + err.message); }
     };
     reader.readAsDataURL(file);
   });
 
-  // --- MESSAGES ---
+  // --- MESSAGES & REPLIES ---
   const messagesDiv = document.getElementById('messages');
   let replyingTo = null;
+
   function escapeHtml(s){if(!s&&s!==0)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
   function renderMessages(data){
-    const val = data||{};
-    messagesDiv.innerHTML='';
+    const val = data || {};
+    messagesDiv.innerHTML = '';
     const entries = Object.entries(val).sort((a,b)=>a[1].timestamp-b[1].timestamp);
-    if(!entries.length){ messagesDiv.innerHTML='<p>No messages yet.</p>'; return; }
+    if (!entries.length){ messagesDiv.innerHTML='<p>No messages yet.</p>'; return; }
     for(const [key,msg] of entries){
-      const shownName = idToName[msg.username]||msg.username;
-      let roleTag="";
+      const shownName = idToName[msg.username] || msg.username;
+      let roleTag = "";
       if(users[msg.username]?.role==="Admin") roleTag=`<span style="background:linear-gradient(90deg, red, blue);color:white;padding:2px 6px;border-radius:6px;font-size:11px;margin-right:6px;">Admin</span>`;
       else if(users[msg.username]?.role==="PremiumOG") roleTag=`<span style="background:linear-gradient(90deg,#b026ff,#6f00ff);color:white;padding:2px 6px;border-radius:6px;font-size:11px;margin-right:6px;">PremiumOG</span>`;
-      let div = document.createElement('div'); div.className='entry'; div.style.marginBottom="10px"; div.dataset.msgId = key;
+      let div = document.createElement('div');
+      div.className='entry'; div.style.marginBottom="10px"; div.dataset.msgId = key;
       const replyHTML = msg.replyTo && val[msg.replyTo] ? `<div style="border-left:3px solid gray;padding-left:6px;font-size:10px;color:#bbb;margin-bottom:4px;">Replied to <strong>${escapeHtml(idToName[val[msg.replyTo].username]||val[msg.replyTo].username)}</strong>: <em>${escapeHtml(val[msg.replyTo].text||"[GIF]")}</em></div>` : '';
       const content = msg.gifUrl ? `${roleTag}<strong>${escapeHtml(shownName)}:</strong><br><img src="${escapeHtml(msg.gifUrl)}" alt="gif" style="max-width:100%;border-radius:8px;" /><br><small>${new Date(msg.timestamp).toLocaleString()}</small>` : `${roleTag}<strong>${escapeHtml(shownName)}:</strong> ${escapeHtml(msg.text)}<br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
       div.innerHTML = replyHTML + content;
@@ -160,49 +190,32 @@
     const text = msgInput.value.trim();
     if(!text) return;
     if(text.length>100){ alert(`⚠️ Too long (${text.length}/100)`); return; }
-    await db.ref('messages').push({ username: currentUserId, text, timestamp: Date.now(), ...(replyingTo?{replyTo:replyingTo}:{}) });
+    try { await db.ref('messages').push({ username: currentUserId, text, timestamp: Date.now(), ...(replyingTo?{replyTo:replyingTo}:{}) }); }
+    catch(err){ alert("❌ Failed to send message: "+err.message); }
     msgInput.value=''; replyingTo=null;
   });
 
   // --- GIF COOLDOWN LOGIC ---
-  function enableGifClick(container){
-    const gifs = container.querySelectorAll("img");
-    gifs.forEach(img=>{
-      let localBlocked=false;
+  async function enableGifClicks(){
+    const gifs = document.querySelectorAll("#locked img");
+    for(const img of gifs){
+      img.style.cursor="pointer";
       img.addEventListener("click", async ()=>{
-        if(localBlocked) return;
-        const userId = currentUserId;
-        if(!userId) return alert("User not found.");
-        const cooldownTime = ["Admin","PremiumOG"].includes(currentUser.role) ? 3000 : 25000;
-        localBlocked=true;
-        const userRef = db.ref(`gifCooldowns/${userId}`);
-        try{
+        const userRef = db.ref(`gifCooldowns/${currentUserId}`);
+        try {
           const snap = await userRef.once("value");
           const data = snap.val();
           const now = Date.now();
-          if(data && data.expires>now){
-            const wait=Math.ceil((data.expires-now)/1000);
-            alert(`⏳ Please wait ${wait}s before sending another GIF.`);
-            localBlocked=false;
-            return;
-          }
-          await db.ref("messages").push({ username:userId, gifUrl:img.src, timestamp:now });
-          await userRef.set({ expires: now+cooldownTime });
-        }catch(err){ alert("❌ Error sending GIF: "+err.message); }
-        finally{ localBlocked=false; }
+          const role = users[currentUserId]?.role || "Guest";
+          const cd = (role==="Admin"||role==="PremiumOG") ? 3000 : 25000;
+          if(data && data.last && now - data.last < cd){ alert(`⏱ Wait ${Math.ceil((cd-(now-data.last))/1000)}s`); return; }
+          await userRef.set({ last: now });
+          await db.ref("messages").push({ username: currentUserId, gifUrl: img.src, timestamp: now });
+        } catch(err){ console.error(err); }
       });
-    });
+    }
   }
-
-  async function restoreGifCooldowns(){
-    const snap = await db.ref("gifCooldowns").once("value");
-    const data = snap.val()||{};
-    const now = Date.now();
-    Object.keys(data).forEach(uid=>{ if(data[uid].expires<now) db.ref(`gifCooldowns/${uid}`).remove(); });
-  }
-
-  enableGifClick(document.getElementById("locked"));
-  restoreGifCooldowns();
+  enableGifClicks();
 
 })();
 </script>
