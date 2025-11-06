@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PingPals</title>
-<link rel="stylesheet" href="./chat.css" />
-<link rel="icon" type="image/png" href="./favicon.png"/> 
+<link rel="stylesheet" href="./chat.css">
+<link rel="icon" type="image/png" href="./favicon.png">
 </head>
 <body>
 
@@ -22,29 +22,7 @@
   <img src="./gifs/shrek.gif">
   <img src="./gifs/what.gif">
   <img src="./gifs/rightGifs/angry.gif">
-  <img src="./gifs/rightGifs/bosnov-67.gif">
-  <img src="./gifs/rightGifs/emoji.gif">
-  <img src="./gifs/rightGifs/enojado.gif">
-  <img src="./gifs/rightGifs/oh-no-oh-my-god.gif">
-  <img src="./gifs/rightGifs/patrick-bateman-smile.gif">
-  <img src="./gifs/rightGifs/reallycooked.gif">
-  <img src="./gifs/rightGifs/sigmasungjinwoo-mewing.gif">
-  <img src="./gifs/rightGifs/solo-leveling-sololeveling.gif">
-  <img src="./gifs/rightGifs/thofinn.gif">
-  <img src="./gifs/rightGifs/thorfinn.gif">
-  <img src="./gifs/rightGifs/twitch-twitch-emote.gif">
-  <img src="./gifs/rightGifs/what-twitch.gif">
-  <img src="./gifs/promo.png">
-  <img src="./gifs/promo.png">
-  <img src="./gifs/promo.png">
-  <img src="./gifs/promo.png">
-  <img src="./gifs/promo.png">
-  <img src="./gifs/promo.png">
-  <img src="./gifs/promo.png">
-  <img src="./gifs/promo.png">
-  <img src="./gifs/promo.png">
-  <img src="./gifs/promo.png">
-  <img src="./gifs/promo.png">
+  <!-- Add remaining GIFs here -->
 </div>
 
 <div class="MainArea">
@@ -60,11 +38,10 @@
 
     <form id="msgForm">
       <div style="display:flex; gap:8px; align-items:center;">
-        <input id="msgInput" type="text" placeholder="Type a message" style="flex:1;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-        <input type="submit" value="Send" />
+        <input id="msgInput" type="text" placeholder="Type a message" style="flex:1;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input type="submit" value="Send">
       </div>
     </form>
-    <div id="replyPreview" style="display:none;height:0px;background:rgba(255,255,255,0.08);padding-bottom:12px;border-radius:6px;margin:8px 0;font-size:10px;"></div>
     <div id="messages" class="GroupNormalMargin">
       <p>Loading messages...</p>
     </div>
@@ -78,32 +55,17 @@
 <script type="module">
 (async () => {
   // --- FETCH HIDDEN CONFIG & USERS ---
-  let firebaseConfig = {};
-  let users = {};
-  let idToName = {};
-  try {
-    const configRes = await fetch("/api/config");
-    firebaseConfig = await configRes.json();
-    firebase.initializeApp(firebaseConfig);
-  } catch(err) {
-    alert("❌ Failed to load Firebase config."); console.error(err); return;
-  }
-
+  const configRes = await fetch("/api/config"); // GET only
+  const firebaseConfig = await configRes.json();
+  firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  try {
-    const usersRes = await fetch("/api/users");
-    const json = await usersRes.json();
-    users = json.users || {};
-    idToName = json.idToName || {};
-  } catch(err) {
-    alert("❌ Failed to fetch users."); console.error(err);
-    users = {}; idToName = {};
-  }
+  const usersRes = await fetch("/api/users"); // GET only
+  const { users, idToName } = await usersRes.json();
 
   // --- CURRENT USER ---
   const currentUserId = localStorage.getItem('username') || sessionStorage.getItem('username');
-  if (!currentUserId) { alert("No username found."); window.location.href = './index.html'; return; }
+  if (!currentUserId) { alert("No username found."); window.location.href = './index.html'; }
   const currentUser = users[currentUserId] || { role: "Guest" };
   document.getElementById('signedInAs').textContent = 'Signed in as: ' + (idToName[currentUserId] || currentUserId);
 
@@ -121,9 +83,7 @@
 
   // --- SHOW UPLOAD SECTION FOR PREMIUM/ADMIN ---
   const uploadSection = document.getElementById("uploadSection");
-  if (["PremiumOG","Admin"].includes(currentUser.role)) {
-    uploadSection.style.display = "block";
-  }
+  if (["PremiumOG","Admin"].includes(currentUser.role)) uploadSection.style.display = "block";
 
   // --- IMAGE UPLOAD ---
   const imageInput = document.getElementById("imageUpload");
@@ -133,7 +93,7 @@
     if (!file) return;
     if (file.size > 2*1024*1024) { alert("⚠️ Max 2MB!"); imageInput.value=""; imagePreview.innerHTML=""; return; }
     const reader = new FileReader();
-    reader.onload = e => { imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width:200px;border-radius:8px;" />`; };
+    reader.onload = e => { imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width:200px;border-radius:8px;">`; };
     reader.readAsDataURL(file);
   });
 
@@ -142,15 +102,14 @@
     if (!file) return alert("Select an image first!");
     const reader = new FileReader();
     reader.onload = async e => {
-      try {
-        await db.ref("messages").push({ username: currentUserId, gifUrl: e.target.result, timestamp: Date.now() });
-        imageInput.value=""; imagePreview.innerHTML="";
-      } catch(err) { alert("❌ Upload failed: " + err.message); }
+      const newMsg = { username: currentUserId, gifUrl: e.target.result, timestamp: Date.now() };
+      await db.ref("messages").push(newMsg);
+      imageInput.value=""; imagePreview.innerHTML="";
     };
     reader.readAsDataURL(file);
   });
 
-  // --- MESSAGES & REPLIES ---
+  // --- MESSAGES ---
   const messagesDiv = document.getElementById('messages');
   let replyingTo = null;
 
@@ -169,7 +128,7 @@
       let div = document.createElement('div');
       div.className='entry'; div.style.marginBottom="10px"; div.dataset.msgId = key;
       const replyHTML = msg.replyTo && val[msg.replyTo] ? `<div style="border-left:3px solid gray;padding-left:6px;font-size:10px;color:#bbb;margin-bottom:4px;">Replied to <strong>${escapeHtml(idToName[val[msg.replyTo].username]||val[msg.replyTo].username)}</strong>: <em>${escapeHtml(val[msg.replyTo].text||"[GIF]")}</em></div>` : '';
-      const content = msg.gifUrl ? `${roleTag}<strong>${escapeHtml(shownName)}:</strong><br><img src="${escapeHtml(msg.gifUrl)}" alt="gif" style="max-width:100%;border-radius:8px;" /><br><small>${new Date(msg.timestamp).toLocaleString()}</small>` : `${roleTag}<strong>${escapeHtml(shownName)}:</strong> ${escapeHtml(msg.text)}<br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+      const content = msg.gifUrl ? `${roleTag}<strong>${escapeHtml(shownName)}:</strong><br><img src="${escapeHtml(msg.gifUrl)}" alt="gif" style="max-width:100%;border-radius:8px;"><br><small>${new Date(msg.timestamp).toLocaleString()}</small>` : `${roleTag}<strong>${escapeHtml(shownName)}:</strong> ${escapeHtml(msg.text)}<br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
       div.innerHTML = replyHTML + content;
       const replyBtn = document.createElement("button");
       replyBtn.textContent="↻"; replyBtn.style="margin-top:3px;margin-left:1vw;font-size:10px;cursor:pointer;opacity:0.7;border-radius:40px;border:none;color:white;background-color:transparent;";
@@ -182,40 +141,49 @@
 
   db.ref('messages').on('value', snap => renderMessages(snap.val()));
 
-  // --- SEND MESSAGE ---
+  // --- SEND MESSAGE WITH FIREBASE GIF COOLDOWN ---
   const msgForm = document.getElementById('msgForm');
   const msgInput = document.getElementById('msgInput');
+
   msgForm.addEventListener('submit', async e => {
     e.preventDefault();
     const text = msgInput.value.trim();
     if(!text) return;
     if(text.length>100){ alert(`⚠️ Too long (${text.length}/100)`); return; }
-    try { await db.ref('messages').push({ username: currentUserId, text, timestamp: Date.now(), ...(replyingTo?{replyTo:replyingTo}:{}) }); }
-    catch(err){ alert("❌ Failed to send message: "+err.message); }
+
+    // Push to Firebase
+    await db.ref('messages').push({ username: currentUserId, text, timestamp: Date.now(), ...(replyingTo?{replyTo:replyingTo}:{}) });
     msgInput.value=''; replyingTo=null;
   });
 
-  // --- GIF COOLDOWN LOGIC ---
-  async function enableGifClicks(){
-    const gifs = document.querySelectorAll("#locked img");
-    for(const img of gifs){
-      img.style.cursor="pointer";
-      img.addEventListener("click", async ()=>{
-        const userRef = db.ref(`gifCooldowns/${currentUserId}`);
-        try {
-          const snap = await userRef.once("value");
-          const data = snap.val();
-          const now = Date.now();
-          const role = users[currentUserId]?.role || "Guest";
-          const cd = (role==="Admin"||role==="PremiumOG") ? 3000 : 25000;
-          if(data && data.last && now - data.last < cd){ alert(`⏱ Wait ${Math.ceil((cd-(now-data.last))/1000)}s`); return; }
-          await userRef.set({ last: now });
-          await db.ref("messages").push({ username: currentUserId, gifUrl: img.src, timestamp: now });
-        } catch(err){ console.error(err); }
-      });
-    }
-  }
-  enableGifClicks();
+  // --- GIF CLICK COOLDOWN USING FIREBASE ---
+  const lockedContainer = document.getElementById("locked");
+  const gifStatus = document.createElement("p");
+  gifStatus.style="color:gray;font-size:14px;text-align:center;margin-top:10px;";
+  gifStatus.textContent="You can send GIFs freely.";
+  document.body.appendChild(gifStatus);
+
+  lockedContainer.querySelectorAll("img").forEach(img => {
+    img.style.cursor="pointer";
+    img.addEventListener("click", async () => {
+      if(!currentUserId) return alert("No user found.");
+
+      const userRef = db.ref(`gifCooldowns/${currentUserId}`);
+      const snap = await userRef.once("value");
+      const data = snap.val();
+      const now = Date.now();
+      let cooldown = (currentUser.role==="Admin"||currentUser.role==="PremiumOG")?3000:25000;
+
+      if(data && data.expires > now){
+        alert(`⏳ Please wait ${Math.ceil((data.expires-now)/1000)}s before sending another GIF.`);
+        return;
+      }
+
+      // Push GIF
+      await db.ref("messages").push({ username: currentUserId, gifUrl: img.src, timestamp: now });
+      await userRef.set({ expires: now+cooldown });
+    });
+  });
 
 })();
 </script>
