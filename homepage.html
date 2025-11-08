@@ -201,11 +201,121 @@ msgForm.addEventListener('submit',e=>{e.preventDefault();const text=msgInput.val
 db.ref('messages').on('value',snap=>renderMessages(snap.val()));
 
 /* --- GIF COOLDOWN --- */
-const gifStatus=document.createElement("p");gifStatus.id="gifStatus";gifStatus.style="color:gray;font-size:14px;text-align:center;margin-top:10px;";gifStatus.textContent="You can send GIFs freely.";document.body.appendChild(gifStatus);
-function startLocalGifCooldown(seconds){let timeLeft=seconds;gifStatus.textContent=`You can send another GIF in ${timeLeft}s`;const imgs=document.querySelectorAll("#locked img");imgs.forEach(img=>{img.style.filter="grayscale(100%)";img.style.pointerEvents="none";img.style.opacity="0.6";});const timer=setInterval(()=>{timeLeft--;if(timeLeft<=0){clearInterval(timer);imgs.forEach(img=>{img.style.filter="none";img.style.pointerEvents="auto";img.style.opacity="1";});gifStatus.textContent="You can send GIFs freely.";}else{gifStatus.textContent=`You can send another GIF in ${timeLeft}s`;}},1000);}
-function enableGifClick(container){const gifs=container.querySelectorAll("img");gifs.forEach(img=>{img.style.cursor="pointer";img.replaceWith(img.cloneNode(true));});const newGifs=container.querySelectorAll("img");newGifs.forEach(img=>{let localBlocked=false;img.addEventListener("click",async()=>{if(localBlocked)return;const userId=currentUserId;if(!userId)return alert("User not found.");const cooldownTime=shortCooldownUsers.includes(userId)?3000:25000;localBlocked=true;startLocalGifCooldown(cooldownTime/1000);const userRef=db.ref(`gifCooldowns/${userId}`);try{const snap=await userRef.once("value");const data=snap.val();const now=Date.now();if(data&&data.expires>now){const wait=Math.ceil((data.expires-now)/1000);alert(`⏳ Please wait ${wait}s before sending another GIF.`);localBlocked=false;return;}await db.ref("messages").push({username:userId,gifUrl:img.src,timestamp:now});await userRef.set({expires:now+cooldownTime});}catch(err){alert("❌ Error sending GIF: "+err.message);localBlocked=false;}});});}
-async function restoreGifCooldowns(){const snap=await db.ref("gifCooldowns").once("value");const data=snap.val()||{};const now=Date.now();Object.keys(data).forEach(uid=>{if(data[uid].expires<now)db.ref(`gifCooldowns/${uid}`).remove();});}
-enableGifClick(document.getElementById("locked"));restoreGifCooldowns();
+const gifStatus = document.createElement("p");
+gifStatus.id = "gifStatus";
+gifStatus.style = "color:gray;font-size:14px;text-align:center;margin-top:10px;";
+gifStatus.textContent = "You can send GIFs freely.";
+document.body.appendChild(gifStatus);
+
+/**
+ * Starts local cooldown timer for GIFs.
+ * Disables all clickable GIFs temporarily.
+ */
+function startLocalGifCooldown(seconds, onDone) {
+  let timeLeft = seconds;
+  gifStatus.textContent = `You can send another GIF in ${timeLeft}s`;
+
+  const imgs = document.querySelectorAll("#locked img");
+  imgs.forEach(img => {
+    img.style.filter = "grayscale(100%)";
+    img.style.pointerEvents = "none";
+    img.style.opacity = "0.6";
+  });
+
+  const timer = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      imgs.forEach(img => {
+        img.style.filter = "none";
+        img.style.pointerEvents = "auto";
+        img.style.opacity = "1";
+      });
+      gifStatus.textContent = "You can send GIFs freely.";
+      if (typeof onDone === "function") onDone(); // ✅ Re-enable click
+    } else {
+      gifStatus.textContent = `You can send another GIF in ${timeLeft}s`;
+    }
+  }, 1000);
+}
+
+/**
+ * Makes all GIFs in a container clickable for sending.
+ */
+function enableGifClick(container) {
+  const gifs = container.querySelectorAll("img");
+  gifs.forEach(img => {
+    img.style.cursor = "pointer";
+    img.replaceWith(img.cloneNode(true)); // remove old event listeners
+  });
+
+  const refreshedGifs = container.querySelectorAll("img");
+  refreshedGifs.forEach(img => {
+    let localBlocked = false;
+
+    img.addEventListener("click", async () => {
+      if (localBlocked) return;
+
+      const userId = currentUserId;
+      if (!userId) return alert("User not found.");
+
+      const cooldownTime = shortCooldownUsers.includes(userId) ? 3000 : 25000;
+      localBlocked = true;
+
+      // Start cooldown + automatically reset when done
+      startLocalGifCooldown(cooldownTime / 1000, () => {
+        localBlocked = false;
+      });
+
+      const userRef = db.ref(`gifCooldowns/${userId}`);
+      const now = Date.now();
+
+      try {
+        const snap = await userRef.once("value");
+        const data = snap.val();
+
+        if (data && data.expires > now) {
+          const wait = Math.ceil((data.expires - now) / 1000);
+          alert(`⏳ Please wait ${wait}s before sending another GIF.`);
+          localBlocked = false;
+          return;
+        }
+
+        // ✅ Send GIF message
+        await db.ref("messages").push({
+          username: userId,
+          gifUrl: img.src,
+          timestamp: now
+        });
+
+        // ✅ Set server cooldown timestamp
+        await userRef.set({ expires: now + cooldownTime });
+
+      } catch (err) {
+        alert("❌ Error sending GIF: " + err.message);
+        localBlocked = false;
+      }
+    });
+  });
+}
+
+/**
+ * Removes expired cooldown entries from Firebase
+ */
+async function restoreGifCooldowns() {
+  const snap = await db.ref("gifCooldowns").once("value");
+  const data = snap.val() || {};
+  const now = Date.now();
+
+  Object.keys(data).forEach(uid => {
+    if (data[uid].expires < now) db.ref(`gifCooldowns/${uid}`).remove();
+  });
+}
+
+// Initialize
+enableGifClick(document.getElementById("locked"));
+restoreGifCooldowns();
+
 
 /* -------------------- INIT -------------------- */
 createAdminPanel();
