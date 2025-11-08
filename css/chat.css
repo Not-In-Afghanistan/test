@@ -105,15 +105,15 @@ to { opacity: 1; transform: translateY(-50%); }
 .MainArea, .MainActionContainer {
     box-sizing: border-box;
 }
-/*
+
 body {
-    background-image: url('../images/wp25.jpg');
+    background-image: url('../images/wallpaper.gif');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed;
 }
-*/
+
 /* Sent GIF sizing: 25% of the message container, centered */
 #messages .entry img {
     display: block;
