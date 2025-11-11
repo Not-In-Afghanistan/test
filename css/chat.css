@@ -79,7 +79,6 @@ body {
     height: 10vh;
 }
 #msgInput {
-    flex: 1;
     padding: 8px;
     border: none;
     border-radius: 5px;
@@ -177,4 +176,3 @@ body {
     bottom: 15vh;
     right: 5vw;
 }
-

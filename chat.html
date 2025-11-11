@@ -71,17 +71,18 @@
 <div class="inputBar">
     <form id="msgForm">
       <div style="display:flex; gap:8px; align-items:center;">
-        <input id="msgInput" type="text" placeholder="Type a message" style="flex:1;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+        <input id="msgInput" type="text" placeholder="Type a message" autocomplete="off" style="flex: 1;" autocapitalize="off" spellcheck="false" />
 
         <input type="submit" value="Send" class="upload-label smBtn"/>
 
         <button type="button" class="upload-label smBtn" id="gifBtn">GIFs</button>
 
+
+         <div id="uploadSection" style="display:none;"> 
         <label for="imageUpload" class="upload-label">Choose Image</label>
-
         <button id="sendImageBtn" class="upload-label smBtn">Send File</button>
-
         <input type="file" id="imageUpload" accept="image/*" />
+        </div>
       </div>
     </form>
 
@@ -95,7 +96,9 @@
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<!-- Main Script -->
 <script>
+
 /* -------------------- CONFIG -------------------- */
 const firebaseConfig = {
   apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
@@ -138,6 +141,7 @@ const shortCooldownUsers = ["596923","547025","599328","589475"];
 
 /* -------------------- CURRENT USER -------------------- */
 const currentUserId = localStorage.getItem('username') || sessionStorage.getItem('username');
+
 if (!currentUserId) { alert("No username found."); window.location.href = './index.html'; }
 const currentUser = users[currentUserId];
 if (!currentUser || currentUser.role !== "Admin") {
@@ -530,6 +534,21 @@ document.getElementById("sendImageBtn").addEventListener("click", async () => {
   };
   reader.readAsDataURL(file);
 });
+
+
+
+if (!currentUser || (currentUser.role !== "PremiumOG" && currentUser.role !== "Admin")) {
+  const msgInput = document.getElementById("msgInput");
+
+  // stop flexbox from controlling it
+  msgInput.style.flex = "none";
+  msgInput.style.minWidth = "0";
+  msgInput.style.flexBasis = "auto";
+
+  // force custom width
+  msgInput.style.setProperty("width", "65vw", "important");
+}
+
 </script>
 <script src="./script/gifbox.js" defer></script>
 </body>
