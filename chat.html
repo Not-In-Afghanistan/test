@@ -298,7 +298,7 @@ function createOnlinePanel() {
       const li = document.createElement("li");
       li.innerHTML = id === currentUserId
         ? `<strong>${color} ${name} (You)</strong>`
-         : `${color} ${name} <button class="openChatBtn" data-userid="${id}" style="margin-left:5px; display:flex; justify-self:flex-end;">Open Chat</button>`;
+        : `${color} ${name}`;
       userList.appendChild(li);
     });
   });
@@ -550,67 +550,6 @@ if (!currentUser || (currentUser.role !== "PremiumOG" && currentUser.role !== "A
   // force custom width
   msgInput.style.setProperty("width", "65vw", "important");
 }
-
-
-// private dm //
-let currentChatTarget = null;
-
-document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("openChatBtn")) {
-    currentChatTarget = e.target.dataset.userid;
-
-    // Update chat header or placeholder
-    const msgInput = document.getElementById("msgInput");
-    msgInput.placeholder = `Message ${idToName[currentChatTarget] || currentChatTarget}...`;
-
-    // Load private messages
-    loadPrivateMessages(currentUserId, currentChatTarget);
-  }
-});
-
-
-function loadPrivateMessages(userA, userB) {
-  const messagesDiv = document.getElementById("messages");
-  messagesDiv.innerHTML = "<p>Loading private chat...</p>";
-
-  const chatRef = db.ref(`privateMessages/${userA}/${userB}`);
-
-  chatRef.off(); // remove old listeners
-  chatRef.on("value", (snap) => {
-    const messages = snap.val() || {};
-    messagesDiv.innerHTML = "";
-
-    const entries = Object.entries(messages).sort((a, b) => a[1].timestamp - b[1].timestamp);
-    if (entries.length === 0) messagesDiv.innerHTML = "<p>No messages yet.</p>";
-
-    for (const [key, msg] of entries) {
-      const senderName = idToName[msg.username] || msg.username;
-      const div = document.createElement("div");
-      div.innerHTML = `<strong>${senderName}:</strong> ${escapeHtml(msg.text)}`;
-      div.style.marginBottom = "6px";
-      messagesDiv.appendChild(div);
-    }
-
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  });
-}
-msgForm.addEventListener('submit', e => {
-  e.preventDefault();
-  const text = msgInput.value.trim();
-  if (!text || !currentChatTarget) return;
-
-  const newMsg = {
-    username: currentUserId,
-    text,
-    timestamp: Date.now()
-  };
-
-  // Save to both sender and receiver paths
-  db.ref(`privateMessages/${currentUserId}/${currentChatTarget}`).push(newMsg);
-  db.ref(`privateMessages/${currentChatTarget}/${currentUserId}`).push(newMsg);
-
-  msgInput.value = "";
-});
 
 </script>
 <script src="./script/gifbox.js" defer></script>
