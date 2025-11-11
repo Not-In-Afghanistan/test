@@ -16,15 +16,17 @@
 
   // 🔒 Local ID-password pairs
   const userPasswords = {
-    "596923": "UrWrong67",
-    "564380": "CurryLover99",
-    "603974": "ninjastar123",
-    "545208": "Boondocks697",
-    "547025": "IhaveLigma43",
-    "600437": "Niggalodian69",
-    "599328": "PreFredom88",
-    "589475": "IrishLapDance67",
-    "598292": "noTherCurry4U"
+    "596923": "UrWrong67", //Muzafar
+    "564380": "CurryLover99", //Harshan
+    "603974": "ninjastar123", //Dasani
+    "545208": "Boondocks697", //Braylen
+    "547025": "IhaveLigma43", //Jostin
+    "600437": "Niggalodian69", //Blake
+    "599328": "PreFredom88", //Ethan
+    "589475": "IrishLapDance67", //Liam
+    "564748": "PurpleGuy9000", //DJ
+    "589192": "JolieBean44", //Lydia
+    "598292": "noTherCurry4U" //Jacob
   };
 
 
