@@ -1,13 +1,12 @@
-// Wait for Firebase Auth
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "index.html"; 
-    return;
-  }
+// --- LOCAL STORAGE LOGIN CHECK ---
+const currentUsername = localStorage.getItem("currentUser");
 
-  const currentUsername = user.displayName;  // ← IMPORTANT
-  startDashboard(currentUsername);
-});
+if (!currentUsername) {
+    window.location.href = "index.html";
+}
+
+// Start the dashboard
+startDashboard(currentUsername);
 
 
 function startDashboard(currentUsername) {

@@ -96,6 +96,19 @@ firebase.initializeApp(firebaseConfig);
 
 <!-- Dashboard JS -->
 <script src="./script/chat.js" defer></script>
+<script>
+window.addEventListener("DOMContentLoaded", () => {
+  const user = localStorage.getItem("currentUser");
+
+  if (!user) {
+    console.log("Not logged in → redirecting to login");
+    window.location.href = "./index.html";
+  } else {
+    console.log("Logged in as:", user);
+    document.getElementById("current-user-name").textContent = user;
+  }
+});
+</script>
 
 </body>
 </html>
