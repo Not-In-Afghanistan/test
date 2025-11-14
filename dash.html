@@ -90,6 +90,15 @@ const firebaseConfig = {
   appId: "1:58366480447:web:f3dd12850f09952b49688a"
 };
 firebase.initializeApp(firebaseConfig);
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    // Not logged in → send them back
+    window.location.href = "index.html"; // or login page
+  } else {
+    console.log("Logged in as:", user.uid);
+  }
+});
+
 </script>
 
 <!-- Dashboard JS -->

@@ -1,88 +1,91 @@
-// --- Current logged-in user ---
-const currentUsername = "test"; // replace this with the real logged-in username
-const currentUserNameEl = document.getElementById('current-user-name');
-
-// Reference to THIS user's data
-const usersRefCurrentUser = firebase.database().ref('users/' + currentUsername);
-
-// Reference to ALL users (for search)
-const allUsersRef = firebase.database().ref('users');
-
-
-// --- Find Friends Modal ---
-const findFriendsBtn = document.getElementById('btn');
-const findFriendsModal = document.getElementById('find-friends-modal');
-const friendSearch = document.getElementById('friend-search');
-const friendResults = document.getElementById('friend-results');
-const findFriendsClose = findFriendsModal.querySelector('.close');
-
-// Open modal
-findFriendsBtn.addEventListener('click', () => {
-  findFriendsModal.style.display = 'block';
-  friendSearch.value = '';
-  friendResults.innerHTML = '';
-  updateFriendResults(''); // show all users
-});
-
-// Close modal
-findFriendsClose.addEventListener('click', () => {
-  findFriendsModal.style.display = 'none';
-});
-
-// Close modal when clicking outside
-window.addEventListener('click', (e) => {
-  if (e.target === findFriendsModal) {
-    findFriendsModal.style.display = 'none';
+// Wait for Firebase Auth
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "index.html"; 
+    return;
   }
+
+  const currentUsername = user.displayName;  // ← IMPORTANT
+  startDashboard(currentUsername);
 });
 
 
-// --- Search all users ---
-function updateFriendResults(query) {
-  friendResults.innerHTML = ''; // Clear
+function startDashboard(currentUsername) {
 
-  allUsersRef.once('value', snapshot => {
-    snapshot.forEach(childSnap => {
+  const currentUserNameEl = document.getElementById('current-user-name');
 
-      const username = childSnap.key; // key = username
+  // User DB paths
+  const usersRefCurrentUser = firebase.database().ref('users/' + currentUsername);
+  const allUsersRef = firebase.database().ref('users');
 
-      if (username.toLowerCase().includes(query.toLowerCase())) {
+  // --- Find Friends Modal ---
+  const findFriendsBtn = document.getElementById('btn');
+  const findFriendsModal = document.getElementById('find-friends-modal');
+  const friendSearch = document.getElementById('friend-search');
+  const friendResults = document.getElementById('friend-results');
+  const findFriendsClose = findFriendsModal.querySelector('.close');
 
-        const li = document.createElement('li');
-        li.style.display = 'flex';
-        li.style.justifyContent = 'space-between';
-        li.style.alignItems = 'center';
 
-        // Username text
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = username;
-        li.appendChild(nameSpan);
+  // Open modal
+  findFriendsBtn.addEventListener('click', () => {
+    findFriendsModal.style.display = 'block';
+    friendSearch.value = '';
+    friendResults.innerHTML = '';
+    updateFriendResults('');
+  });
 
-        // "+" button
-        const addBtn = document.createElement('div');
-        addBtn.classList.add('friend-add-btn');
-        addBtn.textContent = '+';
-        li.appendChild(addBtn);
+  // Close modal
+  findFriendsClose.addEventListener('click', () => {
+    findFriendsModal.style.display = 'none';
+  });
 
-        addBtn.addEventListener('click', () => {
-          console.log(`Add friend clicked: ${username}`);
-          // TODO: send friend request
-        });
+  window.addEventListener('click', (e) => {
+    if (e.target === findFriendsModal) {
+      findFriendsModal.style.display = 'none';
+    }
+  });
 
-        friendResults.appendChild(li);
-      }
+  // --- Search users ---
+  function updateFriendResults(query) {
+    friendResults.innerHTML = '';
+
+    allUsersRef.once('value', snapshot => {
+      snapshot.forEach(childSnap => {
+        const username = childSnap.key;
+
+        if (username.toLowerCase().includes(query.toLowerCase())) {
+
+          const li = document.createElement('li');
+          li.style.display = 'flex';
+          li.style.justifyContent = 'space-between';
+          li.style.alignItems = 'center';
+
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = username;
+          li.appendChild(nameSpan);
+
+          const addBtn = document.createElement('div');
+          addBtn.classList.add('friend-add-btn');
+          addBtn.textContent = '+';
+          li.appendChild(addBtn);
+
+          addBtn.addEventListener('click', () => {
+            console.log("Add friend:", username);
+          });
+
+          friendResults.appendChild(li);
+        }
+      });
     });
+  }
+
+  friendSearch.addEventListener('input', () => {
+    updateFriendResults(friendSearch.value);
+  });
+
+  // Header name
+  usersRefCurrentUser.once('value').then(snapshot => {
+    const displayName = snapshot.val()?.displayName || currentUsername;
+    currentUserNameEl.textContent = `, ${displayName}`;
   });
 }
-
-// Update list while typing
-friendSearch.addEventListener('input', () => {
-  updateFriendResults(friendSearch.value);
-});
-
-
-// --- Load Display Name for Header ---
-usersRefCurrentUser.once('value').then(snapshot => {
-  const displayName = snapshot.val().displayName || currentUsername;
-  currentUserNameEl.textContent = `, ${displayName}`;
-});
