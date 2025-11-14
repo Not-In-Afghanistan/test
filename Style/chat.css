@@ -9,7 +9,7 @@
 body {
   display: flex;
   height: 100vh;
-  background-color: #18191c;
+  background-color: #000000;
   color: #fff;
   overflow: hidden;
 }
@@ -26,12 +26,12 @@ body {
 
 #servers {
   width: 15vw;
-  background-color: #202225;
+  background-color: #111111;
 }
 
 #friends {
   width: 16vw;
-  background-color: #2f3136;
+  background-color: #1b1b1b;
 }
 
 #servers h3, #friends h3 {
@@ -48,14 +48,14 @@ body {
   font-size: 13px;
   border-radius: 5px;
   border: none;
-  background-color: #5865f2;
-  color: white;
+  background-color: #dadada;
+  color: black;
   cursor: pointer;
   transition: 0.2s;
 }
 
 #servers button:hover, #friends button:hover {
-  background-color: #4752c4;
+  background-color: #a3a3a3;
 }
 
 /* --- Server list --- */
@@ -113,7 +113,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #36393f;
+  background-color: #222222;
 }
 
 #messages {
