@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+body {
+    background-color: rgb(20, 20, 20);
+    font-family: 'Inter', sans-serif;
+    color: white;
+    margin: 0;
+    padding: 0;
+}
+
+.login-container {
+    height: 100%;
+    width: 100%;
+}
+
+#left {
+    z-index: 2;
+    position: relative; /* make z-index take effect so #left sits above signBox */
+    height: 100vh;
+    width: 40%;
+    float: left;
+    background-color: rgb(30, 30, 30);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    box-shadow: 20px 0 25px rgba(0, 0, 0, 0.4);
+}
+#left > img {   width: 85%;}
+#left > h1 { font-size: 2.67rem;}
+
+#right {
+    height: 100vh;
+    width: 60%;
+    float: right;
+    background-color: rgba(25, 25, 25, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+#right > img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -5;}
+
+.signOptions {
+    background-color: rgb(30, 30, 30);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    /* responsive sizing to avoid huge vh-based widths/heights */
+    height: auto;
+    padding: 2rem;
+    border-radius: 8px;
+    width: min(90%, 520px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 1rem;
+}
+.btn {
+    background-color: rgb(247, 247, 247);
+    border: none;
+    color: black;
+    width: 30vw;
+    max-width: 460px;
+    padding: 0.9rem 1.25rem;
+    height: auto;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background-color 180ms ease, transform 150ms ease;
+    display: inline-block;
+}
+.btn:hover {
+    /* slightly darker on hover */
+    background-color: rgb(180, 180, 180);
+    transform: translateY(-2px);
+}
+.input {
+    background-color: rgb(43, 43, 43);
+    border: none;
+    color: white;
+    width: 30vw;
+    padding: 0.9rem 1.25rem;
+    height: auto;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    display: inline-block;
+}
+
+.btn2 {
+    background-color: rgb(247, 247, 247);
+    border: none;
+    color: black;
+    width: 32.8vw;
+    padding: 0.9rem 1.25rem;
+    height: auto;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background-color 180ms ease, transform 150ms ease;
+    display: inline-block;
+}
+.btn2:hover {
+    /* slightly darker on hover */
+    background-color: rgb(180, 180, 180);
+    transform: translateY(-2px);
+}

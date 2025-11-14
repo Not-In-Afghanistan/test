@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KORD Dashboard</title>
+<link rel="stylesheet" href="./Style/chat.css">
+<link rel="icon" type="image/ico" href="./images/favicon.ico">
+</head>
+<body>
+
+<!-- Servers sidebar -->
+<div id="servers">
+  <h3>Servers</h3>
+  <button id="add-server-btn">Add Server</button>
+  <button id="join-server-btn">Join Server</button>
+  <ul id="server-list"></ul>
+</div>
+
+<!-- Friends sidebar -->
+<div id="friends">
+  <h3>Friends</h3>
+  <button class=".btn">Find Friends</button>
+  <ul id="friend-list"></ul>
+</div>
+
+<!-- Main chat area -->
+<div id="main">
+  <div class="no-chat">
+    <h2>Welcome to KORD 👋</h2>
+    <p>Join a server or add a friend to start chatting!</p>
+  </div>
+</div>
+
+<!-- Add Server Modal -->
+<div id="server-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Create Server</h2>
+    <input type="text" id="server-name" placeholder="Server Name" required>
+    <input type="file" id="server-image" accept="image/*">
+    <input type="password" id="server-password" placeholder="Server Password">
+    <button id="create-server">Create Server</button>
+  </div>
+</div>
+
+<!-- Join Server Modal -->
+<div id="join-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Join Server</h2>
+    <input type="text" id="join-server-name" placeholder="Server Name" required>
+    <input type="password" id="join-server-password" placeholder="Server Password">
+    <button id="join-server-confirm">Join Server</button>
+  </div>
+</div>
+
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<!-- Firebase Config -->
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
+  authDomain: "test-da143.firebaseapp.com",
+  databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
+  projectId: "test-da143",
+  storageBucket: "test-da143.appspot.com",
+  messagingSenderId: "58366480447",
+  appId: "1:58366480447:web:f3dd12850f09952b49688a"
+};
+firebase.initializeApp(firebaseConfig);
+</script>
+
+<!-- Dashboard JS -->
+<script src="./script/chat.js" defer></script>
+
+</body>
+</html>

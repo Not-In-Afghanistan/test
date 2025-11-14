@@ -1,0 +1,216 @@
+/* Reset & global */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  display: flex;
+  height: 100vh;
+  background-color: #18191c;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* --- Sidebar --- */
+#servers, #friends {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  flex-shrink: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+#servers {
+  width: 15vw;
+  background-color: #202225;
+}
+
+#friends {
+  width: 16vw;
+  background-color: #2f3136;
+}
+
+#servers h3, #friends h3 {
+  font-size: 14px;
+  color: #b9bbbe;
+  margin-bottom: 10px;
+}
+
+/* --- Buttons --- */
+#servers button, #friends button {
+  width: 100%;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  border-radius: 5px;
+  border: none;
+  background-color: #5865f2;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#servers button:hover, #friends button:hover {
+  background-color: #4752c4;
+}
+
+/* --- Server list --- */
+#server-list, #friend-list {
+  list-style: none;
+  margin-top: 5px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+#server-list li, #friend-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  background-color: #2f3136;
+  cursor: pointer;
+  transition: background 0.2s;
+  gap: 5px;
+}
+
+#server-list li:hover, #friend-list li:hover {
+  background-color: #36393f;
+}
+
+/* Server image */
+.server-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Delete server button */
+.delete-server-btn {
+  background-color: #f04747;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 11px;
+  color: white;
+  cursor: pointer;
+}
+
+.delete-server-btn:hover {
+  background-color: #ff5c5c;
+}
+
+/* --- Main chat --- */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #36393f;
+}
+
+#messages {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+}
+
+#chat-form {
+  display: flex;
+  padding: 10px;
+  background-color: #40444b;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  background-color: #303338;
+  color: #fff;
+}
+
+#chat-input::placeholder {
+  color: #b9bbbe;
+}
+
+#chat-form button {
+  padding: 8px 12px;
+  margin-left: 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #5865f2;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#chat-form button:hover {
+  background-color: #4752c4;
+}
+
+/* --- Modals --- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+  background: #2f3136;
+  margin: 12% auto;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-content input {
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  background-color: #40444b;
+  color: #fff;
+}
+
+.modal-content button {
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  background-color: #5865f2;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.modal-content button:hover {
+  background-color: #4752c4;
+}
+.btn {
+  width: 100%;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  border-radius: 5px;
+  border: none;
+  background-color: #5865f2;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}

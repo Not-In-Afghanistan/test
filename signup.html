@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KORD</title>
+  <link rel="stylesheet" href="./Style/login.css">
+  <link rel="icon" type="image/ico" href="./images/favicon.ico">
+</head>
+<body>
+  <div class="login-container">
+    <div id="left">
+      <img src="./images/loginLogo.png">
+      <h1>“Pass notes, not just messages.”</h1>
+    </div>
+    <div id="right">
+        <img src="./images/loginWallpaper.jpg">
+      <div class="signBox">
+        <h1>Sign Up</h1>
+      <form id="signup" class="signOptions">
+        <input type="text" id="displayName" class="input" placeholder="Display Name" required />
+        <input type="text" id="username" class="input" placeholder="Username" required />
+        <input type="password" id="password" class="input" placeholder="Password" required />
+
+        <button type="submit" class="btn2">Sign Up</button>
+
+        <p id="error" style="color:red;display:none;">Username already exists</p>
+        <p id="success" style="color:green;display:none;">Account created! Redirecting...</p>
+      </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs (v8) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <!-- Firebase config -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
+      authDomain: "test-da143.firebaseapp.com",
+      databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
+      projectId: "test-da143",
+      storageBucket: "test-da143.appspot.com",
+      messagingSenderId: "58366480447",
+      appId: "1:58366480447:web:f3dd12850f09952b49688a",
+      measurementId: "G-T5HK7JTWHW"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <script src="./script/signup.js" defer></script>
+</body>
+</html>

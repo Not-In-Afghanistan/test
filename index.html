@@ -3,47 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="./css/login.css">
-    <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
+    <title>KORD</title>
+    <link rel="stylesheet" href="./Style/login.css">
+    <link rel="icon" type="image/ico" href="./images/favicon.ico">
 </head>
 <body>
-  <div class="MainArea">
-     <div class="GroupXLargeMargin"><img src="./images/Logo.png" alt="logo" id="LOGO" /></div>
-    <div class="GroupLargeMargin">
-      <div class="TextSizeXLarge"><a href="./donate.html">Consider Supporting!</a></div>
+    <div class="login-container">
+        <div id="left">
+            <img src="./images/loginLogo.png">
+            <h1>“Pass notes, not just messages.”</h1>
+        </div>
+        <div id="right">
+            <img src="./images/loginWallpaper.jpg">
+            <div class="signBox">
+                <h1>Welcome to Kord</h1>
+                <div class="signOptions">
+                    <button id="loginBtn" class="btn"  onclick="window.location.href='./login.html';">Login</button>
+                    <p style="filter: brightness(50%);">OR</p>
+                   <button id="signupBtn" class="btn" onclick="window.location.href='./signup.html';">Sign Up</button>
+                </div>
+            </div>
+        </div>
     </div>
-
-   <div class="MainActionContainer">
-    <form id="form">
-        <div class="GroupXLargeMargin"><span>Type your School ID and password.</span></div>
-        <table class="UsernamePasswordTable">
-          <tr>
-            <td><span class="Label">School ID:</span></td>
-            <td><input type="text" id="usernameInput" maxlength="6" required /></td>
-            <td class="TextColorSecondary TextSizeSmall"><span>Example: 123456</span></td>
-          </tr>
-          <tr>
-            <td><span class="Label">Password:</span></td>
-            <td><input type="password" id="passwordInput" required /></td>
-            <td class="TextColorSecondary TextSizeSmall">
-          </tr>
-          <tr>
-            <td colspan="2">
-              <div class="RightAlign GroupXLargeMargin">
-                <input type="submit" value="Sign In" class="Resizable btn" />
-              </div>
-            </td>
-          </tr>
-        </table>
-      </form>
-      </div>
-    </div>
-
-
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="./script/login.js" defer></script>
 </body>
 </html>
