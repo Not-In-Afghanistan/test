@@ -18,20 +18,33 @@ body {
 #servers, #friends {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   padding: 10px;
   flex-shrink: 0;
   height: 100%;
   overflow-y: auto;
 }
-
-#servers {
-  width: 15vw;
-  background-color: #111111;
+#servers button {
+  width: 3vw;
+  border-radius: 50%;
+  overflow: hidden;
 }
+#servers {
+  width: 5.5vw;
+  background-color: #111111;
+  /* subtle right-side shadow to separate from main content */
+  box-shadow: 6px 0 18px -8px rgba(0,0,0,0.7);
+  z-index: 100;
+}
+
 
 #friends {
   width: 16vw;
   background-color: #1b1b1b;
+    /* subtle right-side shadow to separate from main content */
+  box-shadow: 6px 0 18px -8px rgba(0,0,0,0.7);
+  z-index: 99;
 }
 
 #servers h3, #friends h3 {
@@ -42,11 +55,9 @@ body {
 
 /* --- Buttons --- */
 #servers button, #friends button {
-  width: 100%;
   padding: 6px 10px;
   margin-bottom: 8px;
   font-size: 13px;
-  border-radius: 5px;
   border: none;
   background-color: #dadada;
   color: black;
@@ -57,7 +68,9 @@ body {
 #servers button:hover, #friends button:hover {
   background-color: #a3a3a3;
 }
-
+#servers button:hover {
+  scale: 0.9;
+}
 /* --- Server list --- */
 #server-list, #friend-list {
   list-style: none;
@@ -114,12 +127,32 @@ body {
   display: flex;
   flex-direction: column;
   background-color: #222222;
+  justify-content: center;
+  align-items: center;
 }
 
-#messages {
-  flex: 1;
-  padding: 15px;
-  overflow-y: auto;
+.no-chat {
+  text-align: center;
+}
+
+.message {
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 70%;
+  background-color: #3a3b41;
+  color: #fff;
+  word-wrap: break-word;
+}
+
+.message.user {
+  background-color: #5865f2; /* your own messages */
+  align-self: flex-end;
+}
+
+.message .username {
+  font-weight: bold;
+  margin-bottom: 4px;
 }
 
 #chat-form {
@@ -137,7 +170,9 @@ body {
   background-color: #303338;
   color: #fff;
 }
-
+#chat-input:focus {
+  outline: 2px solid #ffffff;
+}
 #chat-input::placeholder {
   color: #b9bbbe;
 }
@@ -170,7 +205,7 @@ body {
 }
 
 .modal-content {
-  background: #2f3136;
+  background: #252525;
   margin: 12% auto;
   padding: 20px;
   border-radius: 8px;
@@ -202,7 +237,7 @@ body {
 .modal-content button:hover {
   background-color: #4752c4;
 }
-.btn {
+#btn {
   width: 100%;
   padding: 6px 10px;
   margin-bottom: 8px;
@@ -213,4 +248,112 @@ body {
   color: white;
   cursor: pointer;
   transition: 0.2s;
+}
+
+/* --- Find Friends Modal --- */
+#friend-results {
+  list-style: none;
+  margin: 10px 0 0 0;
+  padding: 0;
+  max-height: 40vh;
+  overflow-y: auto;
+  border-radius: 5px;
+}
+
+#friend-results li {
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+/* Alternating row colors */
+#friend-results li:nth-child(odd) {
+  background-color: #2e2e2e;
+}
+
+#friend-results li:nth-child(even) {
+  background-color: #444444;
+}
+
+
+.close {
+  cursor: pointer;
+}
+#friend-search {
+  background-color: #222222;
+
+}
+#differ {
+  margin-top: 15vh;
+   width: 50vw;
+   z-index: 1000;
+}
+.friend-add-btn {
+  width: 28px;
+  height: 28px;
+  background-color: #222222;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.friend-add-btn:hover {
+  background-color: #d8d8d8;
+  color: black;
+}
+
+.nav {
+  position: fixed;       /* Stay on top of everything */
+  top: 0;
+  left: 0;
+  width: 100%;           /* Full width */
+  height: 10vh;          /* Adjust as needed */
+  background-color: #252525;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 18px;
+  font-weight: bold;
+  z-index: 9999;         /* On top of everything else */
+    /* subtle right-side shadow to separate from main content */
+  box-shadow: 60px 0 18px -8px rgba(0,0,0,0.7);
+  z-index: 999;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Make sure content below nav is not hidden */
+body {
+  padding-top: 10vh; /* same as nav height */
+}
+.rightbuttons {
+  width: fit-content;
+}
+.rightbuttons > button {
+  padding: 6px 10px;
+  margin-left: 1vw;
+  font-size: 15px;
+  border: 0px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.rightbuttons > button:hover {
+  background-color: #d8d8d8;
+  scale: 0.95;
+}
+
+#add-server-btn , #join-server-btn {
+  height: 3vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

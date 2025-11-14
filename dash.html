@@ -8,26 +8,35 @@
 <link rel="icon" type="image/ico" href="./images/favicon.ico">
 </head>
 <body>
-
+<div class="nav">
+  <img src="./images/loginLogo.png" style="height: 13vh;">
+  <div class="rightbuttons">
+  <button>Premium</button>
+  <button>Buy Servers</button>
+  <button>Support</button>
+  <button>About Us</button>
+  <button>My Profile</button>
+  </div>
+</div>
 <!-- Servers sidebar -->
 <div id="servers">
   <h3>Servers</h3>
-  <button id="add-server-btn">Add Server</button>
-  <button id="join-server-btn">Join Server</button>
+  <button id="add-server-btn">+</button>
+  <button id="join-server-btn">Join</button>
   <ul id="server-list"></ul>
 </div>
 
 <!-- Friends sidebar -->
 <div id="friends">
   <h3>Friends</h3>
-  <button class=".btn">Find Friends</button>
+  <button id="btn">Find Friends</button>
   <ul id="friend-list"></ul>
 </div>
 
 <!-- Main chat area -->
 <div id="main">
   <div class="no-chat">
-    <h2>Welcome to KORD 👋</h2>
+    <h2>Welcome to KORD    <span id="current-user-name">User</span>👋</h2>
     <p>Join a server or add a friend to start chatting!</p>
   </div>
 </div>
@@ -52,6 +61,15 @@
     <input type="text" id="join-server-name" placeholder="Server Name" required>
     <input type="password" id="join-server-password" placeholder="Server Password">
     <button id="join-server-confirm">Join Server</button>
+  </div>
+</div>
+<!-- Find Friends Modal -->
+<div id="find-friends-modal" class="modal">
+  <div class="modal-content" id="differ">
+    <span class="close">&times;</span>
+    <h2>Find Friends</h2>
+    <input type="text" id="friend-search" placeholder="Search for friends...">
+    <ul id="friend-results"></ul>
   </div>
 </div>
 
