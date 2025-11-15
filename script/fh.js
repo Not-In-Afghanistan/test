@@ -92,29 +92,13 @@ function loadFriendsSidebar() {
 // Open chat with a friend
 // ----- Open chat with a friend -----
 // ----- Open chat with a friend -----
+// ----- Open chat with a friend -----
 function openChat(friend) {
   currentChatFriend = friend;
 
-  // ----- Utility: format message timestamp -----
-  function formatMessageTime(timestamp) {
-    const now = new Date();
-    const msgDate = new Date(timestamp);
-    const timeString = msgDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-
-    const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
-    const diffMs = nowDateOnly - msgDateOnly;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return `Today at ${timeString}`;
-    if (diffDays === 1) return `Yesterday at ${timeString}`;
-    if (diffDays <= 7) return `${diffDays} days ago at ${timeString}`;
-
-    return msgDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) + ` at ${timeString}`;
-  }
-
-  // ----- Setup chat UI -----
+  // Hide welcome message
   document.querySelector('#main .no-chat').style.display = 'none';
+  
   yesChatEl.innerHTML = `
     <h3>Chat with ${friend}</h3>
     <ul id="chat-messages"></ul>
@@ -128,9 +112,11 @@ function openChat(friend) {
   const chatInput = document.getElementById('chat-input');
   const chatSend = document.getElementById('chat-send');
 
+  // Firebase reference for this chat
   const chatRef = firebase.database().ref(`chats/${[currentUsername, friend].sort().join('_')}`);
+  chatRef.off(); // remove previous listeners
 
-  // ----- Render a single message -----
+  // Function to render a single message
   async function renderMessage(msg) {
     const li = document.createElement('li');
     li.classList.add('message', msg.sender === currentUsername ? 'user' : 'friend');
@@ -138,6 +124,7 @@ function openChat(friend) {
     li.style.alignItems = 'flex-start';
     li.style.marginBottom = '8px';
 
+    // Profile picture
     const pfp = document.createElement('img');
     pfp.style.width = '36px';
     pfp.style.height = '36px';
@@ -145,17 +132,19 @@ function openChat(friend) {
     pfp.style.marginRight = '10px';
     pfp.style.objectFit = 'cover';
     try {
-      const snap = await firebase.database().ref(`users/${msg.sender}/pfpUrl`).once('value');
-      pfp.src = snap.exists() ? snap.val() : '../images/default-pfp.png';
+      const pfpSnap = await firebase.database().ref(`users/${msg.sender}/pfpUrl`).once('value');
+      pfp.src = pfpSnap.exists() ? pfpSnap.val() : '../images/default-pfp.png';
     } catch {
       pfp.src = '../images/default-pfp.png';
     }
 
+    // Message content container
     const content = document.createElement('div');
     content.style.display = 'flex';
     content.style.flexDirection = 'column';
     content.style.maxWidth = '70%';
 
+    // Display name
     let displayName = msg.sender;
     try {
       const snap = await firebase.database().ref(`users/${msg.sender}/displayName`).once('value');
@@ -169,12 +158,14 @@ function openChat(friend) {
     nameSpan.style.fontSize = '14px';
     nameSpan.style.marginBottom = '2px';
 
+    // Timestamp
     const timeSpan = document.createElement('div');
     timeSpan.textContent = formatMessageTime(msg.timestamp);
     timeSpan.style.fontSize = '10px';
     timeSpan.style.color = '#b9bbbe';
     timeSpan.style.marginBottom = '2px';
 
+    // Message text
     const textDiv = document.createElement('div');
     textDiv.textContent = msg.text;
     textDiv.style.padding = '8px';
@@ -194,29 +185,32 @@ function openChat(friend) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
-  // ----- Load all existing messages in order -----
-  chatRef.orderByChild('timestamp').once('value').then(snapshot => {
+  // ----- Load all previous messages -----
+  chatRef.once('value').then(snapshot => {
     chatMessages.innerHTML = ''; // clear old messages
-    snapshot.forEach(msgSnap => renderMessage(msgSnap.val()));
+    const msgs = [];
+    snapshot.forEach(snap => {
+      msgs.push(snap.val());
+    });
+    // Sort by timestamp
+    msgs.sort((a, b) => a.timestamp - b.timestamp);
+    msgs.forEach(msg => renderMessage(msg));
   });
 
   // ----- Listen for new messages -----
-  chatRef.orderByChild('timestamp').startAt(Date.now()).on('child_added', snap => {
-    renderMessage(snap.val());
+  chatRef.on('child_added', snap => {
+    const msg = snap.val();
+    renderMessage(msg);
   });
 
   // ----- Send message -----
   chatSend.addEventListener('click', () => {
-    const text = chatInput.value.trim();
-    if (!text) return;
-
-    const newMsgRef = chatRef.push();
-    newMsgRef.set({
+    if (!chatInput.value.trim()) return;
+    chatRef.push({
       sender: currentUsername,
-      text,
+      text: chatInput.value.trim(),
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
-
     chatInput.value = '';
   });
 
