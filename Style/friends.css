@@ -19,11 +19,11 @@
   border: 0;
   border-radius: 6px;
   cursor: pointer;
-  font-size: px;
-  margin-left: 4px;
+  margin-right: 3px;
   transition: 0.2s;
+  height: 5vh;
+  width: 5vh;
 }
-
 
 .options-btn {
   background: #555;

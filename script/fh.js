@@ -28,6 +28,25 @@ function loadFriendsSidebar() {
         li.classList.add('friend-item');
 
         // Friend name
+        // Create profile picture element
+        const pfp = document.createElement('img');
+        pfp.style.width = '36px';
+        pfp.style.height = '36px';
+        pfp.style.borderRadius = '50%';
+        pfp.style.objectFit = 'cover';
+
+        // Get profile picture WITHOUT using await (no async needed)
+        firebase.database().ref(`users/${friend}/pfpUrl`).once('value')
+          .then(snapshot => {
+            pfp.src = snapshot.exists() ? snapshot.val() : '../images/default-pfp.png';
+          })
+          .catch(() => {
+            pfp.src = '../images/default-pfp.png';
+          });
+        
+        // Add PFP to list item BEFORE the name
+        li.appendChild(pfp);
+
         const nameSpan = document.createElement('span');
         nameSpan.textContent = friend;
         nameSpan.classList.add('friend-name'); 
