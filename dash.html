@@ -10,20 +10,17 @@
 </head>
 <body>
 <div class="nav">
-  <img src="./images/elseLogo.png" style="height: 9vh; margin-left: -0.8vw;">
+  <img src="./images/elseLogo.png" style="height: 9vh; margin-left: -0.8vw;" class="imgeffect">
   <div class="rightbuttons">
-  <button>Premium</button>
-  <button>Buy Servers</button>
-  <button>Support</button>
-  <button>About Us</button>
-  <button>My Profile</button>
-  <button id="inbox-btn">Inbox</button>
+  <button><img src="./images/support.webp"></button>
+  <button id="inbox-btn"><img src="./images/Mail.png"></button>
+  <button onclick="location.href='./profile.html'"><img src="./images/me.png"></button>
   </div>
 </div>
 <!-- Servers sidebar -->
 <div id="servers">
   <h3>Servers</h3>
-  <button id="add-server-btn"><a class="big">+</a></button>
+  <button id="add-server-btn"><img src="./images/add.webp"></button>
   <button id="join-server-btn">Join</button>
   <ul id="server-list"></ul>
 </div>
@@ -94,17 +91,17 @@
 
 <!-- Firebase Config -->
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
-  authDomain: "test-da143.firebaseapp.com",
-  databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
-  projectId: "test-da143",
-  storageBucket: "test-da143.appspot.com",
-  messagingSenderId: "58366480447",
-  appId: "1:58366480447:web:f3dd12850f09952b49688a"
-};
-firebase.initializeApp(firebaseConfig);
-
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
+      authDomain: "test-da143.firebaseapp.com",
+      databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
+      projectId: "test-da143",
+      storageBucket: "test-da143.appspot.com",
+      messagingSenderId: "58366480447",
+      appId: "1:58366480447:web:f3dd12850f09952b49688a",
+      measurementId: "G-T5HK7JTWHW"
+    };
+    firebase.initializeApp(firebaseConfig);
 </script>
 
 <!-- Dashboard JS -->

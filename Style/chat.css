@@ -328,27 +328,36 @@ body {
   display: flex;
   justify-content: space-between;
 }
-
+button > img {
+  width: 7vh;
+  border-radius: 10px;
+  overflow: hidden;
+}
 /* Make sure content below nav is not hidden */
 body {
   padding-top: 10vh; /* same as nav height */
 }
 .rightbuttons {
   width: fit-content;
+    display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
 }
 .rightbuttons > button {
-  padding: 6px 10px;
+  background-color: rgba(0, 0, 0, 0);
   margin-left: 1vw;
   font-size: 15px;
   border: 0px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: 0.2s;
+  width: fit-content;
+  height: 7vh;
 }
 
 .rightbuttons > button:hover {
-  background-color: #d8d8d8;
-  scale: 0.95;
+  scale: 0.9;
 }
 
 #add-server-btn , #join-server-btn {
@@ -462,3 +471,35 @@ body {
   transition: 0.2s;
 }
 
+/*About Us*/
+#abtUS {
+  width: 7vh;
+  height: 7vh;
+  background-image: linear-gradient(to top, #1464c8 , #3189ea);
+  color: white;
+  padding: 3px;
+  font-size: small;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.btnBlue {
+  width: 7vh;
+  height: 7vh;
+  background-image: linear-gradient(to top, #95c5ff , #3189ea);
+  color: white;
+  padding: 3px;
+  font-size: 3px;
+  margin-top: auto;
+  margin-bottom: auto;
+  overflow: hidden;
+}
+.btnBlue > p {
+  font-size: 13px;
+}
+.imgeffect:hover {
+    scale: 0.90;
+}
+.imgeffect {
+    transition: 200ms;
+}

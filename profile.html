@@ -4,8 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KORD | PROFILE</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="./Style/pfp.css">
+    <link rel="icon" type="image/png" href="./images/favicon.png">
+
+    <!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+<script src="./script/prof.js"></script>
 </head>
 <body>
-    
+
+  <div class="nav">
+    <img src="./images/elseLogo.png" style="height: 9vh; margin-left: -0.8vw;" onclick="location.href='./dash.html'" class="imgeffect">
+    <div class="rightbuttons">
+      <button><img src="./images/support.webp"></button>
+      <button id="inbox-btn"><img src="./images/Mail.png"></button>
+      <button onclick="location.href='./profile.html'"><img src="./images/me.png"></button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="img">
+        <img src="./images/default-pfp.png">
+        <!-- Overlay auto added by pfp.js -->
+    </div>
+
+    <div id="changer">
+        <div class="box">
+          <h2>Display Name:</h2>
+          <div id="displayNameBox"></div>
+          <button id="changeDisplayBtn">Change</button>
+        </div>
+    </div>
+  </div>
+
 </body>
 </html>

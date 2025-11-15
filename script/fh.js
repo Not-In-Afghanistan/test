@@ -165,7 +165,20 @@ function openChat(friend) {
     content.style.maxWidth = '70%';
 
     const nameSpan = document.createElement('div');
-    nameSpan.textContent = msg.sender;
+
+
+
+    firebase.database().ref(`users/${msg.sender}/displayName`).once('value')
+    .then(snap => {
+      nameSpan.textContent = snap.exists() ? snap.val() : msg.sender;
+    })
+    .catch(() => {
+      nameSpan.textContent = msg.sender;
+    });
+
+
+
+
     nameSpan.style.fontWeight = 'bold';
     nameSpan.style.color = '#fff';
     nameSpan.style.fontSize = '14px';

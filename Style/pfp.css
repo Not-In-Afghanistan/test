@@ -1,0 +1,219 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  display: flex;
+  height: 100vh;
+  background-color: #1b1b1b;
+  color: #fff;
+  overflow: hidden;
+  flex-direction: row;
+}
+
+.nav {
+  position: fixed;       /* Stay on top of everything */
+  top: 0;
+  left: 0;
+  width: 100%;           /* Full width */
+  height: 10vh;          /* Adjust as needed */
+  background-color: #252525;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 18px;
+  font-weight: bold;
+  z-index: 9999;         /* On top of everything else */
+    /* subtle right-side shadow to separate from main content */
+  box-shadow: 60px 0 18px -8px rgba(0,0,0,0.7);
+  z-index: 999;
+  display: flex;
+  justify-content: space-between;
+}
+button > img {
+  width: 7vh;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.rightbuttons {
+  width: fit-content;
+    display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+}
+.rightbuttons > button {
+  background-color: rgba(0, 0, 0, 0);
+  margin-left: 1vw;
+  font-size: 15px;
+  border: 0px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  width: fit-content;
+  height: 7vh;
+}
+
+.rightbuttons > button:hover {
+  scale: 0.9;
+}
+
+.main {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#img {
+    width: 60vh;
+    height: 60vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #252525;
+    border-radius: 15px;
+    padding: 2vw;
+}
+#img > img {
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+}
+#changer {
+    width: 50vw;
+    height: 60vh;
+    background-color: #252525;
+    border-radius: 15px;
+    margin-left: 5vw;
+    display: flex;
+    flex-direction: column;
+    padding: 1vw;
+    justify-content: space-around;
+}
+.box {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    background-color: #3a3a3a;
+    padding: 10px;
+    border-radius: 15px;
+}
+.box > button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background-color: rgb(70, 70, 255);
+    color: white;
+    transition: 200ms;
+}
+.box > button:hover {
+    background-color: rgb(45, 45, 212);
+    cursor: pointer;
+}
+.imgeffect:hover {
+    scale: 0.90;
+}
+.imgeffect {
+    transition: 200ms;
+}
+
+
+
+
+
+
+/* profile modal + hover styles */
+#displayNameBox {
+  padding: 8px 10px;
+  background: #313131;
+  border-radius: 6px;
+  color: #fff;
+  display: inline-block;
+  min-width: 55%;
+}
+
+/* Change button */
+
+
+/* Modal */
+.kord-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.kord-modal {
+  width: 360px;
+  background: #252525;
+  padding: 18px;
+  border-radius: 10px;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.kord-modal h3 { margin-bottom: 10px; }
+.kord-modal input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  background: #333;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.kord-modal .kord-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+.kord-modal .save-btn {
+  background: #4caf50;
+  color: white;
+  margin-right: 8px;
+  transition: 200ms;
+}
+.kord-modal .save-btn:hover {
+  background: #218624;
+}
+.kord-modal .cancel-btn {
+  background: #bdbdbd;
+  color: black;
+}
+
+/* small message */
+.kord-msg {
+  font-size: 13px;
+  margin-top: 6px;
+  color: #f0f0f0;
+}
+
+/* pfp hover overlay (optional) */
+#img { position: relative; display:inline-block; cursor: pointer; }
+#img .pfp-overlay {
+  position: absolute;
+  inset: 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  background: rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: opacity 0.15s;
+  border-radius: 50%;
+  margin: 2vw;
+}
+#img:hover .pfp-overlay { opacity: 1; }

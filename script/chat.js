@@ -36,6 +36,7 @@ usersRefCurrentUser.once('value').then(snapshot => {
   const displayName = snapshot.val()?.displayName || currentUsername;
   if (currentUserNameEl) currentUserNameEl.textContent = ` ${displayName}`; // set header
 }).catch(err => console.error("Failed loading display name:", err));
+// When user is logged in or when the dash loads
 
 
 // ----- Find Friends modal open/close handlers -----
