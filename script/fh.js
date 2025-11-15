@@ -217,7 +217,7 @@ chatRef.on('child_added', async snap => {
     chatRef.push({
       sender: currentUsername,
       text: chatInput.value.trim(),
-      timestamp: Date.now()
+      timestamp: firebase.database.ServerValue.TIMESTAMP
     });
     chatInput.value = '';
   });
