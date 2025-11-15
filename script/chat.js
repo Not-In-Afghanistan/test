@@ -113,7 +113,9 @@ function updateFriendResults(query) {
       li.style.backgroundColor = (index % 2 === 0) ? '#2e2e2e' : '#444444';
       index++;
 
-
+  const nameSpan = document.createElement('span');
+  nameSpan.textContent = username;
+  li.appendChild(nameSpan);
       // Create "+" addBtn (but we may hide/disable it below)
       const addBtn = document.createElement('div');
       addBtn.classList.add('friend-add-btn');
