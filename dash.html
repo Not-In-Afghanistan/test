@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KORD Dashboard</title>
+<title>KORD | Dashboard</title>
 <link rel="stylesheet" href="./Style/chat.css">
+<link rel="stylesheet" href="./Style/friends.css">
 <link rel="icon" type="image/ico" href="./images/favicon.ico">
 </head>
 <body>
@@ -16,6 +17,7 @@
   <button>Support</button>
   <button>About Us</button>
   <button>My Profile</button>
+  <button id="inbox-btn">Inbox</button>
   </div>
 </div>
 <!-- Servers sidebar -->
@@ -30,7 +32,9 @@
 <div id="friends">
   <h3>Friends</h3>
   <button id="btn">Find Friends</button>
-  <ul id="friend-list"></ul>
+  <ul id="friend-list">
+
+  </ul>
 </div>
 
 <!-- Main chat area -->
@@ -38,6 +42,9 @@
   <div class="no-chat">
     <h2>Welcome to KORD    <span id="current-user-name">User</span>👋</h2>
     <p>Join a server or add a friend to start chatting!</p>
+  </div>
+  <div class="yes-chat">
+
   </div>
 </div>
 
@@ -72,7 +79,13 @@
     <ul id="friend-results"></ul>
   </div>
 </div>
-
+<div id="inbox-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Inbox</h2>
+    <ul id="inbox-list"></ul>
+  </div>
+</div>
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -96,6 +109,7 @@ firebase.initializeApp(firebaseConfig);
 
 <!-- Dashboard JS -->
 <script src="./script/chat.js" defer></script>
+<script src="./script/fh.js" defer></script>
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const user = localStorage.getItem("currentUser");

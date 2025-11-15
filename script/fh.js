@@ -1,0 +1,177 @@
+// ----- DOM elements for sidebar chat -----
+const friendListEl = document.getElementById('friend-list');
+const chatArea = document.getElementById('main');
+const yesChatEl = document.querySelector('#main .yes-chat');
+let currentChatFriend = null;
+
+// ----- Load friends into sidebar -----
+function loadFriendsSidebar() {
+  if (!friendListEl) return;
+
+  friendListEl.innerHTML = ''; // clear previous list
+
+  // Get friends from Firebase
+  usersRefCurrentUser.child('friends').once('value')
+    .then(snapshot => {
+      if (!snapshot.exists()) {
+        const li = document.createElement('li');
+        li.textContent = "No friends yet.";
+        li.classList.add('friend-item');
+        friendListEl.appendChild(li);
+        return;
+      }
+
+      snapshot.forEach(friendSnap => {
+        const friend = friendSnap.key;
+
+        const li = document.createElement('li');
+        li.classList.add('friend-item');
+
+        // Friend name
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = friend;
+        nameSpan.classList.add('friend-name'); 
+        li.appendChild(nameSpan);
+
+        // Buttons container
+        const btnContainer = document.createElement('div');
+        btnContainer.classList.add('friend-buttons');
+
+        // Message button
+        const msgBtn = document.createElement('button');
+        msgBtn.innerHTML = '💬'; // icon
+        msgBtn.classList.add('message-btn');
+        msgBtn.addEventListener('click', () => openChat(friend));
+
+        // Options button (placeholder)
+        const optBtn = document.createElement('button');
+        optBtn.innerHTML = '☰';
+        optBtn.classList.add('options-btn');
+
+        btnContainer.appendChild(msgBtn);
+        btnContainer.appendChild(optBtn);
+        li.appendChild(btnContainer);
+
+        friendListEl.appendChild(li);
+      });
+    })
+    .catch(err => console.error("Failed loading sidebar friends:", err));
+}
+
+// ----- Open chat with a friend -----
+function openChat(friend) {
+  currentChatFriend = friend;
+
+  // Hide welcome message
+  document.querySelector('#main .no-chat').style.display = 'none';
+  yesChatEl.innerHTML = `
+    <h3>Chat with ${friend}</h3>
+    <ul id="chat-messages"></ul>
+    <div id="chat-form">
+      <input type="text" id="chat-input" placeholder="Type a message...">
+      <button id="chat-send">Send</button>
+    </div>
+  `;
+
+  const chatMessages = document.getElementById('chat-messages');
+  const chatInput = document.getElementById('chat-input');
+  const chatSend = document.getElementById('chat-send');
+
+// Listen for messages
+const chatRef = firebase.database().ref(`chats/${[currentUsername, friend].sort().join('_')}`);
+chatRef.off();
+chatRef.on('child_added', async snap => {
+  const msg = snap.val();
+
+  // Create message container
+  const li = document.createElement('li');
+  li.classList.add('message', msg.sender === currentUsername ? 'user' : 'friend');
+  li.style.display = 'flex';
+  li.style.alignItems = 'flex-start';
+  li.style.marginBottom = '8px';
+
+  // Profile picture
+  const pfp = document.createElement('img');
+  pfp.style.width = '36px';
+  pfp.style.height = '36px';
+  pfp.style.borderRadius = '50%';
+  pfp.style.marginRight = '10px';
+  pfp.style.objectFit = 'cover';
+
+  try {
+    const pfpSnap = await firebase.database().ref(`users/${msg.sender}/pfpUrl`).once('value');
+    pfp.src = pfpSnap.exists() ? pfpSnap.val() : '../images/default-pfp.png';
+  } catch {
+    pfp.src = '../images/default-pfp.png';
+  }
+
+  // Message content container
+  const content = document.createElement('div');
+  content.style.display = 'flex';
+  content.style.flexDirection = 'column';
+  content.style.maxWidth = '70%';
+
+  // Display name
+  let displayName = msg.sender;
+  try {
+    const snapshot = await firebase.database().ref(`users/${msg.sender}/displayName`).once('value');
+    if (snapshot.exists()) displayName = snapshot.val();
+  } catch {}
+
+  const nameSpan = document.createElement('div');
+  nameSpan.textContent = displayName;
+  nameSpan.style.fontWeight = 'bold';
+  nameSpan.style.color = '#fff';
+  nameSpan.style.fontSize = '14px';
+  nameSpan.style.marginBottom = '2px';
+
+  // Timestamp
+  const timeSpan = document.createElement('div');
+  const date = new Date(msg.timestamp);
+  timeSpan.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  timeSpan.style.fontSize = '10px';
+  timeSpan.style.color = '#b9bbbe';
+  timeSpan.style.marginBottom = '2px';
+
+  // Message text
+  const textDiv = document.createElement('div');
+  textDiv.textContent = msg.text;
+  textDiv.style.padding = '8px';
+  textDiv.style.borderRadius = '8px';
+  textDiv.style.background = msg.sender === currentUsername ? '#5865f2' : '#3a3a3a';
+  textDiv.style.color = 'white';
+  textDiv.style.wordWrap = 'break-word';
+
+  content.appendChild(nameSpan);
+  content.appendChild(timeSpan);
+  content.appendChild(textDiv);
+
+  li.appendChild(pfp);
+  li.appendChild(content);
+
+  chatMessages.appendChild(li);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+
+  // Send message
+  chatSend.addEventListener('click', () => {
+    if (!chatInput.value.trim()) return;
+    chatRef.push({
+      sender: currentUsername,
+      text: chatInput.value.trim(),
+      timestamp: Date.now()
+    });
+    chatInput.value = '';
+  });
+
+  chatInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') chatSend.click();
+  });
+}
+
+// ----- Initial load -----
+
+
+// Optional: refresh sidebar live if friends list changes
+usersRefCurrentUser.child('friends').on('value', loadFriendsSidebar);

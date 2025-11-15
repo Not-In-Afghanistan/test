@@ -1,0 +1,59 @@
+/* Friend items in sidebar */
+.friend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  background-color: #2f3136; /* updated background */
+  color: white;
+  width: 14.6vw; /* take 95% of the friends tab width */
+  margin-left: auto;
+  margin-right: auto;
+  margin-left: 0.4vw;
+}
+
+
+.friend-buttons button {
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: px;
+  margin-left: 4px;
+  transition: 0.2s;
+}
+
+
+.options-btn {
+  background: #555;
+  color: white;
+}
+
+.options-btn:hover {
+  background: #444;
+}
+
+.yes-chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 78vw;
+}
+
+#chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+#chat-form {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
