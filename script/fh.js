@@ -81,6 +81,30 @@ function loadFriendsSidebar() {
 function openChat(friend) {
   currentChatFriend = friend;
 
+
+
+
+// time 
+function formatMessageTime(timestamp) {
+  const now = new Date();
+  const msgDate = new Date(timestamp);
+
+  const diffMs = now - msgDate;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  const timeString = msgDate.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit"
+  });
+
+  if (diffDays === 0) return `Today at ${timeString}`;
+  if (diffDays === 1) return `Yesterday at ${timeString}`;
+  if (diffDays <= 7) return `${diffDays} days ago at ${timeString}`;
+
+  return msgDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) +
+         ` at ${timeString}`;
+}
+
   // Hide welcome message
   document.querySelector('#main .no-chat').style.display = 'none';
   yesChatEl.innerHTML = `
@@ -146,8 +170,7 @@ chatRef.on('child_added', async snap => {
 
   // Timestamp
   const timeSpan = document.createElement('div');
-  const date = new Date(msg.timestamp);
-  timeSpan.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  timeSpan.textContent = formatMessageTime(msg.timestamp);
   timeSpan.style.fontSize = '10px';
   timeSpan.style.color = '#b9bbbe';
   timeSpan.style.marginBottom = '2px';
