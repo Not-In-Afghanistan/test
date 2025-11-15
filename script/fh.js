@@ -91,6 +91,26 @@ function loadFriendsSidebar() {
 function openChat(friend) {
   currentChatFriend = friend;
 
+  // Format timestamps
+  function formatMessageTime(timestamp) {
+    const now = new Date();
+    const msgDate = new Date(timestamp);
+
+    const timeString = msgDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
+
+    const diffMs = nowDateOnly - msgDateOnly;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return `Today at ${timeString}`;
+    if (diffDays === 1) return `Yesterday at ${timeString}`;
+    if (diffDays <= 7) return `${diffDays} days ago at ${timeString}`;
+
+    return msgDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) +
+           ` at ${timeString}`;
+  }
+
   // Hide welcome message
   document.querySelector('#main .no-chat').style.display = 'none';
   yesChatEl.innerHTML = `
@@ -106,35 +126,15 @@ function openChat(friend) {
   const chatInput = document.getElementById('chat-input');
   const chatSend = document.getElementById('chat-send');
 
-  // Function to format timestamps
-  function formatMessageTime(timestamp) {
-    const now = new Date();
-    const msgDate = new Date(timestamp);
-
-    const timeString = msgDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-
-    const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
-
-    const diffMs = nowDateOnly - msgDateOnly;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return `Today at ${timeString}`;
-    if (diffDays === 1) return `Yesterday at ${timeString}`;
-    if (diffDays > 1 && diffDays <= 7) return `${diffDays} days ago at ${timeString}`;
-
-    return msgDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) +
-           ` at ${timeString}`;
-  }
-
-  // Reference sorted by timestamp
+  // Firebase reference sorted by timestamp
   const chatRef = firebase.database().ref(`chats/${[currentUsername, friend].sort().join('_')}`);
-  chatRef.off(); // clear previous listeners
-
-  // Listen for new messages
+  
+  chatRef.off(); // remove previous listeners
   chatRef.orderByChild('timestamp').on('child_added', async snap => {
     const msg = snap.val();
+    if (!msg.timestamp) return; // wait until Firebase resolves timestamp
 
+    // Message container
     const li = document.createElement('li');
     li.classList.add('message', msg.sender === currentUsername ? 'user' : 'friend');
     li.style.display = 'flex';
@@ -164,8 +164,8 @@ function openChat(friend) {
 
     let displayName = msg.sender;
     try {
-      const nameSnap = await firebase.database().ref(`users/${msg.sender}/displayName`).once('value');
-      if (nameSnap.exists()) displayName = nameSnap.val();
+      const snapshot = await firebase.database().ref(`users/${msg.sender}/displayName`).once('value');
+      if (snapshot.exists()) displayName = snapshot.val();
     } catch {}
 
     const nameSpan = document.createElement('div');
@@ -209,9 +209,10 @@ function openChat(friend) {
       sender: currentUsername,
       text: chatInput.value.trim(),
       timestamp: firebase.database.ServerValue.TIMESTAMP
+    }, error => {
+      if (error) console.error("Message failed to send:", error);
+      else chatInput.value = ''; // clear input after server confirms
     });
-
-    chatInput.value = '';
   });
 
   chatInput.addEventListener('keypress', e => {
