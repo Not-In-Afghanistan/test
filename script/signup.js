@@ -98,8 +98,8 @@
       if (!password)     { showError("Password is required."); return; }
 
       // pattern checks (should already be sanitized)
-      if (!allowedPattern.test(displayName) || displayName.length > 8) {
-        showError("Display Name must be 1–8 characters, letters and numbers only (no spaces/symbols).");
+      if (!allowedPattern.test(displayName) || displayName.length > 10) {
+        showError("Display Name must be 1–10 characters, letters and numbers only (no spaces/symbols).");
         return;
       }
       if (!allowedPattern.test(username) || username.length > 8) {

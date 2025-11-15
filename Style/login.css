@@ -27,7 +27,7 @@ body {
     text-align: center;
     box-shadow: 20px 0 25px rgba(0, 0, 0, 0.4);
 }
-#left > img {   width: 85%;}
+#left > img {   width: 125%;}
 #left > h1 { font-size: 2.67rem;}
 
 #right {
