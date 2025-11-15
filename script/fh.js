@@ -87,39 +87,37 @@ function loadFriendsSidebar() {
 
 
 // ----- Open chat with a friend -----
+
 function openChat(friend) {
   currentChatFriend = friend;
 
+  // Normalize usernames for chat ID (trim and lowercase)
+  const chatId = [currentUsername.trim().toLowerCase(), friend.trim().toLowerCase()].sort().join('_');
+  const chatRef = firebase.database().ref(`chats/${chatId}`);
 
+  // ----- Time formatting -----
+  function formatMessageTime(timestamp) {
+    const now = new Date();
+    const msgDate = new Date(timestamp);
 
+    const timeString = msgDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
+    // Compare only the date parts
+    const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
 
+    const diffMs = nowDateOnly - msgDateOnly;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
+    if (diffDays === 0) return `Today at ${timeString}`;
+    if (diffDays === 1) return `Yesterday at ${timeString}`;
+    if (diffDays <= 7) return `${diffDays} days ago at ${timeString}`;
 
-// time 
-function formatMessageTime(timestamp) {
-  const now = new Date();
-  const msgDate = new Date(timestamp);
+    return msgDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) +
+           ` at ${timeString}`;
+  }
 
-  const timeString = msgDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-
-  // Compare only the date parts
-  const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
-
-  const diffMs = nowDateOnly - msgDateOnly;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return `Today at ${timeString}`;
-  if (diffDays === 1) return `Yesterday at ${timeString}`;
-  if (diffDays <= 7) return `${diffDays} days ago at ${timeString}`;
-
-  return msgDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) +
-         ` at ${timeString}`;
-}
-
-
-  // Hide welcome message
+  // Hide welcome / no-chat message
   document.querySelector('#main .no-chat').style.display = 'none';
   yesChatEl.innerHTML = `
     <h3>Chat with ${friend}</h3>
@@ -134,98 +132,104 @@ function formatMessageTime(timestamp) {
   const chatInput = document.getElementById('chat-input');
   const chatSend = document.getElementById('chat-send');
 
-// Listen for messages
-const chatRef = firebase.database().ref(`chats/${[currentUsername, friend].sort().join('_')}`);
-chatRef.off();
-chatRef.on('child_added', async snap => {
-  const msg = snap.val();
+  // ----- Listen for new messages -----
+  chatRef.off(); // remove previous listeners
+  chatRef.on('child_added', async snap => {
+    const msg = snap.val();
 
-  // Create message container
-  const li = document.createElement('li');
-  li.classList.add('message', msg.sender === currentUsername ? 'user' : 'friend');
-  li.style.display = 'flex';
-  li.style.alignItems = 'flex-start';
-  li.style.marginBottom = '8px';
+    // Message container
+    const li = document.createElement('li');
+    li.classList.add('message', msg.sender === currentUsername ? 'user' : 'friend');
+    li.style.display = 'flex';
+    li.style.alignItems = 'flex-start';
+    li.style.marginBottom = '8px';
 
-  // Profile picture
-  const pfp = document.createElement('img');
-  pfp.style.width = '36px';
-  pfp.style.height = '36px';
-  pfp.style.borderRadius = '50%';
-  pfp.style.marginRight = '10px';
-  pfp.style.objectFit = 'cover';
+    // Profile picture
+    const pfp = document.createElement('img');
+    pfp.style.width = '36px';
+    pfp.style.height = '36px';
+    pfp.style.borderRadius = '50%';
+    pfp.style.marginRight = '10px';
+    pfp.style.objectFit = 'cover';
 
-  try {
-    const pfpSnap = await firebase.database().ref(`users/${msg.sender}/pfpUrl`).once('value');
-    pfp.src = pfpSnap.exists() ? pfpSnap.val() : '../images/default-pfp.png';
-  } catch {
-    pfp.src = '../images/default-pfp.png';
-  }
+    try {
+      const pfpSnap = await firebase.database().ref(`users/${msg.sender}/pfpUrl`).once('value');
+      pfp.src = pfpSnap.exists() ? pfpSnap.val() : '../images/default-pfp.png';
+    } catch {
+      pfp.src = '../images/default-pfp.png';
+    }
 
-  // Message content container
-  const content = document.createElement('div');
-  content.style.display = 'flex';
-  content.style.flexDirection = 'column';
-  content.style.maxWidth = '70%';
+    // Message content
+    const content = document.createElement('div');
+    content.style.display = 'flex';
+    content.style.flexDirection = 'column';
+    content.style.maxWidth = '70%';
 
-  // Display name
-  let displayName = msg.sender;
-  try {
-    const snapshot = await firebase.database().ref(`users/${msg.sender}/displayName`).once('value');
-    if (snapshot.exists()) displayName = snapshot.val();
-  } catch {}
+    // Display name
+    let displayName = msg.sender;
+    try {
+      const snapshot = await firebase.database().ref(`users/${msg.sender}/displayName`).once('value');
+      if (snapshot.exists()) displayName = snapshot.val();
+    } catch {}
 
-  const nameSpan = document.createElement('div');
-  nameSpan.textContent = displayName;
-  nameSpan.style.fontWeight = 'bold';
-  nameSpan.style.color = '#fff';
-  nameSpan.style.fontSize = '14px';
-  nameSpan.style.marginBottom = '2px';
+    const nameSpan = document.createElement('div');
+    nameSpan.textContent = displayName;
+    nameSpan.style.fontWeight = 'bold';
+    nameSpan.style.color = '#fff';
+    nameSpan.style.fontSize = '14px';
+    nameSpan.style.marginBottom = '2px';
 
-  // Timestamp
+    // Timestamp
+    const timeSpan = document.createElement('div');
+    timeSpan.textContent = formatMessageTime(msg.timestamp);
+    timeSpan.style.fontSize = '10px';
+    timeSpan.style.color = '#b9bbbe';
+    timeSpan.style.marginBottom = '2px';
 
-  const timeSpan = document.createElement('div');
-  timeSpan.textContent = formatMessageTime(msg.timestamp);
-  timeSpan.style.fontSize = '10px';
-  timeSpan.style.color = '#b9bbbe';
-  timeSpan.style.marginBottom = '2px';
+    // Message text
+    const textDiv = document.createElement('div');
+    textDiv.textContent = msg.text;
+    textDiv.style.padding = '8px';
+    textDiv.style.borderRadius = '8px';
+    textDiv.style.background = msg.sender === currentUsername ? '#5865f2' : '#3a3a3a';
+    textDiv.style.color = 'white';
+    textDiv.style.wordWrap = 'break-word';
 
-  // Message text
-  const textDiv = document.createElement('div');
-  textDiv.textContent = msg.text;
-  textDiv.style.padding = '8px';
-  textDiv.style.borderRadius = '8px';
-  textDiv.style.background = msg.sender === currentUsername ? '#5865f2' : '#3a3a3a';
-  textDiv.style.color = 'white';
-  textDiv.style.wordWrap = 'break-word';
+    content.appendChild(nameSpan);
+    content.appendChild(timeSpan);
+    content.appendChild(textDiv);
 
-  content.appendChild(nameSpan);
-  content.appendChild(timeSpan);
-  content.appendChild(textDiv);
+    li.appendChild(pfp);
+    li.appendChild(content);
+    chatMessages.appendChild(li);
 
-  li.appendChild(pfp);
-  li.appendChild(content);
+    // Auto-scroll
+    setTimeout(() => {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 0);
+  });
 
-  chatMessages.appendChild(li);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-});
+  // ----- Send message -----
+  const sendMessage = () => {
+    const text = chatInput.value.trim();
+    if (!text) return;
 
-
-  // Send message
-  chatSend.addEventListener('click', () => {
-    if (!chatInput.value.trim()) return;
-    chatRef.push({
-      sender: currentUsername,
-      text: chatInput.value.trim(),
+    const newMsgRef = chatRef.push();
+    newMsgRef.set({
+      sender: currentUsername.trim(),
+      text,
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
-    chatInput.value = '';
-  });
 
+    chatInput.value = '';
+  };
+
+  chatSend.addEventListener('click', sendMessage);
   chatInput.addEventListener('keypress', e => {
-    if (e.key === 'Enter') chatSend.click();
+    if (e.key === 'Enter') sendMessage();
   });
 }
+
 
 // ----- Initial load -----
 

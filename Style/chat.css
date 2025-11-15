@@ -40,7 +40,7 @@ body {
 
 
 #friends {
-  width: 16vw;
+  width: 18vw;
   background-color: #1b1b1b;
     /* subtle right-side shadow to separate from main content */
   box-shadow: 6px 0 18px -8px rgba(0,0,0,0.7);

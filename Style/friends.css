@@ -8,7 +8,7 @@
   margin-bottom: 4px;
   background-color: #2f3136; /* updated background */
   color: white;
-  width: 14.6vw; /* take 95% of the friends tab width */
+  width: 16.5vw; /* take 95% of the friends tab width */
   margin-left: auto;
   margin-right: auto;
   margin-left: 0.4vw;
@@ -21,8 +21,9 @@
   cursor: pointer;
   margin-right: 3px;
   transition: 0.2s;
+  padding: 0;
   height: 5vh;
-  width: 5vh;
+  margin-top: 5px;
 }
 
 .options-btn {
@@ -38,7 +39,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 78vw;
+  width: 76.5vw;
 }
 
 #chat-messages {
