@@ -77,9 +77,21 @@ function loadFriendsSidebar() {
     .catch(err => console.error("Failed loading sidebar friends:", err));
 }
 
+
+
+
+
+
+
+
+
+
 // ----- Open chat with a friend -----
 function openChat(friend) {
   currentChatFriend = friend;
+
+
+
 
 
 
@@ -89,13 +101,14 @@ function formatMessageTime(timestamp) {
   const now = new Date();
   const msgDate = new Date(timestamp);
 
-  const diffMs = now - msgDate;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const timeString = msgDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
-  const timeString = msgDate.toLocaleTimeString([], {
-    hour: "numeric",
-    minute: "2-digit"
-  });
+  // Compare only the date parts
+  const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
+
+  const diffMs = nowDateOnly - msgDateOnly;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) return `Today at ${timeString}`;
   if (diffDays === 1) return `Yesterday at ${timeString}`;
@@ -104,6 +117,7 @@ function formatMessageTime(timestamp) {
   return msgDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) +
          ` at ${timeString}`;
 }
+
 
   // Hide welcome message
   document.querySelector('#main .no-chat').style.display = 'none';
@@ -169,6 +183,7 @@ chatRef.on('child_added', async snap => {
   nameSpan.style.marginBottom = '2px';
 
   // Timestamp
+
   const timeSpan = document.createElement('div');
   timeSpan.textContent = formatMessageTime(msg.timestamp);
   timeSpan.style.fontSize = '10px';
