@@ -91,33 +91,7 @@ function loadFriendsSidebar() {
 function openChat(friend) {
   currentChatFriend = friend;
 
-  // Normalize usernames for chat ID (trim and lowercase)
-  const chatId = [currentUsername.trim().toLowerCase(), friend.trim().toLowerCase()].sort().join('_');
-  const chatRef = firebase.database().ref(`chats/${chatId}`);
-
-  // ----- Time formatting -----
-  function formatMessageTime(timestamp) {
-    const now = new Date();
-    const msgDate = new Date(timestamp);
-
-    const timeString = msgDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-
-    // Compare only the date parts
-    const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
-
-    const diffMs = nowDateOnly - msgDateOnly;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return `Today at ${timeString}`;
-    if (diffDays === 1) return `Yesterday at ${timeString}`;
-    if (diffDays <= 7) return `${diffDays} days ago at ${timeString}`;
-
-    return msgDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) +
-           ` at ${timeString}`;
-  }
-
-  // Hide welcome / no-chat message
+  // Hide welcome message
   document.querySelector('#main .no-chat').style.display = 'none';
   yesChatEl.innerHTML = `
     <h3>Chat with ${friend}</h3>
@@ -132,12 +106,35 @@ function openChat(friend) {
   const chatInput = document.getElementById('chat-input');
   const chatSend = document.getElementById('chat-send');
 
-  // ----- Listen for new messages -----
-  chatRef.off(); // remove previous listeners
-  chatRef.on('child_added', async snap => {
+  // Function to format timestamps
+  function formatMessageTime(timestamp) {
+    const now = new Date();
+    const msgDate = new Date(timestamp);
+
+    const timeString = msgDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+    const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
+
+    const diffMs = nowDateOnly - msgDateOnly;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return `Today at ${timeString}`;
+    if (diffDays === 1) return `Yesterday at ${timeString}`;
+    if (diffDays > 1 && diffDays <= 7) return `${diffDays} days ago at ${timeString}`;
+
+    return msgDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) +
+           ` at ${timeString}`;
+  }
+
+  // Reference sorted by timestamp
+  const chatRef = firebase.database().ref(`chats/${[currentUsername, friend].sort().join('_')}`);
+  chatRef.off(); // clear previous listeners
+
+  // Listen for new messages
+  chatRef.orderByChild('timestamp').on('child_added', async snap => {
     const msg = snap.val();
 
-    // Message container
     const li = document.createElement('li');
     li.classList.add('message', msg.sender === currentUsername ? 'user' : 'friend');
     li.style.display = 'flex';
@@ -165,11 +162,10 @@ function openChat(friend) {
     content.style.flexDirection = 'column';
     content.style.maxWidth = '70%';
 
-    // Display name
     let displayName = msg.sender;
     try {
-      const snapshot = await firebase.database().ref(`users/${msg.sender}/displayName`).once('value');
-      if (snapshot.exists()) displayName = snapshot.val();
+      const nameSnap = await firebase.database().ref(`users/${msg.sender}/displayName`).once('value');
+      if (nameSnap.exists()) displayName = nameSnap.val();
     } catch {}
 
     const nameSpan = document.createElement('div');
@@ -179,14 +175,12 @@ function openChat(friend) {
     nameSpan.style.fontSize = '14px';
     nameSpan.style.marginBottom = '2px';
 
-    // Timestamp
     const timeSpan = document.createElement('div');
     timeSpan.textContent = formatMessageTime(msg.timestamp);
     timeSpan.style.fontSize = '10px';
     timeSpan.style.color = '#b9bbbe';
     timeSpan.style.marginBottom = '2px';
 
-    // Message text
     const textDiv = document.createElement('div');
     textDiv.textContent = msg.text;
     textDiv.style.padding = '8px';
@@ -201,34 +195,30 @@ function openChat(friend) {
 
     li.appendChild(pfp);
     li.appendChild(content);
-    chatMessages.appendChild(li);
 
-    // Auto-scroll
-    setTimeout(() => {
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 0);
+    chatMessages.appendChild(li);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
   });
 
-  // ----- Send message -----
-  const sendMessage = () => {
-    const text = chatInput.value.trim();
-    if (!text) return;
+  // Send message
+  chatSend.addEventListener('click', () => {
+    if (!chatInput.value.trim()) return;
 
     const newMsgRef = chatRef.push();
     newMsgRef.set({
-      sender: currentUsername.trim(),
-      text,
+      sender: currentUsername,
+      text: chatInput.value.trim(),
       timestamp: firebase.database.ServerValue.TIMESTAMP
     });
 
     chatInput.value = '';
-  };
+  });
 
-  chatSend.addEventListener('click', sendMessage);
   chatInput.addEventListener('keypress', e => {
-    if (e.key === 'Enter') sendMessage();
+    if (e.key === 'Enter') chatSend.click();
   });
 }
+
 
 
 // ----- Initial load -----
