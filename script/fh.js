@@ -115,12 +115,12 @@ function formatMessageTime(timestamp) {
 }
 
 // ----- Open chat with a friend -----
+// ----- Open chat with a friend -----
 function openChat(friend) {
   currentChatFriend = friend;
 
   // Hide welcome message
   document.querySelector('#main .no-chat').style.display = 'none';
-  
   yesChatEl.innerHTML = `
     <h3>Chat with ${friend}</h3>
     <ul id="chat-messages"></ul>
@@ -134,60 +134,56 @@ function openChat(friend) {
   const chatInput = document.getElementById('chat-input');
   const chatSend = document.getElementById('chat-send');
 
-  // Firebase reference for this chat
+  // Reference to chat path
   const chatRef = firebase.database().ref(`chats/${[currentUsername, friend].sort().join('_')}`);
-  chatRef.off(); // remove previous listeners
 
-  // Function to render a single message
-  async function renderMessage(msg) {
+  // ----- Utility: render a single message -----
+  function renderMessage(msg) {
     const li = document.createElement('li');
     li.classList.add('message', msg.sender === currentUsername ? 'user' : 'friend');
     li.style.display = 'flex';
     li.style.alignItems = 'flex-start';
     li.style.marginBottom = '8px';
 
-    // Profile picture
     const pfp = document.createElement('img');
     pfp.style.width = '36px';
     pfp.style.height = '36px';
     pfp.style.borderRadius = '50%';
     pfp.style.marginRight = '10px';
     pfp.style.objectFit = 'cover';
-    try {
-      const pfpSnap = await firebase.database().ref(`users/${msg.sender}/pfpUrl`).once('value');
-      pfp.src = pfpSnap.exists() ? pfpSnap.val() : '../images/default-pfp.png';
-    } catch {
-      pfp.src = '../images/default-pfp.png';
-    }
 
-    // Message content container
+    // Profile picture
+    firebase.database().ref(`users/${msg.sender}/pfpUrl`).once('value')
+      .then(snap => {
+        pfp.src = snap.exists() ? snap.val() : '../images/default-pfp.png';
+      })
+      .catch(() => pfp.src = '../images/default-pfp.png');
+
     const content = document.createElement('div');
     content.style.display = 'flex';
     content.style.flexDirection = 'column';
     content.style.maxWidth = '70%';
 
-    // Display name
-    let displayName = msg.sender;
-    try {
-      const snap = await firebase.database().ref(`users/${msg.sender}/displayName`).once('value');
-      if (snap.exists()) displayName = snap.val();
-    } catch {}
-
     const nameSpan = document.createElement('div');
-    nameSpan.textContent = displayName;
+    nameSpan.textContent = msg.sender;
     nameSpan.style.fontWeight = 'bold';
     nameSpan.style.color = '#fff';
     nameSpan.style.fontSize = '14px';
     nameSpan.style.marginBottom = '2px';
 
-    // Timestamp
     const timeSpan = document.createElement('div');
-    timeSpan.textContent = formatMessageTime(msg.timestamp);
+    const msgDate = new Date(msg.timestamp);
+    const timeString = msgDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const nowDateOnly = new Date();
+    const msgDateOnly = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
+    const diffDays = Math.floor((nowDateOnly - msgDateOnly) / (1000*60*60*24));
+    if (diffDays === 0) timeSpan.textContent = `Today at ${timeString}`;
+    else if (diffDays === 1) timeSpan.textContent = `Yesterday at ${timeString}`;
+    else timeSpan.textContent = `${diffDays} days ago at ${timeString}`;
     timeSpan.style.fontSize = '10px';
     timeSpan.style.color = '#b9bbbe';
     timeSpan.style.marginBottom = '2px';
 
-    // Message text
     const textDiv = document.createElement('div');
     textDiv.textContent = msg.text;
     textDiv.style.padding = '8px';
@@ -207,25 +203,20 @@ function openChat(friend) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
-  // ----- Load all previous messages -----
-  chatRef.once('value').then(snapshot => {
-    chatMessages.innerHTML = ''; // clear old messages
-    const msgs = [];
-    snapshot.forEach(snap => {
-      msgs.push(snap.val());
+  // ----- 1️⃣ Load all existing messages in chronological order -----
+  chatRef.orderByChild('timestamp').once('value', snapshot => {
+    chatMessages.innerHTML = ''; // clear previous messages
+    snapshot.forEach(msgSnap => {
+      renderMessage(msgSnap.val());
     });
-    // Sort by timestamp
-    msgs.sort((a, b) => a.timestamp - b.timestamp);
-    msgs.forEach(msg => renderMessage(msg));
   });
 
-  // ----- Listen for new messages -----
-  chatRef.on('child_added', snap => {
-    const msg = snap.val();
-    renderMessage(msg);
+  // ----- 2️⃣ Real-time listener for new messages -----
+  chatRef.orderByChild('timestamp').startAt(Date.now()).on('child_added', snap => {
+    renderMessage(snap.val());
   });
 
-  // ----- Send message -----
+  // ----- 3️⃣ Send new message -----
   chatSend.addEventListener('click', () => {
     if (!chatInput.value.trim()) return;
     chatRef.push({
@@ -240,6 +231,7 @@ function openChat(friend) {
     if (e.key === 'Enter') chatSend.click();
   });
 }
+
 
 
 
