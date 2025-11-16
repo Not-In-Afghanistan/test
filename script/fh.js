@@ -69,6 +69,10 @@ function loadFriendsSidebar() {
 
         btnContainer.appendChild(msgBtn);
         btnContainer.appendChild(optBtn);
+        optBtn.addEventListener('click', () => {
+  openFriendOptions(friend);
+});
+
         li.appendChild(btnContainer);
 
         friendListEl.appendChild(li);

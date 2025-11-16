@@ -48,6 +48,16 @@
 
   </div>
 </div>
+<!-- Friend Options Modal -->
+<div id="friendOptionsModal" class="modal">
+  <div class="modal-content">
+    <h2 id="friendOptionsName">Friend Options</h2>
+
+    <button id="deleteFriendBtn" class="danger-btn">Remove Friend</button>
+
+    <button id="closeFriendModal" class="close-btn">Close</button>
+  </div>
+</div>
 
 <!-- Add Server Modal -->
 <div id="server-modal" class="modal">
@@ -112,6 +122,7 @@
 <script src="./script/chat.js" defer></script>
 <script src="./script/fh.js" defer></script>
 <script src="./script/updtInbox.js" defer></script>
+<script src="./script/frOPT.js" defer></script>
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const user = localStorage.getItem("currentUser");

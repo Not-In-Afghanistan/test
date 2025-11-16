@@ -4,3 +4,27 @@
 .hidden {
   display: none;
 }
+
+
+
+
+.danger-btn {
+  background: #d9534f;
+  color: white;
+  padding: 10px;
+  width: 100%;
+  border-radius: 6px;
+  border: none;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.close-btn {
+  background: #444;
+  color: white;
+  padding: 10px;
+  width: 100%;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
