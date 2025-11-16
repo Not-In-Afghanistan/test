@@ -7,7 +7,7 @@ let currentChatFriend = null;
 // ----- Load friends into sidebar -----
 function loadFriendsSidebar() {
   if (!friendListEl) return;
-
+  
   friendListEl.innerHTML = ''; // clear previous list
 
   // Get friends from Firebase
@@ -72,9 +72,12 @@ function loadFriendsSidebar() {
         li.appendChild(btnContainer);
 
         friendListEl.appendChild(li);
+        
       });
     })
+    
     .catch(err => console.error("Failed loading sidebar friends:", err));
+    
 }
 
 
@@ -244,7 +247,7 @@ chatSend.addEventListener('click', () => {
 
     // RED WARNING PLACEHOLDER
     chatInput.placeholder = "⚠️ Message blocked: inappropriate language";
-    chatInput.style.setProperty("color", "red", "important");
+    chatInput.style.setProperty("color", "white", "important");
 
     // Reset placeholder after 2 seconds
     setTimeout(() => {

@@ -1,5 +1,3 @@
-// prof.js
-
 // Ensure Firebase is loaded and initialized
 if (!window.firebase) {
   console.error("Firebase SDK not loaded.");
@@ -17,6 +15,17 @@ if (!window.firebase) {
     const imgBox = document.querySelector("#img img");
 
     const usersRef = firebase.database().ref(`users/${currentUsername}`);
+
+    // --- Banned words list ---
+    const bannedWords = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
+      "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide","cum",
+      "boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","dildo"];
+
+    function containsBadWord(str) {
+      if (!str) return false;
+      const s = str.toLowerCase();
+      return bannedWords.some(w => s.includes(w));
+    }
 
     // --- Load current displayName and PFP ---
     usersRef.child("displayName").once("value").then(snap => {
@@ -68,6 +77,11 @@ if (!window.firebase) {
           msg.textContent = "Cannot be empty";
           return;
         }
+        // --- Check for bad words ---
+        if (containsBadWord(val)) {
+          msg.textContent = "Please avoid offensive words.";
+          return;
+        }
         saveCallback(val, msg, hide);
       });
 
@@ -77,22 +91,44 @@ if (!window.firebase) {
       return { show, hide, input, msg };
     }
 
-    // --- Display Name Modal ---
-    const displayNameModal = createModal(
-      "Change Display Name",
-      "Enter new display name",
-      (val, msgEl, closeModal) => {
-        usersRef.child("displayName").set(val)
-          .then(() => {
-            displayNameBox.textContent = val;
-            closeModal();
-          })
-          .catch(err => {
-            msgEl.textContent = "Error saving display name";
-            console.error(err);
-          });
-      }
-    );
+// --- Display Name Modal ---
+const displayNameModal = createModal(
+  "Change Display Name",
+  "Enter new display name",
+  (val, msgEl, closeModal) => {
+    const trimmed = val.trim();
+
+    // --- Validation ---
+    if (!trimmed) {
+      msgEl.textContent = "Cannot be empty";
+      return;
+    }
+    if (containsBadWord(trimmed)) {
+      msgEl.textContent = "Please avoid offensive words.";
+      return;
+    }
+    if (trimmed.length < 1) {
+      msgEl.textContent = "Display name too short (min 3 chars)";
+      return;
+    }
+    if (trimmed.length > 15) {
+      msgEl.textContent = "Display name too long (max 15 chars)";
+      return;
+    }
+
+    // --- Save to Firebase ---
+    usersRef.child("displayName").set(trimmed)
+      .then(() => {
+        displayNameBox.textContent = trimmed;
+        closeModal();
+      })
+      .catch(err => {
+        msgEl.textContent = "Error saving display name";
+        console.error(err);
+      });
+  }
+);
+
 
     changeDisplayBtn.addEventListener("click", () => {
       usersRef.child("displayName").once("value")
@@ -106,19 +142,13 @@ if (!window.firebase) {
     const overlay = document.createElement("div");
     overlay.textContent = "Change Image";
     overlay.style = `
-      position:absolute;
-      top:0; left:0;
+      position:absolute; top:0; left:0;
       width:51vh; height:51vh;
-      display:flex;
-      align-items:center; justify-content:center;
+      display:flex; align-items:center; justify-content:center;
       background:rgba(0,0,0,0.5);
-      color:white;
-      font-size:18px;
-      border-radius:50%;
-      margin: 2vw;
-      opacity:0;
-      transition:0.2s;
-      cursor:pointer;
+      color:white; font-size:18px;
+      border-radius:50%; margin:2vw;
+      opacity:0; transition:0.2s; cursor:pointer;
     `;
     const imgWrapper = document.getElementById("img");
     imgWrapper.style.position = "relative";
@@ -131,7 +161,6 @@ if (!window.firebase) {
       "Change Profile Picture",
       "Enter image URL",
       (val, msgEl, closeModal) => {
-        // Optional: validate URL ends with common image extensions
         if (!val.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
           msgEl.textContent = "Enter a valid image URL";
           return;

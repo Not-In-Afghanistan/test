@@ -6,14 +6,15 @@
 <title>KORD | Dashboard</title>
 <link rel="stylesheet" href="./Style/chat.css">
 <link rel="stylesheet" href="./Style/friends.css">
+<link rel="stylesheet" href="./Style/updtInbox.css">
 <link rel="icon" type="image/png" href="./images/favicon.png">
 </head>
 <body>
 <div class="nav">
-  <img src="./images/elseLogo.png" style="height: 9vh; margin-left: -0.9vw;" class="imgeffect">
+  <img src="./images/elseLogo.png" style="height: 9vh; margin-left: -0.8vw;" class="imgeffect">
   <div class="rightbuttons">
-  <button><img src="./images/support.webp"></button>
-  <button id="inbox-btn"><img src="./images/Mail.png"></button>
+  <button id="inbox-btn"><img src="./images/Mail.png"><span id="mail-count" class="badge hidden">0</span></button>
+  <button onclick="location.href='./extra.html'"><img src="./images/support.webp"></button>
   <button onclick="location.href='./profile.html'"><img src="./images/me.png"></button>
   </div>
 </div>
@@ -110,6 +111,7 @@
 <!-- Dashboard JS -->
 <script src="./script/chat.js" defer></script>
 <script src="./script/fh.js" defer></script>
+<script src="./script/updtInbox.js" defer></script>
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const user = localStorage.getItem("currentUser");

@@ -1,0 +1,108 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  font-size: 105%;
+}
+@media screen and (max-width: 890px) {
+  /* CSS rules for screens with a maximum width of 890px */
+  * {
+    display: none;
+  }
+}
+body {
+  display: flex;
+  height: 100vh;
+  background-color: #1b1b1b;
+  color: #fff;
+
+  flex-direction: column;
+  margin-top: 10vh;
+  padding: 1rem;
+  gap: 4vh;
+}
+
+.nav {
+  position: fixed;       /* Stay on top of everything */
+  top: 0;
+  left: 0;
+  width: 100%;           /* Full width */
+  height: 10vh;          /* Adjust as needed */
+  background-color: #252525;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 18px;
+  font-weight: bold;
+  z-index: 9999;         /* On top of everything else */
+    /* subtle right-side shadow to separate from main content */
+  box-shadow: 60px 0 18px -8px rgba(0,0,0,0.7);
+  z-index: 999;
+  display: flex;
+  justify-content: space-between;
+}
+
+button > img {
+  width: 7vh;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.rightbuttons {
+  width: fit-content;
+    display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+}
+.rightbuttons > button {
+  background-color: rgba(0, 0, 0, 0);
+  margin-left: 1vw;
+  font-size: 15px;
+  border: 0px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  width: fit-content;
+  height: 7vh;
+}
+
+.rightbuttons > button:hover {
+  scale: 0.9;
+}
+.imgeffect:hover {
+    scale: 0.90;
+}
+.imgeffect {
+    transition: 200ms;
+    cursor: pointer;
+}
+
+.box {
+    width: 100%;
+    background-color: #252525;
+    border-radius: 10px;
+    padding: 2vh;
+    border: solid 1px rgb(58, 58, 58);
+}
+.box > h2 {
+  margin-bottom: 2vh;
+  font-size: 130%;
+}
+.cont {
+  display: flex;
+  gap: 2vh;
+}
+p {
+  font-size: 110%;
+  font-weight: 100;
+}
+
+hr {
+    border: none;      /* Remove default border */
+    height: 5px;       /* Give it thickness */
+    background-color: #494949; /* Apply background color */
+}
