@@ -134,6 +134,11 @@ body {
 
 .no-chat {
   text-align: center;
+  height: 500vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .message {
