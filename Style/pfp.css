@@ -203,17 +203,5 @@ button > img {
 
 /* pfp hover overlay (optional) */
 #img { position: relative; display:inline-block; cursor: pointer; }
-#img .pfp-overlay {
-  position: absolute;
-  inset: 0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:white;
-  background: rgba(0,0,0,0.4);
-  opacity: 0;
-  transition: opacity 0.15s;
-  border-radius: 50%;
-  margin: 2vw;
-}
+
 #img:hover .pfp-overlay { opacity: 1; }
