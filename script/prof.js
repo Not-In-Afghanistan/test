@@ -5,7 +5,7 @@ if (!window.firebase) {
   (function initProfile() {
     const currentUsername = localStorage.getItem("currentUser");
     if (!currentUsername) {
-      console.warn("No user found. Redirecting to login.");
+      console.warn("No user found. Redirecting.");
       window.location.href = "./index.html";
       return;
     }
@@ -16,7 +16,7 @@ if (!window.firebase) {
 
     const usersRef = firebase.database().ref(`users/${currentUsername}`);
 
-    // --- Banned words list ---
+    // --- Banned words ---
     const bannedWords = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
       "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide","cum",
       "boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","dildo"];
@@ -27,118 +27,145 @@ if (!window.firebase) {
       return bannedWords.some(w => s.includes(w));
     }
 
-    // --- Load current displayName and PFP ---
+    // Load displayName
     usersRef.child("displayName").once("value").then(snap => {
       displayNameBox.textContent = snap.exists() ? snap.val() : currentUsername;
     });
 
+    // Load PFP
     usersRef.child("pfpUrl").once("value").then(snap => {
       imgBox.src = snap.exists() ? snap.val() : "./images/default-pfp.png";
     });
 
-    // --- CREATE MODAL FUNCTION ---
-    function createModal(title, placeholder, saveCallback) {
+    // ----- CREATE MODAL -----
+    function createModal(title, placeholder, saveCallback, includeFilePicker = false) {
       const backdrop = document.createElement("div");
       backdrop.className = "kord-modal-backdrop";
       backdrop.style.display = "none";
 
       const modal = document.createElement("div");
       modal.className = "kord-modal";
+
       modal.innerHTML = `
         <h3>${title}</h3>
         <input id="kord-input" type="text" placeholder="${placeholder}" />
+        ${includeFilePicker ? '<input type="file" id="fileInput" accept="image/*" style="margin-top:8px;">' : ""}
         <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
           <button class="kord-btn save-btn">Save</button>
           <button class="kord-btn cancel-btn">Cancel</button>
           <div id="kord-msg" style="flex:1;color:red;font-size:12px;"></div>
         </div>
       `;
+
       backdrop.appendChild(modal);
       document.body.appendChild(backdrop);
 
       const input = modal.querySelector("#kord-input");
+      const fileInput = modal.querySelector("#fileInput");
       const saveBtn = modal.querySelector(".save-btn");
       const cancelBtn = modal.querySelector(".cancel-btn");
       const msg = modal.querySelector("#kord-msg");
 
+      let selectedBase64 = null;
+
+      // FILE → BASE64
+      if (fileInput) {
+        fileInput.addEventListener("change", () => {
+          const file = fileInput.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = () => {
+            selectedBase64 = reader.result; // data:image/...;base64,...
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
       function show(initialValue = "") {
         input.value = initialValue;
+        selectedBase64 = null;
         msg.textContent = "";
         backdrop.style.display = "flex";
         input.focus();
       }
+
       function hide() {
         backdrop.style.display = "none";
       }
 
       saveBtn.addEventListener("click", () => {
         const val = input.value.trim();
-        if (!val) {
-          msg.textContent = "Cannot be empty";
-          return;
-        }
-        // --- Check for bad words ---
-        if (containsBadWord(val)) {
-          msg.textContent = "Please avoid offensive words.";
-          return;
-        }
-        saveCallback(val, msg, hide);
+        saveCallback({ val, base64: selectedBase64 }, msg, hide);
       });
 
       cancelBtn.addEventListener("click", hide);
       backdrop.addEventListener("click", e => { if (e.target === backdrop) hide(); });
 
-      return { show, hide, input, msg };
+      return { show, hide };
     }
 
-// --- Display Name Modal ---
-const displayNameModal = createModal(
-  "Change Display Name",
-  "Enter new display name",
-  (val, msgEl, closeModal) => {
-    const trimmed = val.trim();
 
-    // --- Validation ---
-    if (!trimmed) {
-      msgEl.textContent = "Cannot be empty";
-      return;
-    }
-    if (containsBadWord(trimmed)) {
-      msgEl.textContent = "Please avoid offensive words.";
-      return;
-    }
-    if (trimmed.length < 1) {
-      msgEl.textContent = "Display name too short (min 3 chars)";
-      return;
-    }
-    if (trimmed.length > 15) {
-      msgEl.textContent = "Display name too long (max 15 chars)";
-      return;
-    }
+    // ----- DISPLAY NAME MODAL -----
+    const displayNameModal = createModal(
+      "Change Display Name",
+      "Enter new display name",
+      ({ val }, msgEl, closeModal) => {
+        const trimmed = val.trim();
 
-    // --- Save to Firebase ---
-    usersRef.child("displayName").set(trimmed)
-      .then(() => {
-        displayNameBox.textContent = trimmed;
-        closeModal();
-      })
-      .catch(err => {
-        msgEl.textContent = "Error saving display name";
-        console.error(err);
-      });
-  }
-);
+        if (!trimmed) return msgEl.textContent = "Cannot be empty";
+        if (containsBadWord(trimmed)) return msgEl.textContent = "Please avoid offensive words.";
+        if (trimmed.length < 1) return msgEl.textContent = "Too short";
+        if (trimmed.length > 15) return msgEl.textContent = "Too long";
 
+        usersRef.child("displayName").set(trimmed)
+          .then(() => {
+            displayNameBox.textContent = trimmed;
+            closeModal();
+          })
+          .catch(err => {
+            msgEl.textContent = "Error saving name";
+            console.error(err);
+          });
+      }
+    );
 
     changeDisplayBtn.addEventListener("click", () => {
       usersRef.child("displayName").once("value")
-        .then(snap => {
-          const current = snap.exists() ? snap.val() : "";
-          displayNameModal.show(current);
-        });
+        .then(snap => displayNameModal.show(snap.exists() ? snap.val() : ""));
     });
 
-    // --- PFP Modal ---
+
+    // ------ PROFILE PICTURE MODAL (WITH UPLOAD) ------
+    const pfpModal = createModal(
+      "Change Profile Picture",
+      "Enter image URL (optional)",
+      ({ val, base64 }, msgEl, closeModal) => {
+        let finalImage;
+
+        if (base64) {
+          finalImage = base64; // user uploaded a file
+        } else if (val.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+          finalImage = val; // user typed a URL
+        } else {
+          msgEl.textContent = "Upload an image or enter a valid image URL";
+          return;
+        }
+
+        usersRef.child("pfpUrl").set(finalImage)
+          .then(() => {
+            imgBox.src = finalImage;
+            closeModal();
+          })
+          .catch(err => {
+            msgEl.textContent = "Error saving image";
+            console.error(err);
+          });
+      },
+      true // include file picker
+    );
+
+    // Hover overlay
     const overlay = document.createElement("div");
     overlay.textContent = "Change Image";
     overlay.style = `
@@ -156,26 +183,6 @@ const displayNameModal = createModal(
 
     imgWrapper.addEventListener("mouseenter", () => overlay.style.opacity = "1");
     imgWrapper.addEventListener("mouseleave", () => overlay.style.opacity = "0");
-
-    const pfpModal = createModal(
-      "Change Profile Picture",
-      "Enter image URL",
-      (val, msgEl, closeModal) => {
-        if (!val.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
-          msgEl.textContent = "Enter a valid image URL";
-          return;
-        }
-        usersRef.child("pfpUrl").set(val)
-          .then(() => {
-            imgBox.src = val;
-            closeModal();
-          })
-          .catch(err => {
-            msgEl.textContent = "Error saving profile picture";
-            console.error(err);
-          });
-      }
-    );
 
     overlay.addEventListener("click", () => {
       usersRef.child("pfpUrl").once("value")
