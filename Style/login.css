@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-
+@media screen and (max-width: 890px) {
+  /* CSS rules for screens with a maximum width of 890px */
+  * {
+    display: none;
+  }
+}
 body {
     background-color: rgb(20, 20, 20);
     font-family: 'Inter', sans-serif;
@@ -27,7 +32,7 @@ body {
     text-align: center;
     box-shadow: 20px 0 25px rgba(0, 0, 0, 0.4);
 }
-#left > img {   width: 125%;}
+#left > img {   width: 115%;}
 #left > h1 { font-size: 2.67rem;}
 
 #right {

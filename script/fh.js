@@ -229,20 +229,46 @@ function openChat(friend) {
     renderMessage(snap.val());
   });
 
-  // ----- 3️⃣ Send new message -----
-  chatSend.addEventListener('click', () => {
-    if (!chatInput.value.trim()) return;
-    chatRef.push({
-      sender: currentUsername,
-      text: chatInput.value.trim(),
-      timestamp: firebase.database.ServerValue.TIMESTAMP
-    });
-    chatInput.value = '';
-  });
+// ----- 3️⃣ Send new message -----
+const bannedWords = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
+      "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide",
+      "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","dildo"];
 
-  chatInput.addEventListener('keypress', e => {
-    if (e.key === 'Enter') chatSend.click();
+chatSend.addEventListener('click', () => {
+  const text = chatInput.value.trim().toLowerCase();
+
+  // --- CENSORSHIP CHECK ---
+  let containsBanned = bannedWords.some(w => text.includes(w));
+  if (containsBanned) {
+    chatInput.value = "";
+
+    // RED WARNING PLACEHOLDER
+    chatInput.placeholder = "⚠️ Message blocked: inappropriate language";
+    chatInput.style.setProperty("color", "red", "important");
+
+    // Reset placeholder after 2 seconds
+    setTimeout(() => {
+      chatInput.placeholder = "Type a message...";
+      chatInput.style.color = "";
+    }, 2000);
+
+    return; // STOP MESSAGE FROM SENDING
+  }
+
+  // --- SEND MESSAGE (SAFE TEXT) ---
+  if (!chatInput.value.trim()) return;
+  chatRef.push({
+    sender: currentUsername,
+    text: chatInput.value.trim(),
+    timestamp: firebase.database.ServerValue.TIMESTAMP
   });
+  chatInput.value = '';
+});
+
+chatInput.addEventListener('keypress', e => {
+  if (e.key === 'Enter') chatSend.click();
+});
+
 }
 
 

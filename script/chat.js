@@ -38,146 +38,169 @@ usersRefCurrentUser.once('value').then(snapshot => {
 }).catch(err => console.error("Failed loading display name:", err));
 // When user is logged in or when the dash loads
 
-
 // ----- Find Friends modal open/close handlers -----
-// Open the find-friends modal and clear previous results.
 if (findFriendsBtn) {
   findFriendsBtn.addEventListener('click', () => {
     if (!findFriendsModal) return;
     findFriendsModal.style.display = 'block';
+
     if (friendSearch) friendSearch.value = '';
     if (friendResults) friendResults.innerHTML = '';
+
     updateFriendResults(''); // show all initially
   });
 }
 
-// Close using the × inside modal
 if (findFriendsClose) {
   findFriendsClose.addEventListener('click', () => {
     findFriendsModal.style.display = 'none';
   });
 }
 
-// Close modal when clicking outside of it
 window.addEventListener('click', (e) => {
   if (e.target === findFriendsModal) findFriendsModal.style.display = 'none';
 });
 
 
-// ----- Utility: check friendship and pending request status -----
-// Returns a promise resolving to an object { isFriend: bool, hasPendingRequest: bool }
+// ----- Relationship Status Checker -----
 function getRelationshipStatusWith(username) {
-  // Read current user's friends and the receiver's inbox entry for current user
   const friendPath = `users/${currentUsername}/friends/${username}`;
   const inboxPath = `users/${username}/inbox/requests/${currentUsername}`;
 
-  const friendPromise = firebase.database().ref(friendPath).once('value');
-  const inboxPromise = firebase.database().ref(inboxPath).once('value');
+  const p1 = firebase.database().ref(friendPath).once('value');
+  const p2 = firebase.database().ref(inboxPath).once('value');
 
-  return Promise.all([friendPromise, inboxPromise]).then(([fSnap, iSnap]) => {
-    return {
-      isFriend: fSnap.exists() && !!fSnap.val(),
-      hasPendingRequest: iSnap.exists() && iSnap.val() === "pending"
-    };
-  });
+  return Promise.all([p1, p2]).then(([fSnap, iSnap]) => ({
+    isFriend: fSnap.exists() && !!fSnap.val(),
+    hasPendingRequest: iSnap.exists() && iSnap.val() === "pending"
+  }));
 }
 
 
-// ----- Main: updateFriendResults (search + render) -----
-// Query all users, filter by username (key), and render list items with + button.
+// ----- MAIN: Update Friend Results (search + render + PFP) -----
 function updateFriendResults(query) {
   if (!friendResults) return;
-  friendResults.innerHTML = ''; // clear previous results
+  friendResults.innerHTML = '';
 
-  // Load all users once (this is fine for moderate user counts)
   allUsersRef.once('value').then(snapshot => {
-    let index = 0; // for alternating bg colors
+    let index = 0;
 
     snapshot.forEach(childSnap => {
       const username = childSnap.key;
-      const displayName = childSnap.val()?.displayName || username;
+      const val = childSnap.val() || {};
 
-      // Skip current user from list
+      // Skip yourself
       if (username === currentUsername) return;
 
-      // Filter by query
+      // Query filter
       if (!username.toLowerCase().includes((query || '').toLowerCase())) return;
 
-      // Build list item (flex container)
+      const displayName = val.displayName || username;
+      const pfpUrl = val.pfpUrl || "../images/default-pfp.png";
+
+      // --- LIST ITEM CONTAINER ---
       const li = document.createElement('li');
       li.style.display = 'flex';
-      li.style.justifyContent = 'space-between';
       li.style.alignItems = 'center';
+      li.style.justifyContent = 'space-between';
       li.style.padding = '8px 10px';
       li.style.borderRadius = '6px';
       li.style.marginBottom = '6px';
-      li.style.backgroundColor = (index % 2 === 0) ? '#2e2e2e' : '#444444';
+      li.style.backgroundColor = (index % 2 === 0) ? '#2e2e2e' : '#444';
       index++;
 
-  const nameSpan = document.createElement('span');
-  nameSpan.textContent = username;
-  li.appendChild(nameSpan);
-      // Create "+" addBtn (but we may hide/disable it below)
+      // --- LEFT SECTION (pfp + names) ---
+      const left = document.createElement('div');
+      left.style.display = 'flex';
+      left.style.alignItems = 'center';
+      left.style.gap = '10px';
+
+      const img = document.createElement('img');
+      img.src = pfpUrl;
+      img.onerror = () => img.src = "../images/default-pfp.png";
+      img.style.width = '40px';
+      img.style.height = '40px';
+      img.style.borderRadius = '50%';
+      img.style.objectFit = 'cover';
+
+      const nameBox = document.createElement('div');
+      nameBox.style.display = 'flex';
+      nameBox.style.flexDirection = 'column';
+
+      const topName = document.createElement('span');
+      topName.textContent = displayName;
+      topName.style.color = 'white';
+      topName.style.fontSize = '15px';
+
+      const userTag = document.createElement('span');
+      userTag.textContent = '@' + username;
+      userTag.style.color = '#aaa';
+      userTag.style.fontSize = '11px';
+
+      nameBox.appendChild(topName);
+      nameBox.appendChild(userTag);
+
+      left.appendChild(img);
+      left.appendChild(nameBox);
+
+
+      // --- RIGHT: "+" button ---
       const addBtn = document.createElement('div');
       addBtn.classList.add('friend-add-btn');
       addBtn.textContent = '+';
       addBtn.title = `Send friend request to ${username}`;
-
-      // Default style/behavior: clickable
       addBtn.style.cursor = 'pointer';
+      addBtn.style.width = '28px';
+      addBtn.style.height = '28px';
+      addBtn.style.display = 'flex';
+      addBtn.style.alignItems = 'center';
+      addBtn.style.justifyContent = 'center';
+      addBtn.style.borderRadius = '6px';
+      addBtn.style.background = '#007aff';
+      addBtn.style.color = 'white';
+      addBtn.style.fontWeight = 'bold';
+      addBtn.style.userSelect = 'none';
 
-      // Check relationship status (friend or pending)
-      // If already friends -> hide add button; if already sent pending -> disable and show "Sent"
+      // Relationship check (friend or pending)
       getRelationshipStatusWith(username).then(status => {
         if (status.isFriend) {
-          addBtn.style.display = 'none'; // hide if already friends
+          addBtn.style.display = 'none';
         } else if (status.hasPendingRequest) {
-          addBtn.textContent = 'Sent';
+          addBtn.textContent = '✓';
           addBtn.style.opacity = '0.6';
           addBtn.style.pointerEvents = 'none';
         }
-      }).catch(err => {
-        console.error("Relationship check failed:", err);
       });
 
-      // Click handler to send friend request
+      // Send friend request
       addBtn.addEventListener('click', () => {
-        const sender = currentUsername;
-        const receiver = username;
-
-        if (sender === receiver) return; // safety
-
-        // Write a "pending" request under receiver's inbox/requests
-        firebase.database().ref(`users/${receiver}/inbox/requests/${sender}`)
+        firebase.database()
+          .ref(`users/${username}/inbox/requests/${currentUsername}`)
           .set("pending")
           .then(() => {
             addBtn.textContent = '✓';
             addBtn.style.opacity = '0.6';
-            addBtn.style.fontSize = '10px';
             addBtn.style.pointerEvents = 'none';
-            console.log(`Friend request sent from ${sender} to ${receiver}`);
-          })
-          .catch(err => {
-            console.error("Error sending friend request:", err);
           });
       });
 
-      // Append button to list item and item to results
+      // Append everything
+      li.appendChild(left);
       li.appendChild(addBtn);
       friendResults.appendChild(li);
     });
-  }).catch(err => {
-    console.error("Failed loading users for search:", err);
   });
 }
 
 
-// Live search handler: update while typing
+// ----- Live Search -----
 if (friendSearch) {
   friendSearch.addEventListener('input', () => {
     updateFriendResults(friendSearch.value);
   });
 }
+
+
 
 
 // ----- Inbox modal open/close and loader -----

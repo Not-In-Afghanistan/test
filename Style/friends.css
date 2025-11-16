@@ -13,7 +13,12 @@
   margin-right: auto;
   margin-left: 0.4vw;
 }
-
+@media screen and (max-width: 890px) {
+  /* CSS rules for screens with a maximum width of 890px */
+  * {
+    display: none;
+  }
+}
 
 .friend-buttons button {
   border: 0;

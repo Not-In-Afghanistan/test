@@ -4,7 +4,12 @@
   box-sizing: border-box;
   font-family: 'Inter', sans-serif;
 }
-
+@media screen and (max-width: 890px) {
+  /* CSS rules for screens with a maximum width of 890px */
+  * {
+    display: none;
+  }
+}
 body {
   display: flex;
   height: 100vh;
@@ -122,6 +127,7 @@ button > img {
 }
 .imgeffect {
     transition: 200ms;
+    cursor: pointer;
 }
 
 

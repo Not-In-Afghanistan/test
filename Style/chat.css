@@ -6,6 +6,14 @@
   font-family: 'Inter', sans-serif;
 }
 
+@media screen and (max-width: 890px) {
+  /* CSS rules for screens with a maximum width of 890px */
+  * {
+    display: none;
+  }
+}
+
+
 body {
   display: flex;
   height: 100vh;
@@ -60,14 +68,14 @@ body {
   margin-bottom: 8px;
   font-size: 13px;
   border: none;
-  background-color: #dadada;
-  color: black;
+  background-color: rgb(88, 101, 242);
+  color: white;
   cursor: pointer;
   transition: 0.2s;
 }
 
 #servers button:hover, #friends button:hover {
-  background-color: #a3a3a3;
+  background-color: rgb(56, 72, 245);
 }
 #servers button:hover {
   scale: 0.9;
@@ -188,14 +196,14 @@ body {
   margin-left: 10px;
   border-radius: 5px;
   border: none;
-  background-color: #e7e7e7;
-  color: black;
+  background-color: rgb(70, 70, 255);
+  color: whitesmoke;
   cursor: pointer;
   transition: 0.2s;
 }
 
 #chat-form button:hover {
-  background-color: #bbbbbb;
+  background-color: rgb(45, 45, 212);
 }
 
 /* --- Modals --- */
@@ -234,14 +242,14 @@ body {
   padding: 8px;
   border: none;
   border-radius: 5px;
-  background-color: #ffffff;
-  color: black;
+  background-color: rgb(70, 70, 255);
+  color: whitesmoke;
   cursor: pointer;
   transition: 0.2s;
 }
 
 .modal-content button:hover {
-  background-color: #c5c5c5;
+  background-color: rgb(45, 45, 212);
 }
 #btn {
   width: 100%;
@@ -295,7 +303,6 @@ body {
 .friend-add-btn {
   width: 28px;
   height: 28px;
-  background-color: #222222;
   color: white;
   font-weight: bold;
   font-size: 18px;
@@ -308,10 +315,6 @@ body {
   transition: background 0.2s;
 }
 
-.friend-add-btn:hover {
-  background-color: #d8d8d8;
-  color: black;
-}
 
 .nav {
   position: fixed;       /* Stay on top of everything */
@@ -374,7 +377,6 @@ body {
 .big {
   font-size: 200%;
 }
-
 
 
 /* --- Chat area --- */
@@ -507,4 +509,5 @@ body {
 }
 .imgeffect {
     transition: 200ms;
+    cursor: pointer;
 }
