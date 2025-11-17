@@ -3,6 +3,18 @@ const friendListEl = document.getElementById('friend-list');
 const chatArea = document.getElementById('main');
 const yesChatEl = document.querySelector('#main .yes-chat');
 let currentChatFriend = null;
+function closeChat() {
+  currentChatFriend = null;
+
+  // Hide chat UI
+  const yesChatEl = document.querySelector('#main .yes-chat');
+  const noChatEl = document.querySelector('#main .no-chat');
+
+  if (yesChatEl) yesChatEl.innerHTML = "";
+  if (noChatEl) noChatEl.style.display = "block";
+
+  console.log("Chat closed.");
+}
 
 // ----- Load friends into sidebar -----
 function loadFriendsSidebar() {
@@ -125,6 +137,10 @@ function formatMessageTime(timestamp) {
 // ----- Open chat with a friend -----
 function openChat(friend) {
   currentChatFriend = friend;
+
+
+
+
 
   // Hide welcome message
   document.querySelector('#main .no-chat').style.display = 'none';
@@ -279,6 +295,14 @@ chatInput.addEventListener('keypress', e => {
 }
 
 
+firebase.database().ref(`users/${currentUsername}/friends`).on('value', (snap) => {
+  const newList = snap.exists() ? Object.keys(snap.val()) : [];
+
+  if (currentChatFriend && !newList.includes(currentChatFriend)) {
+    console.log("[Friend removed] Closing chat with:", currentChatFriend);
+    closeChat();
+  }
+});
 
 
 
