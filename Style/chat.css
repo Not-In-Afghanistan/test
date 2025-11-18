@@ -397,6 +397,7 @@ body {
   flex-direction: column;
   background-color: #222222;
   padding: 15px;
+  padding-top: 0;
   overflow: hidden;
   border-left: 1px solid #1c1c1c;
 }

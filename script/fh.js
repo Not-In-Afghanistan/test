@@ -16,13 +16,13 @@ function closeChat() {
   console.log("Chat closed.");
 }
 
+
+
 // ----- Load friends into sidebar -----
 function loadFriendsSidebar() {
   if (!friendListEl) return;
-  
-  friendListEl.innerHTML = ''; // clear previous list
+  friendListEl.innerHTML = '';
 
-  // Get friends from Firebase
   usersRefCurrentUser.child('friends').once('value')
     .then(snapshot => {
       if (!snapshot.exists()) {
@@ -34,82 +34,75 @@ function loadFriendsSidebar() {
       }
 
       snapshot.forEach(friendSnap => {
-        const friend = friendSnap.key;
+        const friend = friendSnap.key;  // <--- friend defined INSIDE loop
 
         const li = document.createElement('li');
         li.classList.add('friend-item');
 
-        // Friend name
-        // Create profile picture element
+        // LEFT SIDE
+        const leftBox = document.createElement('div');
+        leftBox.style.display = "flex";
+        leftBox.style.alignItems = "center";
+        leftBox.style.gap = "10px";
+
         const pfp = document.createElement('img');
-        pfp.style.width = '36px';
-        pfp.style.height = '36px';
-        pfp.style.borderRadius = '50%';
-        pfp.style.objectFit = 'cover';
+        pfp.classList.add('chat-pfp');
 
-        // Get profile picture WITHOUT using await (no async needed)
         firebase.database().ref(`users/${friend}/pfpUrl`).once('value')
-          .then(snapshot => {
-            pfp.src = snapshot.exists() ? snapshot.val() : '../images/default-pfp.png';
+          .then(snap => {
+            pfp.src = snap.exists() ? snap.val() : '../images/default-pfp.png';
           })
-          .catch(() => {
-            pfp.src = '../images/default-pfp.png';
+          .catch(() => pfp.src = '../images/default-pfp.png');
+
+        leftBox.appendChild(pfp);
+
+        const nameBox = document.createElement('div');
+
+        const displayEl = document.createElement('div');
+        displayEl.classList.add('friend-display');
+        displayEl.textContent = friend;
+
+        firebase.database().ref(`users/${friend}/displayName`).once('value')
+          .then(snap => {
+            if (snap.exists()) displayEl.textContent = snap.val();
           });
-        
-        // Add PFP to list item BEFORE the name
-        li.appendChild(pfp);
 
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = friend;
-        nameSpan.classList.add('friend-name'); 
-        li.appendChild(nameSpan);
+        const handleEl = document.createElement('div');
+        handleEl.classList.add('friend-handle');
+        handleEl.textContent = '@' + friend;
 
-        // Buttons container
+        nameBox.appendChild(displayEl);
+        nameBox.appendChild(handleEl);
+
+        leftBox.appendChild(nameBox);
+        li.appendChild(leftBox);
+
+        // RIGHT BUTTONS
         const btnContainer = document.createElement('div');
         btnContainer.classList.add('friend-buttons');
 
-        // Message button
         const msgBtn = document.createElement('button');
-        msgBtn.innerHTML = '💬'; // icon
-        msgBtn.classList.add('message-btn');
+        msgBtn.innerHTML = '💬';
         msgBtn.addEventListener('click', () => openChat(friend));
 
-        // Options button (placeholder)
         const optBtn = document.createElement('button');
         optBtn.innerHTML = '☰';
-        optBtn.classList.add('options-btn');
+        optBtn.addEventListener('click', () => openFriendOptions(friend));
 
         btnContainer.appendChild(msgBtn);
         btnContainer.appendChild(optBtn);
-        optBtn.addEventListener('click', () => {
-  openFriendOptions(friend);
-});
 
         li.appendChild(btnContainer);
 
         friendListEl.appendChild(li);
-        
       });
     })
-    
     .catch(err => console.error("Failed loading sidebar friends:", err));
-    
 }
 
 
 
 
-
-
-
-
-
-
-// ----- Open chat with a friend -----
-
-
-// Open chat with a friend
-// ----- Open chat with a friend -----
 // ----- Open chat with a friend -----
 // ----- Format timestamps for messages -----
 function formatMessageTime(timestamp) {
@@ -145,13 +138,28 @@ function openChat(friend) {
   // Hide welcome message
   document.querySelector('#main .no-chat').style.display = 'none';
   yesChatEl.innerHTML = `
-    <h3>Chat with ${friend}</h3>
+      <div class="chat-head">
+    <img id="chatPfp" class="chat-pfp" src="../images/default-pfp.png">
+    <h3>${friend}</h3>
+  </div>
     <ul id="chat-messages"></ul>
     <div id="chat-form">
       <input type="text" id="chat-input" placeholder="Type a message...">
       <button id="chat-send">Send</button>
     </div>
   `;
+// Load friend's PFP
+firebase.database().ref(`users/${friend}/pfpUrl`).once('value')
+  .then(snap => {
+    const chatPfp = document.getElementById("chatPfp");
+    if (chatPfp) {
+      chatPfp.src = snap.exists() ? snap.val() : "../images/default-pfp.png";
+    }
+  })
+  .catch(() => {
+    const chatPfp = document.getElementById("chatPfp");
+    if (chatPfp) chatPfp.src = "../images/default-pfp.png";
+  });
 
   const chatMessages = document.getElementById('chat-messages');
   const chatInput = document.getElementById('chat-input');
@@ -291,7 +299,6 @@ chatSend.addEventListener('click', () => {
 chatInput.addEventListener('keypress', e => {
   if (e.key === 'Enter') chatSend.click();
 });
-
 }
 
 
@@ -303,14 +310,6 @@ firebase.database().ref(`users/${currentUsername}/friends`).on('value', (snap) =
     closeChat();
   }
 });
-
-
-
-
-
-
 // ----- Initial load -----
-
-
 // Optional: refresh sidebar live if friends list changes
 usersRefCurrentUser.child('friends').on('value', loadFriendsSidebar);
