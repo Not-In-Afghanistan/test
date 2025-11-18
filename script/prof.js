@@ -197,7 +197,7 @@ if (!window.firebase) {
         if (!trimmed) return msgEl.textContent = "Cannot be empty";
         if (containsBadWord(trimmed)) return msgEl.textContent = "Please avoid offensive words.";
         if (trimmed.length < 1) return msgEl.textContent = "Too short";
-        if (trimmed.length > 15) return msgEl.textContent = "Too long";
+        if (trimmed.length > 13) return msgEl.textContent = "Too long";
 
         useTrial()
           .then(() => usersRef.child("displayName").set(trimmed))

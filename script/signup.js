@@ -71,7 +71,7 @@
       if (!username) { showError("Username is required."); return; }
       if (!password) { showError("Password is required."); return; }
 
-      if (!allowedPattern.test(displayName) || displayName.length > 15) {
+      if (!allowedPattern.test(displayName) || displayName.length > 13) {
         showError("Display Name must be 1–15 characters, letters and numbers only.");
         return;
       }

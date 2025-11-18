@@ -104,6 +104,8 @@
 .friend-display {
   font-weight: bold;
   font-size: 14px;
+  width: 5.5vw;
+  overflow: hidden;
   color: white;
 }
 
