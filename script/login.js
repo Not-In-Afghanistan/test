@@ -1,14 +1,14 @@
 // Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyBGPFSP0e0oYqKqvJHLB5eGlX9mJ8aU09s",
-  authDomain: "test-da143.firebaseapp.com",
-  databaseURL: "https://test-da143-default-rtdb.firebaseio.com",
-  projectId: "test-da143",
-  storageBucket: "test-da143.appspot.com",
-  messagingSenderId: "58366480447",
-  appId: "1:58366480447:web:f3dd12850f09952b49688a",
-  measurementId: "G-T5HK7JTWHW"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyAZgBE5NSV_ueySIMEzI5sSMiXWXgIEAm0",
+    authDomain: "schoolwebapp-f387b.firebaseapp.com",
+    databaseURL: "https://schoolwebapp-f387b-default-rtdb.firebaseio.com",
+    projectId: "schoolwebapp-f387b",
+    storageBucket: "schoolwebapp-f387b.firebasestorage.app",
+    messagingSenderId: "586089938810",
+    appId: "1:586089938810:web:571725c421c9d9365220c3",
+    measurementId: "G-N116PDW0M4"
+  };
 
 // Initialize Firebase only if not already initialized
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
