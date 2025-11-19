@@ -263,7 +263,7 @@ firebase.database().ref(`users/${friend}/pfpUrl`).once('value')
 // ----- 3️⃣ Send new message -----
 const bannedWords = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
       "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide",
-      "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","dildo"];
+      "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy","ass","dildo"];
 
 chatSend.addEventListener('click', () => {
   const text = chatInput.value.trim().toLowerCase();

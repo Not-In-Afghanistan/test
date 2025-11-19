@@ -34,7 +34,7 @@ if (!window.firebase) {
         trialsLoaded = true;
       });
 
-    // --- UI Helpers ---
+    // ---- UI Helpers ----
     function showTrialPopup(left) {
       const div = document.createElement("div");
       div.className = "trial-popup";
@@ -66,7 +66,6 @@ if (!window.firebase) {
     // --- Premium check ---
     function loadPremiumStatus() {
       return premiumRef.once("value").then(snap => {
-        // Treat user as premium if premium object exists, ignore expires
         if (snap.exists()) {
           isPremium = true;
           return true;
@@ -82,7 +81,7 @@ if (!window.firebase) {
       return new Promise((resolve, reject) => {
         loadPremiumStatus().then(() => {
           if (isPremium) {
-            resolve("premium"); // premium users never lose trials
+            resolve("premium");
             return;
           }
 
@@ -103,7 +102,7 @@ if (!window.firebase) {
               resolve(trialsLeft);
             })
             .catch(err => {
-              trialsLeft++; // rollback on error
+              trialsLeft++; // rollback
               reject(err);
             });
         });
@@ -113,7 +112,7 @@ if (!window.firebase) {
     // --- Banned words ---
     const bannedWords = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
       "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide","cum",
-      "boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","dildo"];
+      "boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy","ass","dildo"];
     function containsBadWord(str) {
       if (!str) return false;
       const s = str.toLowerCase();
@@ -128,7 +127,7 @@ if (!window.firebase) {
       imgBox.src = snap.exists() ? snap.val() : "./images/default-pfp.png";
     });
 
-    // --- Create modal ---
+    // ----- Create Modal -----
     function createModal(title, placeholder, saveCallback, includeFilePicker = false) {
       const backdrop = document.createElement("div");
       backdrop.className = "kord-modal-backdrop";
@@ -139,7 +138,7 @@ if (!window.firebase) {
 
       modal.innerHTML = `
         <h3>${title}</h3>
-        <input id="kord-input" type="text" placeholder="${placeholder}" />
+        <input id="kord-input" type="text" placeholder="${placeholder}" style="display:none;">
         ${includeFilePicker ? '<input type="file" id="fileInput" accept="image/*" style="margin-top:8px;">' : ""}
         <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
           <button class="kord-btn save-btn">Save</button>
@@ -162,6 +161,15 @@ if (!window.firebase) {
         fileInput.addEventListener("change", () => {
           const file = fileInput.files[0];
           if (!file) return;
+
+          // --- BLOCK GIFS for PFP ---
+          if (file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif")) {
+            alert("GIFs are not allowed for profile pictures.");
+            fileInput.value = "";
+            selectedBase64 = null;
+            return;
+          }
+
           const reader = new FileReader();
           reader.onload = () => { selectedBase64 = reader.result; };
           reader.readAsDataURL(file);
@@ -173,15 +181,16 @@ if (!window.firebase) {
         selectedBase64 = null;
         msg.textContent = "";
         backdrop.style.display = "flex";
-        input.focus();
       }
 
-      function hide() { backdrop.style.display = "none"; }
+      function hide() {
+        backdrop.style.display = "none";
+      }
 
       saveBtn.addEventListener("click", () => {
-        const val = input.value.trim();
-        saveCallback({ val, base64: selectedBase64 }, msg, hide);
+        saveCallback({ base64: selectedBase64 }, msg, hide);
       });
+
       cancelBtn.addEventListener("click", hide);
       backdrop.addEventListener("click", e => { if (e.target === backdrop) hide(); });
 
@@ -191,7 +200,7 @@ if (!window.firebase) {
     // ----- Display Name Modal -----
     const displayNameModal = createModal(
       "Change Display Name",
-      "Enter new display name",
+      "",
       ({ val }, msgEl, closeModal) => {
         const trimmed = val.trim();
         if (!trimmed) return msgEl.textContent = "Cannot be empty";
@@ -203,8 +212,7 @@ if (!window.firebase) {
           .then(() => usersRef.child("displayName").set(trimmed))
           .then(() => { displayNameBox.textContent = trimmed; closeModal(); })
           .catch(err => {
-            console.error("Display name change blocked:", err);
-            if (err.message !== "No trials left") msgEl.textContent = "Failed to save. Try again later.";
+            if (err.message !== "No trials left") msgEl.textContent = "Failed to save.";
           });
       }
     );
@@ -217,19 +225,23 @@ if (!window.firebase) {
     // ----- PFP Modal -----
     const pfpModal = createModal(
       "Change Profile Picture",
-      "Enter image URL (optional)",
-      ({ val, base64 }, msgEl, closeModal) => {
-        let finalImage = null;
-        if (base64) finalImage = base64;
-        else if (val.match(/\.(jpeg|jpg|gif|png|webp)$/i)) finalImage = val;
-        else return msgEl.textContent = "Upload an image or enter a valid image URL";
+      "",
+      ({ base64 }, msgEl, closeModal) => {
+        if (!base64)
+          return msgEl.textContent = "Please upload an image.";
+
+        // --- BLOCK GIFs (base64) ---
+        if (base64.startsWith("data:image/gif")) {
+          return msgEl.textContent = "GIFs are not allowed.";
+        }
+
+        const finalImage = base64;
 
         useTrial()
           .then(() => usersRef.child("pfpUrl").set(finalImage))
           .then(() => { imgBox.src = finalImage; closeModal(); })
           .catch(err => {
-            console.error("PFP change blocked:", err);
-            if (err.message !== "No trials left") msgEl.textContent = "Failed to save. Try again later.";
+            if (err.message !== "No trials left") msgEl.textContent = "Failed to save.";
           });
       },
       true
@@ -252,8 +264,7 @@ if (!window.firebase) {
     imgWrapper.addEventListener("mouseleave", () => overlay.style.opacity = "0");
 
     overlay.addEventListener("click", () => {
-      usersRef.child("pfpUrl").once("value")
-        .then(snap => pfpModal.show(snap.exists() ? snap.val() : ""));
+      pfpModal.show();
     });
 
   })();
