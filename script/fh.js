@@ -465,15 +465,15 @@ function renderMessage(msg, id) {
   }
 // IMAGE support
 if (msg.image) {
-  const imgEl = document.createElement('img');
-  imgEl.src = msg.image;
-  imgEl.style.maxWidth = '250px';
-  imgEl.style.borderRadius = '8px';
-  imgEl.style.marginTop = '6px';
-  imgEl.style.objectFit = "cover";
-  imgEl.style.display = "block";
-  content.appendChild(imgEl);
+  const img = document.createElement('img');
+  img.src = msg.image;  // base64 OR URL both work
+  img.style.maxWidth = '250px';
+  img.style.borderRadius = '8px';
+  img.style.marginTop = '4px';
+  img.style.objectFit = 'cover';
+  content.appendChild(img);
 }
+
 
   li.appendChild(wrapper);
   li.appendChild(content);
