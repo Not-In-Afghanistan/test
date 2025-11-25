@@ -496,6 +496,8 @@ chatRef.once('value').then(snapshot => {
       id: msgSnap.key,
       sender: msg.sender,
       text: msg.text || '',
+      image: msg.image || null,         // <- URL images
+      imageBase64: msg.imageBase64 || null, // <- Base64 images
       gif: msg.gif || null,
       timestamp: msg.timestamp || 0
     });
@@ -517,7 +519,7 @@ chatRef.orderByChild('timestamp').on('child_added', snap => {
     id: snap.key,
     sender: msg.sender,
     text: msg.text || '',
-        image: msg.image || null,         // <- URL images
+    image: msg.image || null,         // <- URL images
     imageBase64: msg.imageBase64 || null, // <- Base64 images
     gif: msg.gif || null,
     timestamp: msg.timestamp || 0
