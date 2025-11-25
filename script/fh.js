@@ -463,10 +463,11 @@ function renderMessage(msg, id) {
     gifImg.style.marginTop = '4px';
     content.appendChild(gifImg);
   }
-// IMAGE support
-if (msg.image) {
+// IMAGE support (URL or Base64)
+const imageSrc = msg.image || msg.imageBase64;
+if (imageSrc) {
   const img = document.createElement('img');
-  img.src = msg.image;  // base64 OR URL both work
+  img.src = imageSrc; // works for both URL and base64
   img.style.maxWidth = '250px';
   img.style.borderRadius = '8px';
   img.style.marginTop = '4px';
@@ -516,6 +517,8 @@ chatRef.orderByChild('timestamp').on('child_added', snap => {
     id: snap.key,
     sender: msg.sender,
     text: msg.text || '',
+        image: msg.image || null,         // <- URL images
+    imageBase64: msg.imageBase64 || null, // <- Base64 images
     gif: msg.gif || null,
     timestamp: msg.timestamp || 0
   };
