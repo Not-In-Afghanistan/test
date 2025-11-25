@@ -463,20 +463,16 @@ function renderMessage(msg, id) {
     gifImg.style.marginTop = '4px';
     content.appendChild(gifImg);
   }
-  // Image support
+// IMAGE support
 if (msg.image) {
-  const imageEl = document.createElement("img");
-  imageEl.src = msg.image;
-  imageEl.style.maxWidth = "250px";
-  imageEl.style.borderRadius = "8px";
-  imageEl.style.marginTop = "4px";
-  imageEl.style.objectFit = "cover";
-  imageEl.style.cursor = "pointer";
-
-  // optional: open full screen on click
-  imageEl.onclick = () => window.open(msg.image, "_blank");
-
-  content.appendChild(imageEl);
+  const imgEl = document.createElement('img');
+  imgEl.src = msg.image;
+  imgEl.style.maxWidth = '250px';
+  imgEl.style.borderRadius = '8px';
+  imgEl.style.marginTop = '6px';
+  imgEl.style.objectFit = "cover";
+  imgEl.style.display = "block";
+  content.appendChild(imgEl);
 }
 
   li.appendChild(wrapper);
