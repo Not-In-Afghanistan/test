@@ -27,12 +27,14 @@
   margin-right: 3px;
   transition: 0.2s;
   padding: 0;
-  height: 5vh;
+  height: 100%;
   margin-top: 5px;
+  background-color: rgba(0, 0, 0, 0);
+  color: white;
+  font-size: 2em;
 }
 
 .options-btn {
-  background: #555;
   color: white;
 }
 
@@ -104,7 +106,6 @@
 .friend-display {
   font-weight: bold;
   font-size: 14px;
-  width: 5.5vw;
   overflow: hidden;
   color: white;
 }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KORD | Dashboard</title>
+<title>WAVE | Dashboard</title>
 <link rel="stylesheet" href="./Style/chat.css">
 <link rel="stylesheet" href="./Style/friends.css">
 <link rel="stylesheet" href="./Style/updtInbox.css">
@@ -13,8 +13,8 @@
 <div class="nav">
   <img src="./images/elseLogo.png" style="height: 9vh; margin-left: -0.8vw;" class="imgeffect">
   <div class="rightbuttons">
-  <button id="inbox-btn"><img src="./images/Mail.png"><span id="mail-count" class="badge hidden">0</span></button>
   <button onclick="location.href='./extra.html'"><img src="./images/support.webp"></button>
+  <button id="inbox-btn"><img src="./images/Mail.png"><span id="mail-count" class="badge hidden">0</span></button>
   <button onclick="location.href='./profile.html'"><img src="./images/me.png"></button>
   </div>
 </div>
@@ -38,7 +38,7 @@
 <!-- Main chat area -->
 <div id="main">
   <div class="no-chat">
-    <h2>Welcome to KORD    <span id="current-user-name">User</span>👋</h2>
+    <h2>Welcome to WAVE, <span id="current-user-name">User</span>👋</h2>
     <br>
     <p>Join a server or add a friend to start chatting!</p>
     <br>
@@ -58,6 +58,15 @@
     <button id="closeFriendModal" class="close-btn">Close</button>
   </div>
 </div>
+<!-- Gif Modal -->
+<!-- GIF PICKER MODAL -->
+<div id="gif-modal">
+  <div id="gif-modal-inner">
+    <input id="gif-search" placeholder="Search GIFs..." />
+<div id="gif-results"></div>
+  </div>
+</div>
+
 
 <!-- Add Server Modal -->
 <div id="server-modal" class="modal">
@@ -102,7 +111,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script> <!-- <- add this -->
 <!-- Firebase Config -->
 <script>
   const firebaseConfig = {
@@ -110,7 +119,7 @@
     authDomain: "schoolwebapp-f387b.firebaseapp.com",
     databaseURL: "https://schoolwebapp-f387b-default-rtdb.firebaseio.com",
     projectId: "schoolwebapp-f387b",
-    storageBucket: "schoolwebapp-f387b.firebasestorage.app",
+    storageBucket: "schoolwebapp-f387b.appspot.com",   // ✅ FIXED
     messagingSenderId: "586089938810",
     appId: "1:586089938810:web:571725c421c9d9365220c3",
     measurementId: "G-N116PDW0M4"

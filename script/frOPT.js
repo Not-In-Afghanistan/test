@@ -33,6 +33,20 @@ deleteFriendBtn.addEventListener("click", () => {
   firebase.database().ref(`users/${currentUsername}/friends/${selectedFriend}`).remove();
   firebase.database().ref(`users/${selectedFriend}/friends/${currentUsername}`).remove();
 
+  // ----- DELETE CHAT MESSAGES (A-structure) -----
+  let chatPath = "";
+  if (currentUsername < selectedFriend) {
+    chatPath = `${currentUsername}_${selectedFriend}`;
+  } else {
+    chatPath = `${selectedFriend}_${currentUsername}`;
+  }
+
+  firebase.database().ref(`chats/${chatPath}`).remove();
+
+  // Delete lastSeen both ways
+  firebase.database().ref(`chatLastSeen/${currentUsername}/${selectedFriend}`).remove();
+  firebase.database().ref(`chatLastSeen/${selectedFriend}/${currentUsername}`).remove();
+
   // If user was chatting with them, close chat
   if (typeof currentChatFriend !== "undefined" && currentChatFriend === selectedFriend) {
     currentChatFriend = null;
@@ -47,5 +61,4 @@ deleteFriendBtn.addEventListener("click", () => {
   friendOptionsModal.style.display = "none";
 
   // Reload friends list
-
 });

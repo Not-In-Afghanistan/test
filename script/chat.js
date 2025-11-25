@@ -156,8 +156,8 @@ function updateFriendResults(query) {
       addBtn.style.alignItems = 'center';
       addBtn.style.justifyContent = 'center';
       addBtn.style.borderRadius = '6px';
-      addBtn.style.background = '#007aff';
-      addBtn.style.color = 'white';
+      addBtn.style.background = '#E0E0E0';
+      addBtn.style.color = 'black';
       addBtn.style.fontWeight = 'bold';
       addBtn.style.userSelect = 'none';
 

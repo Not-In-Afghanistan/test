@@ -50,7 +50,7 @@
     const bannedWords = [
       "fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
       "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide",
-      "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy","ass","dildo"
+      "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy","ass","kkk","dildo"
     ];
 
     function containsBadWord(str) {

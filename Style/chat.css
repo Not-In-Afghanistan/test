@@ -63,19 +63,19 @@ body {
 }
 
 /* --- Buttons --- */
-#servers button, #friends button {
+#servers button{
   padding: 6px 10px;
   margin-bottom: 8px;
   font-size: 13px;
   border: none;
-  background-color: rgb(88, 101, 242);
-  color: white;
+  background-color: #E0E0E0;
+  color: black;
   cursor: pointer;
   transition: 0.2s;
 }
 
 #servers button:hover, #friends button:hover {
-  background-color: rgb(56, 72, 245);
+  filter: brightness(50%);
 }
 #servers button:hover {
   scale: 0.9;
@@ -196,14 +196,14 @@ body {
   margin-left: 10px;
   border-radius: 5px;
   border: none;
-  background-color: rgb(70, 70, 255);
-  color: whitesmoke;
+  background-color: #E0E0E0;
+  color: black;
   cursor: pointer;
   transition: 0.2s;
 }
 
 #chat-form button:hover {
-  background-color: rgb(45, 45, 212);
+  filter: brightness(50%);
 }
 
 /* --- Modals --- */
@@ -242,14 +242,19 @@ body {
   padding: 8px;
   border: none;
   border-radius: 5px;
-  background-color: rgb(70, 70, 255);
-  color: whitesmoke;
+  background-color: #E0E0E0;
+  color: black;
   cursor: pointer;
   transition: 0.2s;
 }
-
+#closeFriendModal {
+  bottom: 0;
+  display:flex ;
+  justify-content: center;
+  align-self: flex-end;
+}
 .modal-content button:hover {
-  background-color: rgb(45, 45, 212);
+  filter: brightness(50%);
 }
 #btn {
   width: 100%;
@@ -258,7 +263,7 @@ body {
   font-size: 13px;
   border-radius: 5px;
   border: none;
-  color: white;
+  color: black;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -303,8 +308,6 @@ body {
 .friend-add-btn {
   width: 28px;
   height: 28px;
-  color: white;
-  font-weight: bold;
   font-size: 18px;
   border-radius: 50%;
   display: flex;
@@ -312,9 +315,11 @@ body {
   align-items: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.2s;
+  transition: 0.2s;
 }
-
+.friend-add-btn:hover {
+  filter: brightness(50%);
+}
 
 .nav {
   position: fixed;       /* Stay on top of everything */
@@ -479,29 +484,6 @@ body {
   transition: 0.2s;
 }
 
-/*About Us*/
-#abtUS {
-  width: 7vh;
-  height: 7vh;
-  background-image: linear-gradient(to top, #1464c8 , #3189ea);
-  color: white;
-  padding: 3px;
-  font-size: small;
-  margin-top: auto;
-  margin-bottom: auto;
-}
-
-.btnBlue {
-  width: 7vh;
-  height: 7vh;
-  background-image: linear-gradient(to top, #95c5ff , #3189ea);
-  color: white;
-  padding: 3px;
-  font-size: 3px;
-  margin-top: auto;
-  margin-bottom: auto;
-  overflow: hidden;
-}
 .btnBlue > p {
   font-size: 13px;
 }
@@ -511,4 +493,63 @@ body {
 .imgeffect {
     transition: 200ms;
     cursor: pointer;
+}
+.unseen-counter {
+  position: absolute;
+  bottom: -4px;
+  left: -4px;
+  background: #007bff; /* blue */
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  display: none; /* hide until >0 */
+  font-weight: 600;
+  pointer-events: none;
+}
+#addBtn:hover { filter: brightness(50%);  }
+#gif-modal {
+  position: fixed;
+  bottom: -300px;  /* hidden */
+  right: 20px;
+  width: 500px;
+  height: 260px;
+  background: #1c1c1c;
+  border-radius: 20px;
+  padding: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  transition: bottom 0.35s ease;
+  overflow-y: auto;
+  z-index: 9999;
+}
+
+#gif-modal.show {
+  bottom: 80px; /* slides up */
+}
+
+#gif-modal-inner img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+#gif-search {
+  width: 100%;
+  padding: 8px;
+  background: #333;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 10px;
+}
+
+#gif-results img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+#gif-results img:hover {
+  scale: 0.95;
 }
