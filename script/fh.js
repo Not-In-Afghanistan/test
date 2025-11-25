@@ -770,17 +770,17 @@ gifSearchEl.oninput = () => {
 
 
 
-
 async function setupUploadButton() {
-  const waitForButton = () => new Promise(resolve => {
-    const interval = setInterval(() => {
-      const btn = document.getElementById("upImgBtn");
-      if (btn) {
-        clearInterval(interval);
-        resolve(btn);
-      }
-    }, 50);
-  });
+  const waitForButton = () =>
+    new Promise(resolve => {
+      const interval = setInterval(() => {
+        const btn = document.getElementById("upImgBtn");
+        if (btn) {
+          clearInterval(interval);
+          resolve(btn);
+        }
+      }, 50);
+    });
 
   const upImgBtn = await waitForButton();
 
@@ -793,55 +793,75 @@ async function setupUploadButton() {
   const premium = await isPremium(currentUsername);
 
   if (!premium) {
-    // Overlay
     const overlay = document.createElement("div");
     overlay.textContent = "Premium Only";
     overlay.style.position = "absolute";
-    overlay.style.inset = "0";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
     overlay.style.background = "rgba(0,0,0,0.6)";
     overlay.style.color = "#fff";
     overlay.style.display = "flex";
     overlay.style.justifyContent = "center";
     overlay.style.alignItems = "center";
     overlay.style.fontWeight = "bold";
-    overlay.style.cursor = "not-allowed";
     overlay.style.borderRadius = "4px";
+    overlay.style.cursor = "not-allowed";
     wrapper.appendChild(overlay);
     return;
   }
 
-  // Premium upload
+  // Premium enabled
   upImgBtn.onclick = () => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = "image/*";
 
-    fileInput.onchange = (evt) => {
-      const file = evt.target.files[0];
+    fileInput.onchange = async e => {
+      const file = e.target.files[0];
       if (!file) return;
 
-      // Convert to Base64 (no CORS, no Firebase Storage)
-      const reader = new FileReader();
-      reader.onload = function () {
-        const imageData = reader.result;
+      const storageRef = firebase
+        .storage()
+        .ref(`images/${currentUsername}/${Date.now()}_${file.name}`);
 
-        const chatId = [currentUsername, currentChatFriend].sort().join("_");
+      const uploadTask = storageRef.put(file);
 
-        firebase.database().ref(`chats/${chatId}`).push({
-          sender: currentUsername,
-          imageBase64: imageData,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-      };
+      uploadTask.on(
+        "state_changed",
+        null,
+        err => console.error("Upload failed:", err),
 
-      reader.readAsDataURL(file); // -> converts to Base64
+        async () => {
+          // FIX: generate PUBLIC URL
+          const fullPath = uploadTask.snapshot.ref.fullPath;
+          firebase
+            .storage()
+            .ref(fullPath)
+            .getDownloadURL()
+            .then(url => {
+              const chatId = [currentUsername, currentChatFriend]
+                .sort()
+                .join("_");
+
+              firebase.database().ref(`chats/${chatId}`).push({
+                sender: currentUsername,
+                image: url,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+              });
+            });
+        }
+      );
     };
 
     fileInput.click();
   };
 }
 
+// Call this once
 setupUploadButton();
+
 
 
 
