@@ -771,12 +771,7 @@ gifSearchEl.oninput = () => {
 
 
 
-
-// ==========================
-// Upload Image Button Setup
-// ==========================
 async function setupUploadButton() {
-  // Wait for the button to exist in the DOM
   const waitForButton = () => new Promise(resolve => {
     const interval = setInterval(() => {
       const btn = document.getElementById("upImgBtn");
@@ -789,69 +784,65 @@ async function setupUploadButton() {
 
   const upImgBtn = await waitForButton();
 
-  // Wrap the button in a relative container
+  // Wrap button
   const wrapper = document.createElement("div");
   wrapper.style.position = "relative";
   upImgBtn.parentNode.insertBefore(wrapper, upImgBtn);
   wrapper.appendChild(upImgBtn);
 
-  // Check if user is premium
   const premium = await isPremium(currentUsername);
 
   if (!premium) {
-    // Create overlay for non-premium
+    // Overlay
     const overlay = document.createElement("div");
     overlay.textContent = "Premium Only";
     overlay.style.position = "absolute";
-    overlay.style.top = "0";
-    overlay.style.left = "0";
-    overlay.style.width = "100%";
-    overlay.style.height = "100%";
+    overlay.style.inset = "0";
     overlay.style.background = "rgba(0,0,0,0.6)";
     overlay.style.color = "#fff";
     overlay.style.display = "flex";
     overlay.style.justifyContent = "center";
     overlay.style.alignItems = "center";
     overlay.style.fontWeight = "bold";
-    overlay.style.borderRadius = upImgBtn.style.borderRadius || "4px";
     overlay.style.cursor = "not-allowed";
+    overlay.style.borderRadius = "4px";
     wrapper.appendChild(overlay);
-  } else {
-    // Premium user: set click behavior
-    upImgBtn.onclick = async () => {
-      // Your image upload logic here, e.g., open file selector
-      const fileInput = document.createElement("input");
-      fileInput.type = "file";
-      fileInput.accept = "image/*";
-      fileInput.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // Upload to Firebase Storage (example)
-        const storageRef = firebase.storage().ref(`images/${currentUsername}/${Date.now()}_${file.name}`);
-        const uploadTask = storageRef.put(file);
-
-        uploadTask.on('state_changed', null, 
-          (error) => { console.error("Upload failed:", error); },
-          async () => {
-            const url = await uploadTask.snapshot.ref.getDownloadURL();
-            // Send as chat message
-            const chatId = [currentUsername, currentChatFriend].sort().join("_");
-            firebase.database().ref(`chats/${chatId}`).push({
-              sender: currentUsername,
-              image: url,
-              timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-          }
-        );
-      };
-      fileInput.click();
-    };
+    return;
   }
+
+  // Premium upload
+  upImgBtn.onclick = () => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+
+    fileInput.onchange = (evt) => {
+      const file = evt.target.files[0];
+      if (!file) return;
+
+      // Convert to Base64 (no CORS, no Firebase Storage)
+      const reader = new FileReader();
+      reader.onload = function () {
+        const imageData = reader.result;
+
+        const chatId = [currentUsername, currentChatFriend].sort().join("_");
+
+        firebase.database().ref(`chats/${chatId}`).push({
+          sender: currentUsername,
+          imageBase64: imageData,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+      };
+
+      reader.readAsDataURL(file); // -> converts to Base64
+    };
+
+    fileInput.click();
+  };
 }
 
-// Call once after rendering the chat form
 setupUploadButton();
+
 
 
 
