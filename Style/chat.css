@@ -34,7 +34,10 @@ body {
   overflow-y: auto;
 }
 #servers button {
-  width: 3vw;
+  min-width: 3vw;
+  min-height: 3vw;
+  max-width: 3vw;
+  max-height: 3vw;
   border-radius: 50%;
   overflow: hidden;
 }
@@ -44,7 +47,34 @@ body {
   /* subtle right-side shadow to separate from main content */
   box-shadow: 6px 0 18px -8px rgba(0,0,0,0.7);
   z-index: 100;
+  overflow-x: hidden;
 }
+
+
+#server-list {
+  height: 100%;
+  overflow-x: hidden;
+  margin-right: -0.5vw;
+}
+#server-list::-webkit-scrollbar {
+    height: 8px; /* horizontal scrollbar height */
+    width: 8px;  /* vertical scrollbar width (if any) */
+}
+
+#server-list::-webkit-scrollbar-track {
+    background: #1e1e1e; /* track color */
+    border-radius: 4px;
+}
+
+#server-list::-webkit-scrollbar-thumb {
+    background: #ffbd59; /* thumb color */
+    border-radius: 4px;
+}
+
+#server-list::-webkit-scrollbar-thumb:hover {
+    background: #ff9900; /* thumb on hover */
+}
+
 
 
 #friends {
@@ -81,12 +111,11 @@ body {
   scale: 0.9;
 }
 /* --- Server list --- */
-#server-list, #friend-list {
+#friend-list {
   list-style: none;
   margin-top: 5px;
   flex: 1;
   overflow-y: auto;
-  padding-right: 5px;
 }
 
 #server-list li, #friend-list li {
@@ -104,15 +133,6 @@ body {
 
 #server-list li:hover {
   background-color: #36393f;
-}
-
-/* Server image */
-.server-img {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
 }
 
 /* Delete server button */
@@ -374,7 +394,7 @@ body {
 }
 
 #add-server-btn , #join-server-btn {
-  height: 3vw;
+  width: 3vw;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -498,7 +518,6 @@ body {
   position: absolute;
   bottom: -4px;
   left: -4px;
-  background: #007bff; /* blue */
   color: white;
   font-size: 11px;
   padding: 2px 6px;

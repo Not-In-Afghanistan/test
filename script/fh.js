@@ -129,7 +129,7 @@ function loadFriendsSidebar() {
             ringDiv.style.width = '60px';
             ringDiv.style.height = '60px';
             ringDiv.style.pointerEvents = 'none';
-            ringDiv.style.opacity = '0.5';
+            ringDiv.style.opacity = '0.3';
             ringDiv.style.zIndex = '5';
 
             const ringImg = document.createElement('img');
@@ -174,7 +174,7 @@ function loadFriendsSidebar() {
             badge.style.position = 'absolute';
             badge.style.bottom = '5px';
             badge.style.right = '5px';
-            badge.style.backgroundColor = '#00bfffff';
+            badge.style.backgroundColor = '#ffca7a';
             badge.style.color = 'white';
             badge.style.borderRadius = '50%';
             badge.style.padding = '2px 6px';
@@ -446,7 +446,7 @@ function renderMessage(msg, id) {
   textDiv.textContent = msg.text || '';
   textDiv.style.padding = '8px';
   textDiv.style.borderRadius = '8px';
-  textDiv.style.background = msg.sender === currentUsername ? '#5865f2' : '#3a3a3a';
+  textDiv.style.background = msg.sender === currentUsername ? '#ffbd59d7' : '#3a3a3a';
   textDiv.style.color = 'white';
   textDiv.style.wordWrap = 'break-word';
 
@@ -858,19 +858,6 @@ async function setupUploadButton() {
 }
 
 setupUploadButton();
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ----- Watch for friend removals (close chat if missing) -----
 firebase.database().ref(`users/${currentUsername}/friends`).on('value', (snap) => {
   const newList = snap.exists() ? Object.keys(snap.val()) : [];
