@@ -446,7 +446,7 @@ function renderMessage(msg, id) {
   textDiv.textContent = msg.text || '';
   textDiv.style.padding = '8px';
   textDiv.style.borderRadius = '8px';
-  textDiv.style.background = msg.sender === currentUsername ? '#ffbd59d7' : '#3a3a3a';
+  textDiv.style.background = msg.sender === currentUsername ? '#2f3136' : '#3a3a3a';
   textDiv.style.color = 'white';
   textDiv.style.wordWrap = 'break-word';
 

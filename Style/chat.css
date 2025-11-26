@@ -56,26 +56,6 @@ body {
   width: 5vw;
   overflow-x: hidden;
 }
-#server-list::-webkit-scrollbar {
-    height: 8px; /* horizontal scrollbar height */
-    width: 8px;  /* vertical scrollbar width (if any) */
-}
-
-#server-list::-webkit-scrollbar-track {
-    background: #1e1e1e; /* track color */
-    border-radius: 4px;
-}
-
-#server-list::-webkit-scrollbar-thumb {
-    background: #ffbd59; /* thumb color */
-    border-radius: 4px;
-}
-
-#server-list::-webkit-scrollbar-thumb:hover {
-    background: #ff9900; /* thumb on hover */
-}
-
-
 
 #friends {
   width: 18vw;
@@ -118,23 +98,23 @@ body {
   overflow-y: auto;
 }
 
-#server-list li, #friend-list li {
+#friend-list li {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 5px;
   margin-bottom: 5px;
   border-radius: 5px;
-  background-color: #383838;
   cursor: pointer;
   transition: background 0.2s;
   gap: 5px;
 }
-
-#server-list li:hover {
-  background-color: #36393f;
+#server-list li{
+  padding: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
-
 /* Delete server button */
 .delete-server-btn {
   background-color: #f04747;
