@@ -53,8 +53,8 @@ body {
 
 #server-list {
   height: 100%;
+  width: 5vw;
   overflow-x: hidden;
-  margin-right: -0.5vw;
 }
 #server-list::-webkit-scrollbar {
     height: 8px; /* horizontal scrollbar height */
