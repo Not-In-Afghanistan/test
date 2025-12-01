@@ -54,7 +54,7 @@ function closeChat() {
   const noChatEl = document.querySelector('#main .no-chat');
 
   if (yesChatElLocal) yesChatElLocal.innerHTML = "";
-  if (noChatEl) noChatEl.style.display = "block";
+  if (noChatEl) noChatEl.style.display = "flex";
 
   console.log("Chat closed.");
 }
@@ -738,7 +738,7 @@ gifSearchEl.oninput = () => {
 
     try {
       const premium = await isPremium(currentUsername);
-      const limit = premium ? 30 : 4; // 5 for free, 30 for premium
+      const limit = premium ? 30 : 4; // 4 for free, 30 for premium
 
       const res = await fetch(`https://api.tenor.com/v1/search?q=${encodeURIComponent(query)}&key=${TENOR_KEY}&limit=${limit}`);
       if (!res.ok) throw new Error(res.statusText);
@@ -822,6 +822,7 @@ async function setupUploadButton() {
     overlay.style.fontWeight = "bold";
     overlay.style.cursor = "not-allowed";
     overlay.style.borderRadius = "4px";
+    overlay.style.fontSize = "13px";
     wrapper.appendChild(overlay);
     return;
   }

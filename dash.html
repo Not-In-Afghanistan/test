@@ -91,6 +91,22 @@
     <button id="join-server-confirm">Join Server</button>
   </div>
 </div>
+<!-- SERVER CHAT MODAL -->
+<div id="server-chat-modal" class="modal" style="display:none;">
+
+  <div class="server-chat-nav" id="server-chat-nav"></div>
+
+  <div class="server-chat-messages" id="server-chat-messages"></div>
+
+  <div class="server-chat-input" id="server-chat-input">
+    <input type="text" id="server-chat-box" placeholder="Message...">
+    <button id="server-chat-send">Send</button>
+  </div>
+
+</div>
+
+
+
 <!-- Find Friends Modal -->
 <div id="find-friends-modal" class="modal">
   <div class="modal-content" id="differ">
@@ -134,6 +150,7 @@
 <script src="./script/updtInbox.js" defer></script>
 <script src="./script/frOPT.js" defer></script>
 <script src="./script/servers.js" defer></script>
+
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const user = localStorage.getItem("currentUser");
