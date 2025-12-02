@@ -117,10 +117,3 @@ body {
     background-color: rgb(180, 180, 180);
     transform: translateY(-2px);
 }
-#ahref {
-    color: rgb(153, 153, 153);
-    transition: 0.2s;
-}
-#ahref:hover {
-    filter: brightness(60%);
-}
