@@ -558,17 +558,22 @@ function insertMessageSorted(msg) {
   // ----- 3) Send new message -----
   const bannedWords = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
         "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide",
-        "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy","ass","kkk","dildo"];
+        "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy","ass","kkk","masturbate","dildo"];
 
   // remove previous event listeners if any (guard)
   chatSend.onclick = null;
   chatInput.onkeypress = null;
 
-  chatSend.addEventListener('click', () => {
-    const text = chatInput.value.trim().toLowerCase();
+chatSend.addEventListener('click', async () => {
+  const text = chatInput.value.trim();
+  if (!text) return;
 
-    // --- CENSORSHIP CHECK ---
-    let containsBanned = bannedWords.some(w => text.includes(w));
+  const lower = text.toLowerCase();
+  const premium = await isPremium(currentUsername);
+
+  // --- CENSORSHIP CHECK (only for non-premium) ---
+  if (!premium) {
+    const containsBanned = bannedWords.some(w => lower.includes(w));
     if (containsBanned) {
       chatInput.value = "";
       chatInput.placeholder = "⚠️ Message blocked: inappropriate language";
@@ -581,16 +586,18 @@ function insertMessageSorted(msg) {
 
       return; // STOP MESSAGE FROM SENDING
     }
+  }
 
-    // --- SEND MESSAGE (SAFE TEXT) ---
-    if (!chatInput.value.trim()) return;
-    chatRef.push({
-      sender: currentUsername,
-      text: chatInput.value.trim(),
-      timestamp: firebase.database.ServerValue.TIMESTAMP
-    });
-    chatInput.value = '';
+  // --- SEND MESSAGE (SAFE TEXT) ---
+  chatRef.push({
+    sender: currentUsername,
+    text: text,
+    timestamp: firebase.database.ServerValue.TIMESTAMP
   });
+
+  chatInput.value = '';
+});
+
 
   chatInput.addEventListener('keypress', e => {
     if (e.key === 'Enter') chatSend.click();

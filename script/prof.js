@@ -86,7 +86,7 @@ if (!window.firebase) {
 
     const bannedWords = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
       "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide","cum",
-      "boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy","ass","kkk","dildo"];
+      "boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy","ass","kkk","masturbate","dildo"];
     function containsBadWord(str) {
       if (!str) return false;
       const s = str.toLowerCase();

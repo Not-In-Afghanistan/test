@@ -175,6 +175,7 @@ body {
 #chat-form {
   display: flex;
   padding: 10px;
+  padding-bottom: 0;
   background-color: #40444b;
 }
 
@@ -195,7 +196,7 @@ body {
 }
 
 #chat-form button {
-  
+  height: 100%;
   padding: 8px 12px;
   border-radius: 5px;
   border: none;
@@ -560,7 +561,29 @@ body {
 
 
 
-
+#server-gif-modal {
+  position: fixed;
+  bottom: 10vh;  /* hidden */
+  right: 20px;
+  width: 500px;
+  height: 260px;
+  background: #1c1c1c;
+  border-radius: 20px;
+  padding: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  transition: bottom 0.35s ease;
+  overflow-y: auto;
+  z-index: 9999;
+}
+#server-gif-search {
+width: 100%;
+  padding: 8px;
+  background: #333;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 10px;
+}
 #server-chat-modal {
   display: none;
   position: fixed;
@@ -612,7 +635,7 @@ body {
 }
 
 .server-chat-input button {
-  display: none;
+    height: 100%;
     padding: 8px 12px;
     border-radius: 5px;
     border: none;
@@ -621,6 +644,7 @@ body {
     cursor: pointer;
     transition: 0.2s;
 }
+
 .server-chat-input button:hover {
   filter: brightness(50%);
 }

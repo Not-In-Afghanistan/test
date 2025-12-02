@@ -2,6 +2,12 @@
 // SERVER SYSTEM (ONE FILE, FULL FEATURED)
 // =========================
 async function openServerChat(serverId, serverData) {
+    // --- CLOSE ANY OPEN GIF MODALS FIRST ---
+  const allGifModals = document.querySelectorAll(".gif-modal"); // or "#server-gif-modal" if unique
+  allGifModals.forEach(modal => {
+    modal.style.display = "none";
+    modal.classList.remove("show");
+  });
   const modal = document.getElementById("server-chat-modal");
   const nav = document.getElementById("server-chat-nav");
   const msgArea = document.getElementById("server-chat-messages");
@@ -67,7 +73,7 @@ async function openServerChat(serverId, serverData) {
       const bannedWords = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
         "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide",
         "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy",
-        "ass","kkk","dildo"];
+        "ass","kkk","masturbate","dildo"];
 
       const name = prompt("Enter new server name (max 10 chars):");
       if (!name) return;
@@ -109,9 +115,77 @@ async function openServerChat(serverId, serverData) {
   // ---- Close ----
   document.getElementById("close-server-chat").onclick = () => {
     modal.style.display = "none";
+
+    // Close GIF modal if open
+    const gifModal = document.getElementById("server-gif-modal");
+    if (gifModal) {
+      gifModal.style.display = "none";
+      gifModal.classList.remove("show");
+    }
+
     if (window.serverMessageListener) window.serverMessageListener.off?.();
     if (window.serverLiveListener) window.serverLiveListener.off?.();
   };
+
+  // ---- Close ----
+document.getElementById("close-server-chat").onclick = () => {
+  modal.style.display = "none";
+
+  // Close GIF modal if open
+  const gifModal = document.getElementById("server-gif-modal");
+  if (gifModal) {
+    gifModal.style.display = "none";
+    gifModal.classList.remove("show");
+  }
+
+  if (window.serverMessageListener) window.serverMessageListener.off?.();
+  if (window.serverLiveListener) window.serverLiveListener.off?.();
+};
+
+  // ---- Close ----
+document.getElementById("close-server-chat").onclick = () => {
+  modal.style.display = "none";
+
+  // Close GIF modal if open
+  const gifModal = document.getElementById("server-gif-modal");
+  if (gifModal) {
+    gifModal.style.display = "none";
+    gifModal.classList.remove("show");
+  }
+
+  if (window.serverMessageListener) window.serverMessageListener.off?.();
+  if (window.serverLiveListener) window.serverLiveListener.off?.();
+};
+
+  // ---- Close ----
+document.getElementById("close-server-chat").onclick = () => {
+  modal.style.display = "none";
+
+  // Close GIF modal if open
+  const gifModal = document.getElementById("server-gif-modal");
+  if (gifModal) {
+    gifModal.style.display = "none";
+    gifModal.classList.remove("show");
+  }
+
+  if (window.serverMessageListener) window.serverMessageListener.off?.();
+  if (window.serverLiveListener) window.serverLiveListener.off?.();
+};
+
+  // ---- Close ----
+document.getElementById("close-server-chat").onclick = () => {
+  modal.style.display = "none";
+
+  // Close GIF modal if open
+  const gifModal = document.getElementById("server-gif-modal");
+  if (gifModal) {
+    gifModal.style.display = "none";
+    gifModal.classList.remove("show");
+  }
+
+  if (window.serverMessageListener) window.serverMessageListener.off?.();
+  if (window.serverLiveListener) window.serverLiveListener.off?.();
+};
 
   // ---- Live updates ----
   const serverRef = firebase.database().ref(`servers/${serverId}`);
@@ -157,47 +231,58 @@ async function openServerChat(serverId, serverData) {
         renderServerMessage(m, m.id, msgArea);
     });
   });
-  // --- Add GIF + Image buttons next to input ---
+// --- Prevent duplicate GIF/Image controls ---
+const oldControls = document.getElementById("media-controls");
+if (oldControls) oldControls.remove();
+
+// --- Add GIF + Image buttons next to input ---
 const controls = document.createElement("div");
+controls.id = "media-controls"; // IMPORTANT
 controls.style.display = "flex";
 controls.style.gap = "10px";
-controls.style.marginTop = "5px";
 
 controls.innerHTML = `
-  <button id="gif-btn" style="padding:5px 10px;">GIF</button>
-  <button id="img-btn" style="padding:5px 10px;">Image</button>
+  <button id="gif-btn2">GIF</button>
+  <button id="img-btn">Upload Image</button>
 `;
 
 box.parentNode.insertBefore(controls, box.nextSibling);
 
-const gifBtn = document.getElementById("gif-btn");
+const gifBtn = document.getElementById("gif-btn2");
 const imgBtn = document.getElementById("img-btn");
 
   // ---- Send message ----
   const bannedWords2 = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
     "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide",
     "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy",
-    "ass","kkk","dildo"];
+    "ass","kkk","masturbate","dildo"];
 
-  sendBtn.onclick = () => {
-    const rawText = box.value.trim();
-    if (!rawText) return;
-    const lower = rawText.toLowerCase();
+  sendBtn.onclick = async () => {
+  const rawText = box.value.trim();
+  if (!rawText) return;
 
-    if (bannedWords2.some(w => lower.includes(w))) {
+  const lower = rawText.toLowerCase();
+  const premium = await isPremium(currentUsername);
+
+  // --- CENSORSHIP CHECK (non-premium only) ---
+  if (!premium) {
+    const containsBanned = bannedWords2.some(w => lower.includes(w));
+    if (containsBanned) {
       box.value = "";
-      box.placeholder = "⚠️ Message blocked";
+      box.placeholder = "⚠️ Message blocked: inappropriate language";
       setTimeout(() => box.placeholder = "Type a message...", 1500);
-      return;
+      return; // STOP MESSAGE FROM SENDING
     }
+  }
 
-    firebase.database().ref(`servers/${serverId}/messages`).push({
-      sender: currentUsername,
-      text: rawText,
-      timestamp: Date.now()
-    });
+  // --- SEND MESSAGE (SAFE TEXT) ---
+  firebase.database().ref(`servers/${serverId}/messages`).push({
+    sender: currentUsername,
+    text: rawText,
+    timestamp: Date.now()
+  });
 
-    box.value = "";
+  box.value = "";
   };
 
   // ---- Enter key sends ----
@@ -207,11 +292,244 @@ const imgBtn = document.getElementById("img-btn");
       sendBtn.onclick();
     }
   });
+
+
+
+
+
+
+  const gifModal = document.getElementById("server-gif-modal");
+const gifModalInner = document.getElementById("server-gif-modal-inner");
+
+  // Initialize GIF system for this server chat
+initGifSystemForServer({
+  serverId,
+  gifButtonEl: document.getElementById("gif-btn2"),
+  gifModalEl: gifModal,
+  gifModalInnerEl: gifModalInner,
+  gifResultsTargetEl: gifModalInner
+});
+function initGifSystemForServer({ serverId, gifButtonEl, gifModalEl, gifModalInnerEl, gifResultsTargetEl }) {
+  if (!gifButtonEl || !gifModalEl || !gifModalInnerEl) {
+    console.warn("GIF system skipped — missing elements");
+    return;
+  }
+
+  // Build search UI inside modal
+  gifModalInnerEl.innerHTML = `
+    <div class="gif-ui" style="padding:10px; max-width:520px;">
+      <input id="server-gif-search" placeholder="Search GIFs..." 
+             style="width:100%; padding:8px; margin-bottom:8px;" />
+      <div id="server-gif-results" style="display:flex; flex-wrap:wrap;"></div>
+    </div>
+  `;
+
+  const gifSearchEl = gifModalInnerEl.querySelector("#server-gif-search");
+  const gifResultsEl = gifModalInnerEl.querySelector("#server-gif-results");
+
+  // Modal helpers
+  function showModal() {
+    gifModalEl.style.display = "block";
+    gifModalEl.classList.add("show");
+  }
+  function hideModal() {
+    gifModalEl.style.display = "none";
+    gifModalEl.classList.remove("show");
+  }
+  function toggleModal() {
+    if (gifModalEl.style.display === "block") hideModal();
+    else showModal();
+  }
+
+  // Send GIF message to server
+  async function sendServerGifMessage(url) {
+    if (!serverId || !url) return;
+
+    const premium = await isPremium(currentUsername);
+    const timeoutSnap = await firebase.database()
+      .ref(`gifTimeouts/${currentUsername}`)
+      .once("value");
+
+    if (!premium && timeoutSnap.exists()) {
+      return; // cooldown block
+    }
+
+    firebase.database()
+      .ref(`servers/${serverId}/messages`)
+      .push({
+        sender: currentUsername,
+        gif: url,
+        timestamp: Date.now()
+      });
+
+    if (!premium) startGifCooldown(currentUsername, 25);
+
+    hideModal();
+  }
+
+  // Handle GIF button click
+  gifButtonEl.onclick = async (e) => {
+    e.stopPropagation();
+
+    const premium = await isPremium(currentUsername);
+    const timeoutSnap = await firebase.database()
+      .ref(`gifTimeouts/${currentUsername}`)
+      .once("value");
+
+    // Cooldown check
+    if (!premium && timeoutSnap.exists()) {
+      const left = Math.ceil((timeoutSnap.val() - Date.now()) / 1000);
+      gifButtonEl.textContent = `GIF (${left}s)`;
+      return;
+    }
+
+    toggleModal();
+  };
+
+  // Restore cooldown if already active
+  firebase.database().ref(`gifTimeouts/${currentUsername}`).once("value")
+    .then(snap => {
+      if (snap.exists()) {
+        const left = Math.ceil((snap.val() - Date.now()) / 1000);
+        if (left > 0) startGifCooldown(currentUsername, left);
+      }
+    });
+
+  // Tenor search (debounced)
+  let typingTimeout;
+  gifSearchEl.oninput = () => {
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(async () => {
+      const query = gifSearchEl.value.trim();
+      if (query.length < 2) {
+        gifResultsEl.innerHTML = "<p style='color:#999'>Type 2+ characters...</p>";
+        return;
+      }
+
+      try {
+        const premium = await isPremium(currentUsername);
+        const limit = premium ? 30 : 4;
+
+        const res = await fetch(
+          `https://api.tenor.com/v1/search?q=${encodeURIComponent(query)}&key=${TENOR_KEY}&limit=${limit}`
+        );
+        const data = await res.json();
+
+        gifResultsEl.innerHTML = "";
+        data.results?.forEach(item => {
+          const url = item.media[0]?.gif?.url;
+          if (!url) return;
+
+          const img = document.createElement("img");
+          img.src = url;
+          img.className = "gif-option";
+          img.style.width = "100px";
+          img.style.height = "100px";
+          img.style.objectFit = "cover";
+          img.style.borderRadius = "8px";
+          img.style.margin = "4px";
+          img.style.cursor = "pointer";
+          img.onclick = () => sendServerGifMessage(url);
+
+          gifResultsEl.appendChild(img);
+        });
+      } catch (err) {
+        gifResultsEl.innerHTML = "<p style='color:red'>Error loading GIFs</p>";
+      }
+    }, 300);
+  };
+
+  // Close modal when clicking outside
+  gifModalEl.onclick = (e) => {
+    if (e.target === gifModalEl) hideModal();
+  };
+
+  gifModalInnerEl.onclick = (e) => e.stopPropagation();
+}
+
+
+setupServerImageUpload({
+  serverId,
+  imgButtonEl: document.getElementById("img-btn")
+});
+async function setupServerImageUpload({ serverId, imgButtonEl }) {
+  if (!imgButtonEl) return;
+
+  // --- Prevent double wrapping ---
+  if (imgButtonEl.dataset.bound === "true") return;
+  imgButtonEl.dataset.bound = "true";
+
+  // Wrap button just like DM
+  const wrapper = document.createElement("div");
+  wrapper.style.position = "relative";
+  imgButtonEl.parentNode.insertBefore(wrapper, imgButtonEl);
+  wrapper.appendChild(imgButtonEl);
+
+  const premium = await isPremium(currentUsername);
+
+  if (!premium) {
+    // Overlay block
+    const overlay = document.createElement("div");
+    overlay.textContent = "Premium Only";
+    overlay.style.position = "absolute";
+    overlay.style.inset = "0";
+    overlay.style.background = "rgba(0,0,0,0.6)";
+    overlay.style.color = "#fff";
+    overlay.style.display = "flex";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.fontWeight = "bold";
+    overlay.style.cursor = "not-allowed";
+    overlay.style.borderRadius = "4px";
+    overlay.style.fontSize = "13px";
+    wrapper.appendChild(overlay);
+    return;
+  }
+
+  // ---- Premium allowed ----
+  imgButtonEl.onclick = () => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+
+    fileInput.onchange = evt => {
+      const file = evt.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const imageData = reader.result;
+
+        // push into server messages
+        firebase.database().ref(`servers/${serverId}/messages`).push({
+          sender: currentUsername,
+          imageBase64: imageData,
+          timestamp: Date.now()
+        });
+      };
+
+      reader.readAsDataURL(file);
+    };
+
+    fileInput.click();
+  };
+}
+
 }
 
 
 // Example refreshUserServers function
 async function refreshUserServers() {
+  const imageSrc = msg.image || msg.imageBase64;
+if (imageSrc) {
+  const img = document.createElement("img");
+  img.src = imageSrc;
+  img.style.maxWidth = "250px";
+  img.style.borderRadius = "8px";
+  img.style.marginTop = "4px";
+  img.style.objectFit = "cover";
+  content.appendChild(img);
+}
   const serverListEl = document.getElementById("server-list");
   serverListEl.innerHTML = "";
   const userServersSnap = await firebase.database().ref(`users/${currentUsername}/servers`).once("value");
