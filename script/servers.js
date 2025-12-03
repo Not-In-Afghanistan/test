@@ -2,35 +2,46 @@
 // SERVER SYSTEM (ONE FILE, FULL FEATURED)
 // =========================
 async function openServerChat(serverId, serverData) {
-    // --- CLOSE ANY OPEN GIF MODALS FIRST ---
-  const allGifModals = document.querySelectorAll(".gif-modal"); // or "#server-gif-modal" if unique
-  allGifModals.forEach(modal => {
-    modal.style.display = "none";
-    modal.classList.remove("show");
+  // --- close any open gif modals first ---
+  document.querySelectorAll(".gif-modal").forEach(m => {
+    m.style.display = "none";
+    m.classList.remove("show");
   });
+
+  // --- DOM refs ---
   const modal = document.getElementById("server-chat-modal");
   const nav = document.getElementById("server-chat-nav");
-  const msgArea = document.getElementById("server-chat-messages");
+  const msgArea = document.getElementById("server-chat-messages"); // you said it's a DIV
   const box = document.getElementById("server-chat-box");
   const sendBtn = document.getElementById("server-chat-send");
 
+  if (!modal || !nav || !msgArea || !box || !sendBtn) {
+    console.warn("openServerChat: missing required DOM elements");
+    return;
+  }
+
+  // show modal
   modal.style.display = "flex";
   modal.style.flexDirection = "column";
   msgArea.innerHTML = "";
 
-  // ---- Check if banned BEFORE opening fully ----
-  const banSnap = await firebase.database().ref(`servers/${serverId}/banned/${currentUsername}`).once("value");
-  if (banSnap.exists()) {
-    alert("You are banned from this server.");
-    modal.style.display = "none";
-    return;
+  // ---- Check ban BEFORE opening fully ----
+  try {
+    const banSnap = await firebase.database().ref(`servers/${serverId}/banned/${currentUsername}`).once("value");
+    if (banSnap.exists()) {
+      alert("You are banned from this server.");
+      modal.style.display = "none";
+      return;
+    }
+  } catch (err) {
+    console.error("Ban check failed:", err);
   }
 
   // --- header ---
   nav.innerHTML = `
     <div style="display:flex; gap:10px; align-items:center;">
-      <img id="server-header-img" src="${serverData.imgUrl}" style="width:3.2vw;height:3.2vw;border-radius:12px;object-fit:cover;">
-      <h1 id="server-header-name" style="color:white; font-weight:100;">${serverData.name}</h1>
+      <img id="server-header-img" src="${serverData.imgUrl || '../images/default-server.png'}" style="width:3.2vw;height:3.2vw;border-radius:12px;object-fit:cover;">
+      <h1 id="server-header-name" style="color:white; font-weight:100;">${serverData.name || 'Server'}</h1>
     </div>
     <div class="admintools"></div>
     <button id="close-server-chat">X</button>
@@ -41,215 +52,213 @@ async function openServerChat(serverId, serverData) {
   const headerName = document.getElementById("server-header-name");
 
   // --- OWNER CHECK ---
-  const ownerSnap = await firebase.database().ref(`servers/${serverId}/owner`).once("value");
-  const isOwner = ownerSnap.exists() && ownerSnap.val() === currentUsername;
+  try {
+    const ownerSnap = await firebase.database().ref(`servers/${serverId}/owner`).once("value");
+    const isOwner = ownerSnap.exists() && ownerSnap.val() === currentUsername;
 
-  if (isOwner) {
-    adminToolsEl.innerHTML = `
-      <button id="change-server-icon">Change Icon</button>
-      <button id="change-server-name">Change Name</button>
-      <button id="manage-members">Manage Members</button>
-    `;
+    if (isOwner) {
+      adminToolsEl.innerHTML = `
+        <button id="change-server-icon">Change Icon</button>
+        <button id="change-server-name">Change Name</button>
+        <button id="manage-members">Manage Members</button>
+      `;
 
-    // ---- CHANGE ICON ----
-    document.getElementById("change-server-icon").onclick = () => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.onchange = async e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async () => {
-          await firebase.database().ref(`servers/${serverId}/imgUrl`).set(reader.result);
+      // change icon
+      document.getElementById("change-server-icon").onclick = () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+        input.onchange = async e => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = async () => {
+            try {
+              await firebase.database().ref(`servers/${serverId}/imgUrl`).set(reader.result);
+            } catch (err) {
+              console.error("Failed to set server imgUrl:", err);
+            }
+          };
+          reader.readAsDataURL(file);
         };
-        reader.readAsDataURL(file);
+        input.click();
       };
-      input.click();
-    };
 
-    // ---- CHANGE NAME ----
-    document.getElementById("change-server-name").onclick = async () => {
-      const bannedWords = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
-        "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide",
-        "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy",
-        "ass","kkk","masturbate","dildo"];
+      // change name
+      document.getElementById("change-server-name").onclick = async () => {
+        const bannedWords = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
+          "nigga","slut","whore","bastard","penis","vagina","sex","rape","kill","suicide",
+          "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy",
+          "ass","kkk","masturbate","dildo"];
+        const name = prompt("Enter new server name (max 10 chars):");
+        if (!name) return;
+        if (name.length > 10) return alert("Name too long.");
+        if (bannedWords.some(w => name.toLowerCase().includes(w)))
+          return alert("Blocked: banned word detected.");
+        try {
+          await firebase.database().ref(`servers/${serverId}/name`).set(name);
+        } catch (err) {
+          console.error("Failed to set server name:", err);
+        }
+      };
 
-      const name = prompt("Enter new server name (max 10 chars):");
-      if (!name) return;
-      if (name.length > 10) return alert("Name too long.");
-      if (bannedWords.some(w => name.toLowerCase().includes(w)))
-        return alert("Blocked: banned word detected.");
-
-      await firebase.database().ref(`servers/${serverId}/name`).set(name);
-    };
-
-    // ---- MANAGE MEMBERS (remove / ban) ----
-    document.getElementById("manage-members").onclick = async () => {
-      const membersSnap = await firebase.database().ref(`servers/${serverId}/members`).once("value");
-      if (!membersSnap.exists()) return alert("No members.");
-
-      const members = membersSnap.val();
-      const memberList = Object.keys(members).filter(u => u !== currentUsername);
-
-      if (memberList.length === 0) return alert("No members to manage.");
-
-      const target = prompt("Members:\n" + memberList.join("\n") + "\n\nEnter username:");
-      if (!target || !members[target]) return;
-
-      const action = prompt(`Action for ${target}: remove / ban`).toLowerCase();
-
-      if (action === "remove") {
-        await firebase.database().ref(`servers/${serverId}/members/${target}`).remove();
-        alert(`${target} removed from server.`);
-      }
-      else if (action === "ban") {
-        await firebase.database().ref(`servers/${serverId}/banned/${target}`).set(true);
-        await firebase.database().ref(`servers/${serverId}/members/${target}`).remove();
-        alert(`${target} has been banned.`);
-      }
-      else alert("Invalid action.");
-    };
+      // manage members
+      document.getElementById("manage-members").onclick = async () => {
+        try {
+          const membersSnap = await firebase.database().ref(`servers/${serverId}/members`).once("value");
+          if (!membersSnap.exists()) return alert("No members.");
+          const members = membersSnap.val();
+          const memberList = Object.keys(members).filter(u => u !== currentUsername);
+          if (memberList.length === 0) return alert("No members to manage.");
+          const target = prompt("Members:\n" + memberList.join("\n") + "\n\nEnter username:");
+          if (!target || !members[target]) return;
+          const action = prompt(`Action for ${target}: remove / ban`);
+          if (!action) return;
+          if (action.toLowerCase() === "remove") {
+            await firebase.database().ref(`servers/${serverId}/members/${target}`).remove();
+            alert(`${target} removed from server.`);
+          } else if (action.toLowerCase() === "ban") {
+            await firebase.database().ref(`servers/${serverId}/banned/${target}`).set(true);
+            await firebase.database().ref(`servers/${serverId}/members/${target}`).remove();
+            alert(`${target} has been banned.`);
+          } else alert("Invalid action.");
+        } catch (err) {
+          console.error("Manage members failed:", err);
+          alert("Could not manage members.");
+        }
+      };
+    }
+  } catch (err) {
+    console.error("Owner check failed:", err);
   }
 
-  // ---- Close ----
-  document.getElementById("close-server-chat").onclick = () => {
+  // ---- Close handler (single, reliable) ----
+  const closeBtn = document.getElementById("close-server-chat");
+  closeBtn.onclick = () => {
     modal.style.display = "none";
 
-    // Close GIF modal if open
     const gifModal = document.getElementById("server-gif-modal");
     if (gifModal) {
       gifModal.style.display = "none";
       gifModal.classList.remove("show");
     }
 
-    if (window.serverMessageListener) window.serverMessageListener.off?.();
-    if (window.serverLiveListener) window.serverLiveListener.off?.();
+    // remove server message listener cleanly
+    if (window.serverMessageListener && window.serverMessageListener.ref) {
+      try {
+        window.serverMessageListener.ref.off();
+      } catch (err) {
+        console.warn("Error removing serverMessageListener:", err);
+      }
+      window.serverMessageListener = null;
+    }
+
+    // remove live listener
+    if (window.serverLiveListener) {
+      try {
+        window.serverLiveListener.off();
+      } catch (err) {
+        console.warn("Error removing serverLiveListener:", err);
+      }
+      window.serverLiveListener = null;
+    }
   };
 
-  // ---- Close ----
-document.getElementById("close-server-chat").onclick = () => {
-  modal.style.display = "none";
+  // ---- Live updates for server meta (owner, name, kicked) ----
+  try {
+    const serverRef = firebase.database().ref(`servers/${serverId}`);
 
-  // Close GIF modal if open
-  const gifModal = document.getElementById("server-gif-modal");
-  if (gifModal) {
-    gifModal.style.display = "none";
-    gifModal.classList.remove("show");
-  }
-
-  if (window.serverMessageListener) window.serverMessageListener.off?.();
-  if (window.serverLiveListener) window.serverLiveListener.off?.();
-};
-
-  // ---- Close ----
-document.getElementById("close-server-chat").onclick = () => {
-  modal.style.display = "none";
-
-  // Close GIF modal if open
-  const gifModal = document.getElementById("server-gif-modal");
-  if (gifModal) {
-    gifModal.style.display = "none";
-    gifModal.classList.remove("show");
-  }
-
-  if (window.serverMessageListener) window.serverMessageListener.off?.();
-  if (window.serverLiveListener) window.serverLiveListener.off?.();
-};
-
-  // ---- Close ----
-document.getElementById("close-server-chat").onclick = () => {
-  modal.style.display = "none";
-
-  // Close GIF modal if open
-  const gifModal = document.getElementById("server-gif-modal");
-  if (gifModal) {
-    gifModal.style.display = "none";
-    gifModal.classList.remove("show");
-  }
-
-  if (window.serverMessageListener) window.serverMessageListener.off?.();
-  if (window.serverLiveListener) window.serverLiveListener.off?.();
-};
-
-  // ---- Close ----
-document.getElementById("close-server-chat").onclick = () => {
-  modal.style.display = "none";
-
-  // Close GIF modal if open
-  const gifModal = document.getElementById("server-gif-modal");
-  if (gifModal) {
-    gifModal.style.display = "none";
-    gifModal.classList.remove("show");
-  }
-
-  if (window.serverMessageListener) window.serverMessageListener.off?.();
-  if (window.serverLiveListener) window.serverLiveListener.off?.();
-};
-
-  // ---- Live updates ----
-  const serverRef = firebase.database().ref(`servers/${serverId}`);
-
-  if (window.serverLiveListener) window.serverLiveListener.off?.();
-  window.serverLiveListener = serverRef;
-
-  serverRef.on("value", async snap => {
-    if (!snap.exists()) {
-      modal.style.display = "none";
-      await refreshUserServers();
-      return;
+    // remove previous if present
+    if (window.serverLiveListener && window.serverLiveListener.off) {
+      try { window.serverLiveListener.off(); } catch (e) { /* ignore */ }
     }
+    window.serverLiveListener = serverRef;
 
-    const data = snap.val();
-    headerName.textContent = data.name;
-    headerImg.src = data.imgUrl;
+    serverRef.on("value", async snap => {
+      if (!snap.exists()) {
+        modal.style.display = "none";
+        await refreshUserServers();
+        return;
+      }
+      const data = snap.val();
+      headerName.textContent = data.name || headerName.textContent;
+      headerImg.src = data.imgUrl || headerImg.src;
 
-    // kicked or banned mid-session
-    if (!data.members || !data.members[currentUsername]) {
-      modal.style.display = "none";
-      alert("You were removed from the server.");
-      await refreshUserServers();
-    }
-  });
-
-  // ---- Load messages ----
-  const msgRef = firebase.database().ref(`servers/${serverId}/messages`).limitToLast(200);
-
-  if (window.serverMessageListener) window.serverMessageListener.off?.();
-  window.serverMessageListener = msgRef;
-
-  msgRef.once("value").then(snapshot => {
-    const messages = [];
-    snapshot.forEach(s => messages.push({ id: s.key, ...s.val() }));
-    messages.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
-    messages.forEach(m => renderServerMessage(m, m.id, msgArea));
-    msgArea.scrollTop = msgArea.scrollHeight;
-
-    msgRef.orderByChild("timestamp").on("child_added", snap => {
-      const m = { id: snap.key, ...snap.val() };
-      if (!document.querySelector(`li[data-id="${m.id}"]`))
-        renderServerMessage(m, m.id, msgArea);
+      if (!data.members || !data.members[currentUsername]) {
+        modal.style.display = "none";
+        alert("You were removed from the server.");
+        await refreshUserServers();
+      }
     });
-  });
-// --- Prevent duplicate GIF/Image controls ---
-const oldControls = document.getElementById("media-controls");
-if (oldControls) oldControls.remove();
+  } catch (err) {
+    console.warn("Live server listener setup failed:", err);
+  }
 
-// --- Add GIF + Image buttons next to input ---
-const controls = document.createElement("div");
-controls.id = "media-controls"; // IMPORTANT
-controls.style.display = "flex";
-controls.style.gap = "10px";
+  // ---- Load messages (robust, prevent stacked listeners) ----
+  try {
+    const msgRef = firebase.database().ref(`servers/${serverId}/messages`).limitToLast(200);
 
-controls.innerHTML = `
-  <button id="gif-btn2">GIF</button>
-  <button id="img-btn">Upload Image</button>
-`;
+    // If a previous listener exists, off() on the old ref to be safe
+    if (window.serverMessageListener && window.serverMessageListener.ref) {
+      try {
+        window.serverMessageListener.ref.off();
+      } catch (err) {
+        console.warn("Failed to off previous serverMessageListener.ref:", err);
+      }
+    }
 
-box.parentNode.insertBefore(controls, box.nextSibling);
+    // liveRef is the ref we will use for realtime child_added
+    const liveRef = msgRef.orderByChild("timestamp");
 
-const gifBtn = document.getElementById("gif-btn2");
-const imgBtn = document.getElementById("img-btn");
+    // named callback so it can be referenced
+    const onChildAdded = snap => {
+      const m = { id: snap.key, ...snap.val() };
+      // guard: only render if not in DOM yet (prevent duplicates)
+      if (!msgArea.querySelector(`li[data-id="${m.id}"]`)) {
+        renderServerMessage(m, m.id, msgArea);
+        // keep scroll at bottom for new messages
+        msgArea.scrollTop = msgArea.scrollHeight;
+      }
+    };
+
+    // store for later cleanup
+    window.serverMessageListener = { ref: liveRef, callback: onChildAdded };
+
+    // Load history once then attach realtime listener
+    msgRef.once("value").then(snapshot => {
+      const messages = [];
+      snapshot.forEach(s => messages.push({ id: s.key, ...s.val() }));
+      messages.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
+      messages.forEach(m => renderServerMessage(m, m.id, msgArea));
+      msgArea.scrollTop = msgArea.scrollHeight;
+
+      // attach realtime listener exactly once
+      liveRef.on("child_added", onChildAdded);
+    }).catch(err => {
+      console.error("Failed to load message history:", err);
+    });
+  } catch (err) {
+    console.error("Message listener setup failed:", err);
+  }
+
+  // --- Prevent duplicate GIF/Image controls (only create if not present) ---
+  if (document.getElementById("media-controls")) {
+    document.getElementById("media-controls").remove();
+  }
+
+  const controls = document.createElement("div");
+  controls.id = "media-controls";
+  controls.style.display = "flex";
+  controls.style.gap = "10px";
+  controls.innerHTML = `
+    <button id="gif-btn2">GIF</button>
+    <button id="img-btn">Upload Image</button>
+  `;
+  // place controls right after input box
+  box.parentNode.insertBefore(controls, box.nextSibling);
+
+  const gifBtn = document.getElementById("gif-btn2");
+  const imgBtn = document.getElementById("img-btn");
 
   // ---- Send message ----
   const bannedWords2 = ["fuck","shit","bitch","asshole","cunt","nigger","faggot","dick","cock","pussy",
@@ -257,209 +266,202 @@ const imgBtn = document.getElementById("img-btn");
     "cum","boob","boobs","fag","retard","jerk","porn","horny","gay","lesbian","femboy",
     "ass","kkk","masturbate","dildo"];
 
+  // Make sure this assignment overwrites previous handlers (no stacking)
   sendBtn.onclick = async () => {
-  const rawText = box.value.trim();
-  if (!rawText) return;
+    try {
+      const rawText = box.value.trim();
+      if (!rawText) return;
+      const lower = rawText.toLowerCase();
+      const premium = await isPremium(currentUsername);
 
-  const lower = rawText.toLowerCase();
-  const premium = await isPremium(currentUsername);
+      // censorship check (non-premium only)
+      if (!premium) {
+        const containsBanned = bannedWords2.some(w => lower.includes(w));
+        if (containsBanned) {
+          box.value = "";
+          box.placeholder = "⚠️ Message blocked: inappropriate language";
+          setTimeout(() => box.placeholder = "Type a message...", 1500);
+          return;
+        }
+      }
 
-  // --- CENSORSHIP CHECK (non-premium only) ---
-  if (!premium) {
-    const containsBanned = bannedWords2.some(w => lower.includes(w));
-    if (containsBanned) {
+      // push message to DB (do NOT render locally — let realtime listener handle it)
+      await firebase.database().ref(`servers/${serverId}/messages`).push({
+        sender: currentUsername,
+        text: rawText,
+        timestamp: Date.now()
+      });
+
       box.value = "";
-      box.placeholder = "⚠️ Message blocked: inappropriate language";
-      setTimeout(() => box.placeholder = "Type a message...", 1500);
-      return; // STOP MESSAGE FROM SENDING
+    } catch (err) {
+      console.error("Send failed:", err);
     }
-  }
-
-  // --- SEND MESSAGE (SAFE TEXT) ---
-  firebase.database().ref(`servers/${serverId}/messages`).push({
-    sender: currentUsername,
-    text: rawText,
-    timestamp: Date.now()
-  });
-
-  box.value = "";
   };
 
-  // ---- Enter key sends ----
-  box.addEventListener("keydown", e => {
+  // ---- Enter key sends (overwrite handler to avoid stacking) ----
+  box.onkeydown = e => {
     if (e.key === "Enter") {
       e.preventDefault();
-      sendBtn.onclick();
+      if (typeof sendBtn.onclick === "function") sendBtn.onclick();
     }
-  });
+  };
 
-
-
-
-
-
+  // --- GIF modal and system init (guard creation to avoid rebuilding) ---
   const gifModal = document.getElementById("server-gif-modal");
-const gifModalInner = document.getElementById("server-gif-modal-inner");
+  const gifModalInner = document.getElementById("server-gif-modal-inner");
 
-  // Initialize GIF system for this server chat
-initGifSystemForServer({
-  serverId,
-  gifButtonEl: document.getElementById("gif-btn2"),
-  gifModalEl: gifModal,
-  gifModalInnerEl: gifModalInner,
-  gifResultsTargetEl: gifModalInner
-});
-function initGifSystemForServer({ serverId, gifButtonEl, gifModalEl, gifModalInnerEl, gifResultsTargetEl }) {
-  if (!gifButtonEl || !gifModalEl || !gifModalInnerEl) {
-    console.warn("GIF system skipped — missing elements");
-    return;
-  }
-
-  // Build search UI inside modal
-  gifModalInnerEl.innerHTML = `
-    <div class="gif-ui" style="padding:10px; max-width:520px;">
-      <input id="server-gif-search" placeholder="Search GIFs..." 
-             style="width:100%; padding:8px; margin-bottom:8px;" />
-      <div id="server-gif-results" style="display:flex; flex-wrap:wrap;"></div>
-    </div>
-  `;
-
-  const gifSearchEl = gifModalInnerEl.querySelector("#server-gif-search");
-  const gifResultsEl = gifModalInnerEl.querySelector("#server-gif-results");
-
-  // Modal helpers
-  function showModal() {
-    gifModalEl.style.display = "block";
-    gifModalEl.classList.add("show");
-  }
-  function hideModal() {
-    gifModalEl.style.display = "none";
-    gifModalEl.classList.remove("show");
-  }
-  function toggleModal() {
-    if (gifModalEl.style.display === "block") hideModal();
-    else showModal();
-  }
-
-  // Send GIF message to server
-  async function sendServerGifMessage(url) {
-    if (!serverId || !url) return;
-
-    const premium = await isPremium(currentUsername);
-    const timeoutSnap = await firebase.database()
-      .ref(`gifTimeouts/${currentUsername}`)
-      .once("value");
-
-    if (!premium && timeoutSnap.exists()) {
-      return; // cooldown block
+  function initGifSystemForServer({ serverId, gifButtonEl, gifModalEl, gifModalInnerEl }) {
+    if (!gifButtonEl || !gifModalEl || !gifModalInnerEl) {
+      console.warn("GIF system skipped — missing elements");
+      return;
     }
 
-    firebase.database()
-      .ref(`servers/${serverId}/messages`)
-      .push({
+    // Prevent rebuilding the modal UI more than once
+    if (gifModalEl.dataset.built === "true") {
+      // still re-bind gif button click behavior (but keep UI)
+      gifButtonEl.onclick = gifButtonEl.onclick || (async (e) => {
+        e.stopPropagation();
+        const premium = await isPremium(currentUsername);
+        const timeoutSnap = await firebase.database().ref(`gifTimeouts/${currentUsername}`).once("value");
+        if (!premium && timeoutSnap.exists()) {
+          const left = Math.ceil((timeoutSnap.val() - Date.now()) / 1000);
+          gifButtonEl.textContent = `GIF (${left}s)`;
+          return;
+        }
+        if (gifModalEl.style.display === "block") {
+          gifModalEl.style.display = "none";
+          gifModalEl.classList.remove("show");
+        } else {
+          gifModalEl.style.display = "block";
+          gifModalEl.classList.add("show");
+        }
+      });
+      return;
+    }
+
+    gifModalEl.dataset.built = "true";
+
+    gifModalInnerEl.innerHTML = `
+      <div class="gif-ui" style="padding:10px; max-width:520px;">
+        <input id="server-gif-search" placeholder="Search GIFs..." style="width:100%; padding:8px; margin-bottom:8px;" />
+        <div id="server-gif-results" style="display:flex; flex-wrap:wrap;"></div>
+      </div>
+    `;
+
+    const gifSearchEl = gifModalInnerEl.querySelector("#server-gif-search");
+    const gifResultsEl = gifModalInnerEl.querySelector("#server-gif-results");
+
+    function showModal() {
+      gifModalEl.style.display = "block";
+      gifModalEl.classList.add("show");
+    }
+    function hideModal() {
+      gifModalEl.style.display = "none";
+      gifModalEl.classList.remove("show");
+    }
+
+    async function sendServerGifMessage(url) {
+      if (!serverId || !url) return;
+      const premium = await isPremium(currentUsername);
+      const timeoutSnap = await firebase.database().ref(`gifTimeouts/${currentUsername}`).once("value");
+      if (!premium && timeoutSnap.exists()) return;
+      await firebase.database().ref(`servers/${serverId}/messages`).push({
         sender: currentUsername,
         gif: url,
         timestamp: Date.now()
       });
-
-    if (!premium) startGifCooldown(currentUsername, 25);
-
-    hideModal();
-  }
-
-  // Handle GIF button click
-  gifButtonEl.onclick = async (e) => {
-    e.stopPropagation();
-
-    const premium = await isPremium(currentUsername);
-    const timeoutSnap = await firebase.database()
-      .ref(`gifTimeouts/${currentUsername}`)
-      .once("value");
-
-    // Cooldown check
-    if (!premium && timeoutSnap.exists()) {
-      const left = Math.ceil((timeoutSnap.val() - Date.now()) / 1000);
-      gifButtonEl.textContent = `GIF (${left}s)`;
-      return;
+      if (!premium) startGifCooldown(currentUsername, 25);
+      hideModal();
     }
 
-    toggleModal();
-  };
-
-  // Restore cooldown if already active
-  firebase.database().ref(`gifTimeouts/${currentUsername}`).once("value")
-    .then(snap => {
-      if (snap.exists()) {
-        const left = Math.ceil((snap.val() - Date.now()) / 1000);
-        if (left > 0) startGifCooldown(currentUsername, left);
-      }
-    });
-
-  // Tenor search (debounced)
-  let typingTimeout;
-  gifSearchEl.oninput = () => {
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(async () => {
-      const query = gifSearchEl.value.trim();
-      if (query.length < 2) {
-        gifResultsEl.innerHTML = "<p style='color:#999'>Type 2+ characters...</p>";
+    gifButtonEl.onclick = async (e) => {
+      e.stopPropagation();
+      const premium = await isPremium(currentUsername);
+      const timeoutSnap = await firebase.database().ref(`gifTimeouts/${currentUsername}`).once("value");
+      if (!premium && timeoutSnap.exists()) {
+        const left = Math.ceil((timeoutSnap.val() - Date.now()) / 1000);
+        gifButtonEl.textContent = `GIF (${left}s)`;
         return;
       }
+      if (gifModalEl.style.display === "block") hideModal();
+      else showModal();
+    };
 
-      try {
-        const premium = await isPremium(currentUsername);
-        const limit = premium ? 30 : 4;
+    // restore cooldown if active
+    firebase.database().ref(`gifTimeouts/${currentUsername}`).once("value")
+      .then(snap => {
+        if (snap.exists()) {
+          const left = Math.ceil((snap.val() - Date.now()) / 1000);
+          if (left > 0) startGifCooldown(currentUsername, left);
+        }
+      }).catch(() => {});
 
-        const res = await fetch(
-          `https://api.tenor.com/v1/search?q=${encodeURIComponent(query)}&key=${TENOR_KEY}&limit=${limit}`
-        );
-        const data = await res.json();
+    // Tenor search (debounced)
+    let typingTimeout;
+    gifSearchEl.oninput = () => {
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(async () => {
+        const query = gifSearchEl.value.trim();
+        if (query.length < 2) {
+          gifResultsEl.innerHTML = "<p style='color:#999'>Type 2+ characters...</p>";
+          return;
+        }
+        try {
+          const premium = await isPremium(currentUsername);
+          const limit = premium ? 30 : 4;
+          const res = await fetch(`https://api.tenor.com/v1/search?q=${encodeURIComponent(query)}&key=${TENOR_KEY}&limit=${limit}`);
+          const data = await res.json();
+          gifResultsEl.innerHTML = "";
+          data.results?.forEach(item => {
+            const url = item.media[0]?.gif?.url;
+            if (!url) return;
+            const img = document.createElement("img");
+            img.src = url;
+            img.className = "gif-option";
+            img.style.width = "100px";
+            img.style.height = "100px";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "8px";
+            img.style.margin = "4px";
+            img.style.cursor = "pointer";
+            img.onclick = () => sendServerGifMessage(url);
+            gifResultsEl.appendChild(img);
+          });
+        } catch (err) {
+          gifResultsEl.innerHTML = "<p style='color:red'>Error loading GIFs</p>";
+        }
+      }, 300);
+    };
 
-        gifResultsEl.innerHTML = "";
-        data.results?.forEach(item => {
-          const url = item.media[0]?.gif?.url;
-          if (!url) return;
+    gifModalEl.onclick = (e) => {
+      if (e.target === gifModalEl) hideModal();
+    };
+    gifModalInnerEl.onclick = (e) => e.stopPropagation();
+  }
 
-          const img = document.createElement("img");
-          img.src = url;
-          img.className = "gif-option";
-          img.style.width = "100px";
-          img.style.height = "100px";
-          img.style.objectFit = "cover";
-          img.style.borderRadius = "8px";
-          img.style.margin = "4px";
-          img.style.cursor = "pointer";
-          img.onclick = () => sendServerGifMessage(url);
+  // initialize GIF system for this server chat (guarded)
+  initGifSystemForServer({
+    serverId,
+    gifButtonEl: gifBtn,
+    gifModalEl: gifModal,
+    gifModalInnerEl: gifModalInner
+  });
 
-          gifResultsEl.appendChild(img);
-        });
-      } catch (err) {
-        gifResultsEl.innerHTML = "<p style='color:red'>Error loading GIFs</p>";
-      }
-    }, 300);
-  };
+  // setup server image upload (this function already guards double-binding)
+  setupServerImageUpload({
+    serverId,
+    imgButtonEl: imgBtn
+  });
 
-  // Close modal when clicking outside
-  gifModalEl.onclick = (e) => {
-    if (e.target === gifModalEl) hideModal();
-  };
-
-  gifModalInnerEl.onclick = (e) => e.stopPropagation();
-}
-
-
-setupServerImageUpload({
-  serverId,
-  imgButtonEl: document.getElementById("img-btn")
-});
+} // end openServerChat
 async function setupServerImageUpload({ serverId, imgButtonEl }) {
   if (!imgButtonEl) return;
 
-  // --- Prevent double wrapping ---
+  // Prevent duplicate binding
   if (imgButtonEl.dataset.bound === "true") return;
   imgButtonEl.dataset.bound = "true";
 
-  // Wrap button just like DM
+  // Wrap the button
   const wrapper = document.createElement("div");
   wrapper.style.position = "relative";
   imgButtonEl.parentNode.insertBefore(wrapper, imgButtonEl);
@@ -468,54 +470,48 @@ async function setupServerImageUpload({ serverId, imgButtonEl }) {
   const premium = await isPremium(currentUsername);
 
   if (!premium) {
-    // Overlay block
+    // Block behind overlay
     const overlay = document.createElement("div");
     overlay.textContent = "Premium Only";
     overlay.style.position = "absolute";
     overlay.style.inset = "0";
     overlay.style.background = "rgba(0,0,0,0.6)";
-    overlay.style.color = "#fff";
+    overlay.style.color = "white";
     overlay.style.display = "flex";
     overlay.style.justifyContent = "center";
     overlay.style.alignItems = "center";
     overlay.style.fontWeight = "bold";
     overlay.style.cursor = "not-allowed";
     overlay.style.borderRadius = "4px";
-    overlay.style.fontSize = "13px";
     wrapper.appendChild(overlay);
     return;
   }
 
-  // ---- Premium allowed ----
+  // Premium allowed — actual upload logic
   imgButtonEl.onclick = () => {
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "image/*";
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
 
-    fileInput.onchange = evt => {
+    input.onchange = evt => {
       const file = evt.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = () => {
-        const imageData = reader.result;
-
-        // push into server messages
         firebase.database().ref(`servers/${serverId}/messages`).push({
           sender: currentUsername,
-          imageBase64: imageData,
+          imageBase64: reader.result,
           timestamp: Date.now()
         });
       };
-
       reader.readAsDataURL(file);
     };
 
-    fileInput.click();
+    input.click();
   };
 }
 
-}
 
 
 // Example refreshUserServers function
