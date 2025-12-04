@@ -1,7 +1,16 @@
 // =========================
 // SERVER SYSTEM (ONE FILE, FULL FEATURED)
 // =========================
+function cleanupAllListeners() {
+  if (window.serverMessageListener) window.serverMessageListener.off?.();
+  if (window.serverLiveListener) window.serverLiveListener.off?.();
+  if (window.gifCooldownListener) window.gifCooldownListener.off?.();
+  if (window.presenceListener) window.presenceListener.off?.();
+  if (window.memberListener) window.memberListener.off?.();
+}
+
 async function openServerChat(serverId, serverData) {
+  cleanupAllListeners();
   // --- close any open gif modals first ---
   document.querySelectorAll(".gif-modal").forEach(m => {
     m.style.display = "none";
@@ -511,6 +520,25 @@ async function setupServerImageUpload({ serverId, imgButtonEl }) {
     input.click();
   };
 }
+setInterval(() => {
+  const ref = firebase.database().ref("gifTimeouts");
+
+  ref.once("value").then(snap => {
+    snap.forEach(userSnap => {
+      const expiresAt = userSnap.val();
+      const key = userSnap.key;
+
+      // if missing or expired
+      if (!expiresAt || expiresAt - Date.now() <= 0) {
+        firebase.database()
+          .ref(`gifTimeouts/${key}`)
+          .remove()
+          .catch(() => {});
+      }
+    });
+  });
+
+}, 1000);
 
 
 
