@@ -272,6 +272,7 @@ function formatMessageTime(timestamp) {
 // ----- Open chat with a friend -----
 // NOTE: this function creates DOM for the chat and sets up live listeners
 function openChat(friend) {
+  setupUploadButton();
   // Detach any previous chat listener
   if (activeChatRef && activeChatChildAddedCallback) {
     activeChatRef.off("child_added", activeChatChildAddedCallback);
@@ -817,21 +818,27 @@ async function setupUploadButton() {
 
   if (!premium) {
     // Overlay
-    const overlay = document.createElement("div");
-    overlay.textContent = "Premium Only";
-    overlay.style.position = "absolute";
-    overlay.style.inset = "0";
-    overlay.style.background = "rgba(0,0,0,0.6)";
-    overlay.style.color = "#fff";
-    overlay.style.display = "flex";
-    overlay.style.justifyContent = "center";
-    overlay.style.alignItems = "center";
-    overlay.style.fontWeight = "bold";
-    overlay.style.cursor = "not-allowed";
-    overlay.style.borderRadius = "4px";
-    overlay.style.fontSize = "13px";
-    wrapper.appendChild(overlay);
-    return;
+// Overlay (click-blocker)
+const overlay = document.createElement("div");
+overlay.textContent = "Premium Only";
+overlay.style.position = "absolute";
+overlay.style.inset = "0";
+overlay.style.background = "rgba(0,0,0,0.6)";
+overlay.style.color = "#fff";
+overlay.style.display = "flex";
+overlay.style.justifyContent = "center";
+overlay.style.alignItems = "center";
+overlay.style.fontWeight = "bold";
+overlay.style.borderRadius = "4px";
+overlay.style.fontSize = "13px";
+
+/* ★ Correct way: overlay blocks clicks, wrapper + button stay NORMAL */
+overlay.style.pointerEvents = "auto"; 
+// DO NOT disable pointer events on button or wrapper
+
+wrapper.appendChild(overlay);
+return;
+
   }
 
   // Premium upload
