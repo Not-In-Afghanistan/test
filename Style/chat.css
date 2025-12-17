@@ -12,7 +12,10 @@
     display: none;
   }
 }
-
+#inbox-modal > .modal-content {
+  max-height: 60vh;
+  overflow-y: scroll;
+}
 
 body {
   display: flex;
